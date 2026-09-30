@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backtesting Basics for Beginners | ProFX Club Blog</title>
+<meta name="description" content="Test your strategy on historical data before risking money. A beginner-friendly guide to honest backtesting.">
+<link rel="canonical" href="https://dawoodshah2232-svg.github.io/profx-club/blog/backtesting-basics-beginners.html">
+<link rel="icon" href="../assets/favicon.png">
+<link rel="stylesheet" href="../css/style.css?v=20261006">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ProFX Club">
+<meta property="og:title" content="Backtesting Basics for Beginners">
+<meta property="og:description" content="Test your strategy on historical data before risking money. A beginner-friendly guide to honest backtesting.">
+<meta property="og:url" content="https://dawoodshah2232-svg.github.io/profx-club/blog/backtesting-basics-beginners.html">
+<meta property="og:image" content="https://dawoodshah2232-svg.github.io/profx-club/assets/images/webinar-teaching.jpg">
+<meta property="article:published_time" content="2026-08-22">
+<meta property="article:section" content="Technical Analysis">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Backtesting Basics for Beginners">
+<meta name="twitter:description" content="Test your strategy on historical data before risking money. A beginner-friendly guide to honest backtesting.">
+<meta name="twitter:image" content="https://dawoodshah2232-svg.github.io/profx-club/assets/images/webinar-teaching.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://dawoodshah2232-svg.github.io/profx-club/index.html"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://dawoodshah2232-svg.github.io/profx-club/blog/index.html"}, {"@type": "ListItem", "position": 3, "name": "Backtesting Basics for Beginners", "item": "https://dawoodshah2232-svg.github.io/profx-club/blog/backtesting-basics-beginners.html"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Backtesting Basics for Beginners", "description": "Test your strategy on historical data before risking money. A beginner-friendly guide to honest backtesting.", "image": "https://dawoodshah2232-svg.github.io/profx-club/assets/images/webinar-teaching.jpg", "datePublished": "2026-08-22", "dateModified": "2026-08-22", "author": {"@type": "Organization", "name": "ProFX Club"}, "publisher": {"@type": "Organization", "name": "ProFX Club", "logo": {"@type": "ImageObject", "url": "https://dawoodshah2232-svg.github.io/profx-club/assets/logo-full.png"}}, "mainEntityOfPage": "https://dawoodshah2232-svg.github.io/profx-club/blog/backtesting-basics-beginners.html", "articleSection": "Technical Analysis", "wordCount": 277}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "Do I need special software?", "acceptedAnswer": {"@type": "Answer", "text": "No \u2014 manual backtesting on any charting platform works and teaches you the most."}}, {"@type": "Question", "name": "What is curve-fitting?", "acceptedAnswer": {"@type": "Answer", "text": "Over-optimising rules to past data until it looks perfect \u2014 it fails on new data. Keep rules simple."}}, {"@type": "Question", "name": "Backtest passed \u2014 go live?", "acceptedAnswer": {"@type": "Answer", "text": "Forward-test on demo first. Live markets add spreads, slippage and emotions."}}]}</script>
+</head>
+<body data-page="blog">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="../index.html" aria-label="ProFX Club home"><img class="logo-img" src="../assets/logo-full.png" alt="ProFX Club"></a>
+<nav class="nav-links" aria-label="Primary"><a href="../index.html">Home</a><a href="../learn.html">Learn</a><a href="index.html" class="active">Blog</a><a href="../events.html">Events</a><a href="../community.html">Community</a><a href="../assistance.html">Assistance</a><a href="../travel.html">Travel</a><a href="../about.html">About</a></nav>
+<div class="nav-cta"><a class="btn btn-ghost btn-sm" href="../signin.html">Sign in</a><a class="btn btn-primary btn-sm" href="../join.html">Join Free</a></div>
+<button class="burger" id="burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+</div></header>
+<div class="mobile-drawer" id="chrome-drawer"><a href="../index.html">Home</a><a href="../learn.html">Learn</a><a href="index.html" class="active">Blog</a><a href="../events.html">Events</a><a href="../community.html">Community</a><a href="../assistance.html">Assistance</a><a href="../travel.html">Travel</a><a href="../about.html">About</a><a href="../join.html">Join Free</a><a href="../signin.html">Sign in</a></div>
+<main id="main">
+<nav class="container breadcrumbs" aria-label="Breadcrumb"><a href="../index.html">Home</a> › <a href="index.html">Blog</a> › <a href="index.html?cat=Technical Analysis">Technical Analysis</a></nav>
+<article class="container blog-post">
+<header class="blog-post-head">
+<span class="badge badge-info">Technical Analysis</span>
+<h1>Backtesting Basics for Beginners</h1>
+<p class="blog-meta">August 22, 2026 · 2 min read · By ProFX Club</p>
+</header>
+<img class="blog-hero" src="../assets/images/webinar-teaching.jpg" alt="Backtesting Basics for Beginners">
+<p class="lead">Backtesting means applying your strategy rules to past price data to see how it would have performed. It is homework before the exam.</p>
+<h2>Why backtest</h2>
+<p>It answers the only question that matters about a strategy: does it have an edge?</p>
+<p>A few hours of backtesting can save months of live losses on a hopeless idea. It also builds the confidence to follow rules through losing streaks — you have seen the recovery before.</p>
+<h2>How to do it manually</h2>
+<p>Pick a pair and timeframe, define your entry/exit rules precisely, then scroll bar-by-bar through history recording each hypothetical trade (entry, stop, target, result). Aim for 50–100 trades. Tedious?</p>
+<p>Yes. Valuable? Enormously.</p>
+<h2>Avoiding self-deception</h2>
+<p>The big trap is hindsight bias: &#x27;seeing&#x27; signals you would never have taken live.</p>
+<p>Be strict: if a rule is ambiguous, the trade does not count. Also avoid curve-fitting — tweaking rules until past data looks perfect guarantees future disappointment.</p>
+<h2>What good results look like</h2>
+<p>Look for consistent profitability across different market conditions, manageable drawdowns, and enough trades to be statistically meaningful.</p>
+<p>One great month proves nothing; a solid year of data proves something. Then forward-test on demo before going live.</p>
+
+<aside class="takeaways"><h2>Key takeaways</h2><ul><li>Backtesting reveals whether a strategy has an edge — before risking money.</li>
+<li>Record 50–100 trades bar-by-bar with strict, hindsight-free rules.</li>
+<li>Good results need varied conditions and meaningful sample sizes.</li>
+</ul></aside>
+<section class="blog-faq"><h2>Frequently asked questions</h2><details><summary>Do I need special software?</summary><p>No — manual backtesting on any charting platform works and teaches you the most.</p></details>
+<details><summary>What is curve-fitting?</summary><p>Over-optimising rules to past data until it looks perfect — it fails on new data. Keep rules simple.</p></details>
+<details><summary>Backtest passed — go live?</summary><p>Forward-test on demo first. Live markets add spreads, slippage and emotions.</p></details>
+</section>
+<div class="demo-banner"><b>Education only.</b> This article is for learning purposes and is not financial advice. Trading forex and gold carries a high risk of loss.</div>
+<nav class="blog-prevnext"><a class="card blog-nav" href="price-action-vs-indicators.html"><span>← Newer article</span><b>Price Action vs Indicators</b></a><a class="card blog-nav" href="forex-trading-dubai-guide.html"><span>Older article →</span><b>Forex Trading in Dubai: What to Know</b></a></nav>
+</article>
+<section class="section"><div class="container">
+<h2>Related articles</h2>
+<div class="grid g3 blog-grid"><a class="card blog-card reveal" href="candlestick-basics-reading-charts.html">
+<img src="../assets/images/webinar-teaching.jpg" alt="Candlestick Basics: Reading Price Charts" loading="lazy">
+<div class="blog-card-body"><span class="badge badge-info">Technical Analysis</span>
+<h3>Candlestick Basics: Reading Price Charts</h3><p class="meta">Green and red candles encode the whole battle between buyers and sellers. Learn to read them in ten minutes.</p>
+<span class="blog-meta">August 29, 2026 · 2 min read</span></div></a>
+<a class="card blog-card reveal" href="support-resistance-explained.html">
+<img src="../assets/images/webinar-teaching.jpg" alt="Support and Resistance, Simply Explained" loading="lazy">
+<div class="blog-card-body"><span class="badge badge-info">Technical Analysis</span>
+<h3>Support and Resistance, Simply Explained</h3><p class="meta">Prices bounce at certain levels again and again. What support and resistance are, how to draw them, and how to use them.</p>
+<span class="blog-meta">August 28, 2026 · 2 min read</span></div></a>
+<a class="card blog-card reveal" href="trend-lines-market-direction.html">
+<img src="../assets/images/webinar-teaching.jpg" alt="Trend Lines: Spotting Market Direction" loading="lazy">
+<div class="blog-card-body"><span class="badge badge-info">Technical Analysis</span>
+<h3>Trend Lines: Spotting Market Direction</h3><p class="meta">Uptrend, downtrend, sideways — draw trend lines correctly and always know which way the wind blows.</p>
+<span class="blog-meta">August 27, 2026 · 2 min read</span></div></a>
+</div>
+<div style="text-align:center;margin-top:1.5rem"><a class="btn btn-ghost" href="index.html">View all articles</a></div>
+</div></section>
+</main>
+<footer id="chrome-footer"><div class="container"><div class="foot-grid">
+<div><a class="logo" href="../index.html" style="margin-bottom:.2rem" aria-label="ProFX Club home"><img class="logo-foot" src="../assets/logo-white.png" alt="ProFX Club"></a>
+<div class="tagline">Educate, Entertain &amp; Evolve</div>
+<p style="font-size:.9rem;max-width:34ch">Free forex trader membership: classes, webinars, community and assistance. No deposit, no broker account required.</p></div>
+<div><h4>Explore</h4><a href="../learn.html">Learn</a><a href="index.html">Blog</a><a href="../events.html">Events</a><a href="../community.html">Community</a><a href="../travel.html">Travel</a></div>
+<div><h4>Members</h4><a href="../app/index.html">Member portal</a><a href="../join.html">Join free</a><a href="../signin.html">Sign in</a></div>
+<div><h4>Policies</h4><a href="../terms.html">Membership terms</a><a href="../privacy.html">Privacy notice</a><a href="../community-rules.html">Community rules</a><a href="../risk.html">Education risk notice</a></div>
+</div><div class="foot-base"><span>© 2026 ProFX Club. All rights reserved.</span><span>Education only — not financial advice.</span></div></div></footer>
+<script>
+(function(){var b=document.getElementById('burger'),d=document.getElementById('chrome-drawer');
+if(b&&d){b.addEventListener('click',function(){var o=d.classList.toggle('open');b.setAttribute('aria-expanded',o);});}})();
+</script>
+</body>
+</html>

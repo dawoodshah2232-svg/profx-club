@@ -1,0 +1,88 @@
+# ProFX Club
+
+> ProFX Club is a free forex trader membership and community: beginner-friendly trading education,
+> live classes and webinars, a moderated worldwide community, events, travel interest lists and
+> member assistance. No deposit, no broker account and no payment required to join.
+> All educational content is for learning purposes only and is not financial advice.
+
+## Site
+- Home: https://dawoodshah2232-svg.github.io/profx-club/index.html
+- Learn: https://dawoodshah2232-svg.github.io/profx-club/learn.html
+- Events: https://dawoodshah2232-svg.github.io/profx-club/events.html
+- Community: https://dawoodshah2232-svg.github.io/profx-club/community.html
+- Assistance: https://dawoodshah2232-svg.github.io/profx-club/assistance.html
+- Join free: https://dawoodshah2232-svg.github.io/profx-club/join.html
+
+## Blog (56 educational articles)
+
+Beginner-friendly, honest trading education. No guaranteed outcomes, no hype.
+
+### Forex Basics
+- [What Is Forex Trading? A Beginner's Guide](https://dawoodshah2232-svg.github.io/profx-club/blog/what-is-forex-trading-beginners-guide.html): New to forex? Learn what currency trading is, how it works, and what every beginner should understand before anything else.
+- [Forex Pairs Explained: Majors, Minors, Exotics](https://dawoodshah2232-svg.github.io/profx-club/blog/forex-pairs-majors-minors-exotics.html): EUR/USD, GBP/JPY, USD/ZAR — what do these codes mean? A clear guide to currency pairs: majors, minors and exotics.
+- [How to Read Currency Quotes and Pips](https://dawoodshah2232-svg.github.io/profx-club/blog/how-to-read-currency-quotes-pips.html): Bid, ask, spread, pips — decode the numbers on every forex quote and understand what each price move is worth.
+- [What Moves Currency Prices? Key Drivers](https://dawoodshah2232-svg.github.io/profx-club/blog/what-moves-currency-prices.html): Interest rates, inflation, jobs data — the real forces behind currency moves, explained without the jargon.
+- [Forex Market Hours: When to Trade](https://dawoodshah2232-svg.github.io/profx-club/blog/forex-market-hours-when-to-trade.html): The forex market runs 24 hours on weekdays across Sydney, Tokyo, London and New York. Here's when each session matters.
+- [Long vs Short: How Forex Positions Work](https://dawoodshah2232-svg.github.io/profx-club/blog/long-vs-short-forex-positions.html): Going long, going short — what it really means to buy or sell a currency pair, and how profit and loss are calculated.
+- [Forex Jargon Buster: 25 Terms to Know](https://dawoodshah2232-svg.github.io/profx-club/blog/forex-jargon-buster-terms.html): Spread, lot, margin, drawdown — the essential forex vocabulary every beginner needs, explained in one page.
+- [Paper Trading: Practice Before Real Money](https://dawoodshah2232-svg.github.io/profx-club/blog/paper-trading-practice-guide.html): Demo accounts let you practise forex with virtual money. Here's how to use paper trading properly — and its limits.
+
+### Risk Management
+- [Position Sizing 101: Risk Only What You Can Lose](https://dawoodshah2232-svg.github.io/profx-club/blog/position-sizing-101.html): Position size decides whether a losing trade is a lesson or a disaster. Learn the simple math behind smart sizing.
+- [Stop-Loss Orders: Your Safety Net Explained](https://dawoodshah2232-svg.github.io/profx-club/blog/stop-loss-orders-explained.html): A stop-loss exits your trade automatically at a chosen price. How they work, where to place them, and mistakes to avoid.
+- [The 1% Risk Rule Every Beginner Should Know](https://dawoodshah2232-svg.github.io/profx-club/blog/one-percent-risk-rule.html): Risk no more than 1% of your account on any single trade. The simple rule that keeps beginners alive long enough to learn.
+- [Leverage Explained: Power and Danger](https://dawoodshah2232-svg.github.io/profx-club/blog/leverage-explained-power-danger.html): Leverage multiplies both gains and losses. Understand how 1:100 really works before you touch it.
+- [Margin Calls: What They Are and How to Avoid Them](https://dawoodshah2232-svg.github.io/profx-club/blog/margin-calls-avoid.html): A margin call means your broker is warning you: add funds or lose positions. What triggers them and how to never get one.
+- [Risk-Reward Ratios: Plan Every Trade](https://dawoodshah2232-svg.github.io/profx-club/blog/risk-reward-ratios-guide.html): A 1:2 risk-reward ratio means one winner pays for two losers. How to plan exits so your winners carry your losers.
+- [Drawdowns: Surviving Losing Streaks](https://dawoodshah2232-svg.github.io/profx-club/blog/drawdowns-surviving-losing-streaks.html): Every trader faces losing streaks. What drawdown means, why it is normal, and the rules that keep a bad month from ending you.
+- [Building a Trading Plan That Controls Risk](https://dawoodshah2232-svg.github.io/profx-club/blog/trading-plan-controls-risk.html): A trading plan turns impulses into process. The essential sections every beginner's plan needs — with a simple template.
+
+### Trading Psychology
+- [FOMO in Trading: How to Beat It](https://dawoodshah2232-svg.github.io/profx-club/blog/fomo-in-trading-how-to-beat-it.html): Fear of missing out makes traders chase moves too late. Recognise FOMO and replace it with a calmer process.
+- [Revenge Trading: Why It Destroys Accounts](https://dawoodshah2232-svg.github.io/profx-club/blog/revenge-trading-destroys-accounts.html): After a loss, the urge to 'win it back' is overwhelming — and account-destroying. How revenge trading works and how to stop it.
+- [Patience: The Underrated Trading Skill](https://dawoodshah2232-svg.github.io/profx-club/blog/patience-trading-skill.html): Waiting is a trading action. Why patience beats constant activity — and how to build it like a muscle.
+- [Keeping a Trading Journal That Works](https://dawoodshah2232-svg.github.io/profx-club/blog/trading-journal-that-works.html): A trading journal turns random trades into data. What to record, how to review it, and the template that actually helps.
+- [Handling Losses Without Losing Your Mind](https://dawoodshah2232-svg.github.io/profx-club/blog/handling-trading-losses.html): Losses are the tuition of trading. A healthy framework for taking losses, learning from them, and protecting your mindset.
+- [Confirmation Bias: Seeing What You Want](https://dawoodshah2232-svg.github.io/profx-club/blog/confirmation-bias-trading.html): Your brain highlights evidence that agrees with your trade and hides the rest. How to fight confirmation bias in trading.
+- [Discipline Over Motivation in Trading](https://dawoodshah2232-svg.github.io/profx-club/blog/discipline-over-motivation-trading.html): Motivation fades by February; discipline compounds for years. How to build trading discipline that survives bad weeks.
+- [Taking Breaks: When Not to Trade](https://dawoodshah2232-svg.github.io/profx-club/blog/taking-breaks-when-not-to-trade.html): The best trade is often no trade. Recognise the conditions — in markets and in yourself — when stepping away wins.
+
+### Gold Trading
+- [Why Traders Watch Gold (XAUUSD)](https://dawoodshah2232-svg.github.io/profx-club/blog/why-traders-watch-gold-xauusd.html): Gold is the world's most-watched commodity. What makes XAUUSD special — and why beginners should respect its power.
+- [Gold vs Forex: Key Differences](https://dawoodshah2232-svg.github.io/profx-club/blog/gold-vs-forex-differences.html): Thinking of switching from currency pairs to gold? The five differences that change how you must trade XAUUSD.
+- [What Moves Gold Prices?](https://dawoodshah2232-svg.github.io/profx-club/blog/what-moves-gold-prices.html): Rate expectations, the dollar, inflation fears — the fundamental forces behind gold's biggest moves, simply explained.
+- [XAUUSD Sessions: Best Times to Watch](https://dawoodshah2232-svg.github.io/profx-club/blog/xauusd-sessions-best-times.html): Gold sleeps in Asia and storms in New York. A session-by-session guide to when XAUUSD actually moves.
+- [Gold Volatility: What Beginners Must Know](https://dawoodshah2232-svg.github.io/profx-club/blog/gold-volatility-beginners.html): Gold can move $30 before lunch. How to measure, respect and survive XAUUSD volatility as a beginner.
+- [Safe-Haven Demand: Gold in Uncertain Times](https://dawoodshah2232-svg.github.io/profx-club/blog/gold-safe-haven-demand.html): When markets panic, money runs to gold. How safe-haven flows work — and why chasing them is dangerous.
+- [Dollar-Gold Relationship Explained](https://dawoodshah2232-svg.github.io/profx-club/blog/dollar-gold-relationship.html): Gold and the dollar usually move in opposite directions. Why the inverse link exists — and when it breaks.
+- [Common XAUUSD Beginner Mistakes](https://dawoodshah2232-svg.github.io/profx-club/blog/xauusd-beginner-mistakes.html): Oversized lots, tiny stops, news gambling — the classic ways beginners lose on gold, and how to avoid each one.
+
+### Technical Analysis
+- [Candlestick Basics: Reading Price Charts](https://dawoodshah2232-svg.github.io/profx-club/blog/candlestick-basics-reading-charts.html): Green and red candles encode the whole battle between buyers and sellers. Learn to read them in ten minutes.
+- [Support and Resistance, Simply Explained](https://dawoodshah2232-svg.github.io/profx-club/blog/support-resistance-explained.html): Prices bounce at certain levels again and again. What support and resistance are, how to draw them, and how to use them.
+- [Trend Lines: Spotting Market Direction](https://dawoodshah2232-svg.github.io/profx-club/blog/trend-lines-market-direction.html): Uptrend, downtrend, sideways — draw trend lines correctly and always know which way the wind blows.
+- [Moving Averages: A Beginner's Primer](https://dawoodshah2232-svg.github.io/profx-club/blog/moving-averages-beginners-primer.html): The 50-day, 200-day — what moving averages smooth, what they signal, and their honest limitations.
+- [RSI Indicator: What It Tells You](https://dawoodshah2232-svg.github.io/profx-club/blog/rsi-indicator-explained.html): RSI above 70, below 30 — what the Relative Strength Index really measures and how beginners should (and shouldn't) use it.
+- [Chart Timeframes: Which One to Use](https://dawoodshah2232-svg.github.io/profx-club/blog/chart-timeframes-which-to-use.html): M1 to Monthly — what each timeframe is for, why beginners should avoid the tiny ones, and the multi-timeframe approach.
+- [Price Action vs Indicators](https://dawoodshah2232-svg.github.io/profx-club/blog/price-action-vs-indicators.html): Naked charts or indicator-packed screens? An honest comparison to help you choose your analysis style.
+- [Backtesting Basics for Beginners](https://dawoodshah2232-svg.github.io/profx-club/blog/backtesting-basics-beginners.html): Test your strategy on historical data before risking money. A beginner-friendly guide to honest backtesting.
+
+### Trading in UAE
+- [Forex Trading in Dubai: What to Know](https://dawoodshah2232-svg.github.io/profx-club/blog/forex-trading-dubai-guide.html): Trading forex from Dubai or the UAE? Sessions, brokers, communities and practical notes for local traders.
+- [Choosing a Broker: A Due-Diligence Checklist](https://dawoodshah2232-svg.github.io/profx-club/blog/choosing-broker-due-diligence.html): Your broker holds your money — choose carefully. The complete checklist: regulation, costs, withdrawals and red flags.
+- [Regulated vs Unregulated Brokers](https://dawoodshah2232-svg.github.io/profx-club/blog/regulated-vs-unregulated-brokers.html): What broker regulation actually protects — and the real risks of trading with an unlicensed firm.
+- [Withdrawal Records: Keep Proof of Everything](https://dawoodshah2232-svg.github.io/profx-club/blog/withdrawal-records-proof.html): Screenshots, statements, reference numbers — the boring paperwork habit that protects your trading money.
+- [Common Trading Scams and Red Flags](https://dawoodshah2232-svg.github.io/profx-club/blog/trading-scams-red-flags.html): Guaranteed profits, signal sellers, fake brokers — the scams targeting beginner traders and exactly how to spot them.
+- [Trading Communities: Learn With Others](https://dawoodshah2232-svg.github.io/profx-club/blog/trading-communities-learn-together.html): Trading alone is hard; learning together is faster. How communities accelerate your growth — and how to pick a good one.
+- [Tax Basics for UAE-Based Traders](https://dawoodshah2232-svg.github.io/profx-club/blog/uae-trader-tax-basics.html): The UAE has no personal income tax — but rules evolve. What traders should know and why professional advice matters.
+- [Trading on Your Phone: Mobile Tips](https://dawoodshah2232-svg.github.io/profx-club/blog/mobile-trading-tips.html): Your phone can be a full trading station — if you set it up right. Practical tips for safe, effective mobile trading.
+
+### Platforms & Tools
+- [MT4 vs MT5: Which Platform Fits You](https://dawoodshah2232-svg.github.io/profx-club/blog/mt4-vs-mt5-which-fits-you.html): MetaTrader 4 or 5? The honest differences, who each suits, and why most beginners can't go wrong either way.
+- [Setting Up Your First Trading Platform](https://dawoodshah2232-svg.github.io/profx-club/blog/setting-up-first-trading-platform.html): From login to first demo trade: a step-by-step setup guide for your first MT4/MT5 trading platform.
+- [Demo Accounts: How to Use Them Well](https://dawoodshah2232-svg.github.io/profx-club/blog/demo-accounts-how-to-use.html): Demo accounts are free trading simulators. How to practise realistically so demo skills transfer to live markets.
+- [Economic Calendars: Never Miss Key Events](https://dawoodshah2232-svg.github.io/profx-club/blog/economic-calendars-guide.html): NFP, CPI, rate decisions — how to read an economic calendar and why beginners should plan around red-flag events.
+- [TradingView Basics for Beginners](https://dawoodshah2232-svg.github.io/profx-club/blog/tradingview-basics-beginners.html): The world's most popular charting tool, explained: layouts, indicators, alerts and the free features beginners need.
+- [Alerts and Watchlists That Save Time](https://dawoodshah2232-svg.github.io/profx-club/blog/alerts-watchlists-save-time.html): Stop watching charts all day. Build watchlists and price alerts that bring the market to you.
+- [Spreads and Commissions Explained](https://dawoodshah2232-svg.github.io/profx-club/blog/spreads-commissions-explained.html): Every trade has a cost. How spreads and commissions work, why they matter more than you think, and how to minimise them.
+- [Weekend Routine: Review Like a Pro](https://dawoodshah2232-svg.github.io/profx-club/blog/weekend-review-routine.html): Markets close on weekends — your edge compounds. A simple 60-minute weekend routine to review, plan and improve.
