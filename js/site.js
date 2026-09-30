@@ -19,9 +19,7 @@
 
   document.getElementById("chrome-nav").innerHTML =
     '<div class="container nav-inner">' +
-    '<a class="logo" href="index.html" aria-label="ProFX Club home"><span class="logo-mark">PX</span>' +
-    '<span>ProFX Club<small>Free trader community</small></span>' +
-    '<span class="logo-slot">logo slot</span></a>' +
+    '<a class="logo" href="index.html" aria-label="ProFX Club home"><img class="logo-img" src="assets/logo-shield.png" alt="ProFX Club"></a>' +
     '<nav class="nav-links" aria-label="Primary">' + navLinks + "</nav>" +
     '<div class="nav-cta"><a class="btn btn-ghost btn-sm" href="signin.html">Sign in</a>' +
     '<a class="btn btn-primary btn-sm" href="join.html">Join Free</a></div>' +
@@ -32,7 +30,8 @@
 
   document.getElementById("chrome-footer").innerHTML =
     '<div class="container"><div class="foot-grid">' +
-    '<div><a class="logo" href="index.html" style="margin-bottom:.8rem"><span class="logo-mark">PX</span><span style="color:#fff">ProFX Club<small style="color:#8fa1c2">Free trader community</small></span></a>' +
+    '<div><a class="logo" href="index.html" style="margin-bottom:.2rem" aria-label="ProFX Club home"><img class="logo-foot" src="assets/logo-white.png" alt="ProFX Club"></a>' +
+    '<div class="tagline">Educate, Entertain &amp; Evolve</div>' +
     '<p style="font-size:.9rem;max-width:34ch">Free forex trader membership: classes, webinars, community and assistance. No deposit, no broker account required.</p></div>' +
     '<div><h4>Explore</h4><a href="learn.html">Learn</a><a href="events.html">Events</a><a href="community.html">Community</a><a href="travel.html">Travel</a></div>' +
     '<div><h4>Support</h4><a href="assistance.html">Trader assistance</a><a href="about.html">About &amp; contact</a><a href="join.html">Join free</a><a href="signin.html">Sign in</a></div>' +

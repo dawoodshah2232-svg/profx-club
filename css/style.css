@@ -2,15 +2,15 @@
    Light premium interface, dark navy + emerald accents.
    Apple font stack only. Mobile-first. */
 :root{
-  --navy:#0b1b33; --navy-2:#10264a; --navy-3:#0e2038;
-  --emerald:#0e9f6e; --emerald-2:#0b7d57; --emerald-soft:#e7f6f0;
+  --navy:#004070; --navy-2:#003058; --navy-3:#002a4d;
+  --emerald:#28c070; --emerald-2:#1da15c; --emerald-soft:#e9f8ef;
   --gold:#c9a227;
   --ink:#14213d; --muted:#5b6b85; --faint:#8a97ad;
   --line:#e4e9f2; --line-2:#eef2f8;
   --bg:#f7f9fc; --card:#ffffff;
   --radius:16px; --radius-s:10px;
-  --shadow:0 10px 30px rgba(11,27,51,.08);
-  --shadow-s:0 4px 14px rgba(11,27,51,.07);
+  --shadow:0 10px 30px rgba(0,64,112,.08);
+  --shadow-s:0 4px 14px rgba(0,64,112,.07);
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
   --nav-h:64px; --join-h:64px;
 }
@@ -27,7 +27,7 @@ h2{font-size:clamp(1.45rem,3.4vw,2.05rem);font-weight:750;margin-bottom:.6rem}
 h3{font-size:1.15rem;font-weight:700}
 .lead{font-size:1.08rem;color:var(--muted);max-width:62ch}
 .eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--emerald-2)}
-.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 4px rgba(14,159,110,.15)}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--emerald);box-shadow:0 0 0 4px rgba(40,192,112,.18)}
 .section{padding:3.4rem 0}
 .section.alt{background:#fff}
 
@@ -36,7 +36,7 @@ h3{font-size:1.15rem;font-weight:700}
   font-family:var(--font);font-weight:700;font-size:1rem;border-radius:12px;padding:.85rem 1.6rem;
   transition:transform .12s ease,box-shadow .12s ease,background .12s}
 .btn:active{transform:translateY(1px)}
-.btn-primary{background:var(--emerald);color:#fff;box-shadow:0 8px 20px rgba(14,159,110,.28)}
+.btn-primary{background:var(--emerald);color:#fff;box-shadow:0 8px 20px rgba(40,192,112,.30)}
 .btn-primary:hover{background:var(--emerald-2);text-decoration:none}
 .btn-navy{background:var(--navy);color:#fff}
 .btn-navy:hover{background:var(--navy-2);text-decoration:none}
@@ -53,11 +53,11 @@ h3{font-size:1.15rem;font-weight:700}
 .logo{display:flex;align-items:center;gap:.65rem;font-weight:800;font-size:1.12rem;color:var(--navy)}
 .logo:hover{text-decoration:none}
 .logo small{display:block;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.logo-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);
-  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.95rem;letter-spacing:.02em;flex:none;
-  border:1px solid rgba(201,162,39,.45);position:relative}
-.logo-mark::after{content:"";position:absolute;inset:4px;border-radius:8px;border:1px dashed rgba(201,162,39,.55)}
-.logo-slot{font-size:.6rem;font-weight:600;color:var(--faint);border:1px dashed var(--line);border-radius:6px;padding:.1rem .4rem;margin-left:.35rem;white-space:nowrap}
+.logo-img{height:42px;width:auto;display:block;flex:none}
+.logo-foot{height:54px;width:auto;display:block}
+.logo-sub{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.tagline{font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#7f93b8;margin-top:.75rem}
+@media(max-width:640px){.logo-img{height:36px}.logo-foot{height:46px}}
 .nav-links{display:flex;gap:1.15rem;margin-left:auto}
 .nav-links a{color:var(--muted);font-weight:600;font-size:.95rem}
 .nav-links a:hover,.nav-links a.active{color:var(--navy);text-decoration:none}
