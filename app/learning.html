@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Learning — ProFX Club</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930b">
+<link rel="stylesheet" href="../css/style.css?v=20260930c">
 </head>
 <body data-page="learning">
 <header class="nav"><div class="container nav-inner">
@@ -27,8 +27,8 @@
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930b"></script>
-<script src="../js/app.js?v=20260930b"></script>
+<script src="../js/db.js?v=20260930c"></script>
+<script src="../js/app.js?v=20260930c"></script>
 <script>
 (function () {
   "use strict";
@@ -43,7 +43,7 @@
         '<button class="btn ' + (done ? "btn-ghost" : "btn-primary") + ' btn-sm" data-done="' + l.id + '" style="margin-top:.6rem">' + (done ? "Mark as not done" : "Mark complete") + '</button></div>';
     }).join("");
     document.getElementById("res").innerHTML = PFX.db.resources.map(function (r) {
-      return '<div class="card"><div class="icon-chip">📄</div><h3>' + PFX.esc(r.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+      return '<div class="card"><div class="icon-chip"><svg class="" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div><h3>' + PFX.esc(r.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
         '<p class="meta">' + PFX.esc(r.summary) + '</p><p class="meta">' + PFX.esc(r.kind) + '</p>' +
         '<button class="btn btn-ghost btn-sm" data-access="' + r.id + '">Open</button></div>';
     }).join("");
@@ -64,7 +64,7 @@
     if (a) {
       me.progress["res_" + a.dataset.access] = true; PFX.save();
       PFX.audit("resource.access", a.dataset.access, me.id);
-      document.getElementById("msg").innerHTML = '<div class="notice">📄 DEMO — in production this opens the file. Access logged.</div>';
+      document.getElementById("msg").innerHTML = '<div class="notice">DEMO — in production this opens the file. Access logged.</div>';
     }
   });
   render();

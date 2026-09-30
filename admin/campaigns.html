@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Campaigns — ProFX Club CRM</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930b">
+<link rel="stylesheet" href="../css/style.css?v=20260930c">
 </head>
 <body data-page="campaigns">
 <header class="nav"><div class="container nav-inner">
@@ -37,8 +37,8 @@
   </div>
 </div></div>
 
-<script src="../js/db.js?v=20260930b"></script>
-<script src="../js/admin.js?v=20260930b"></script>
+<script src="../js/db.js?v=20260930c"></script>
+<script src="../js/admin.js?v=20260930c"></script>
 <script>
 (function () {
   "use strict";
@@ -75,7 +75,7 @@
     PFX.db.campaigns.push(c); PFX.save();
     PFX.audit("campaign.send", name + " → " + rec.length + " recipients (" + aud + ")", "admin");
     document.getElementById("cModal").classList.remove("open");
-    document.getElementById("msg").innerHTML = '<div class="success">✅ Campaign simulated to <b>' + rec.length + '</b> opted-in members. Members who opted out were excluded automatically — marketing opt-out never cancels membership.</div>';
+    document.getElementById("msg").innerHTML = '<div class="success">Campaign simulated to <b>' + rec.length + '</b> opted-in members. Members who opted out were excluded automatically — marketing opt-out never cancels membership.</div>';
     render();
   });
   render();

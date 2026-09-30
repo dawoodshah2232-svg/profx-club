@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Assistance — ProFX Club CRM</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930b">
+<link rel="stylesheet" href="../css/style.css?v=20260930c">
 </head>
 <body data-page="assistance">
 <header class="nav"><div class="container nav-inner">
@@ -26,8 +26,8 @@
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930b"></script>
-<script src="../js/admin.js?v=20260930b"></script>
+<script src="../js/db.js?v=20260930c"></script>
+<script src="../js/admin.js?v=20260930c"></script>
 <script>
 (function () {
   "use strict";
@@ -56,7 +56,7 @@
       '<p class="meta">' + PFX.esc(m ? m.name + " (" + m.email + ")" : a.memberId) + ' · ' + PFX.esc(a.country) + ' · contact pref: ' + PFX.esc(a.contactPref) + '</p></div>' +
       '<select id="dStatus" style="width:auto">' + FLOW.map(function (s) { return '<option' + (a.status === s ? " selected" : "") + '>' + s + '</option>'; }).join("") + '</select></div>' +
       '<dl class="kv"><dt>Brief facts</dt><dd>' + PFX.esc(a.facts) + '</dd><dt>Dates</dt><dd>' + PFX.esc(a.dates || "—") + '</dd><dt>Requested help</dt><dd>' + PFX.esc(a.requestedHelp) + '</dd>' +
-      '<dt>Referral consent</dt><dd>' + (a.referralConsent ? "✅ granted " + PFX.fmtDate(a.referralConsent.at) : "not granted") + '</dd></dl>' +
+      '<dt>Referral consent</dt><dd>' + (a.referralConsent ? "granted " + PFX.fmtDate(a.referralConsent.at) : "not granted") + '</dd></dl>' +
       '<h4 style="margin:1rem 0 .5rem">Messages</h4><div class="timeline">' +
       (a.messages || []).map(function (mm) {
         return '<div><b>' + (mm.from === "staff" ? "Support" : "Member") + '</b> <span class="meta">' + PFX.fmtDate(mm.at) + '</span><br>' + PFX.esc(mm.text) + '</div>';

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Members — ProFX Club CRM</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930b">
+<link rel="stylesheet" href="../css/style.css?v=20260930c">
 </head>
 <body data-page="members">
 <header class="nav"><div class="container nav-inner">
@@ -50,8 +50,8 @@
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930b"></script>
-<script src="../js/admin.js?v=20260930b"></script>
+<script src="../js/db.js?v=20260930c"></script>
+<script src="../js/admin.js?v=20260930c"></script>
 <script>
 (function () {
   "use strict";
@@ -74,11 +74,11 @@
     document.getElementById("list").innerHTML =
       '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Member</th><th>ID</th><th>Status</th><th>Verified</th><th>Source</th><th>Consents</th><th></th></tr></thead><tbody>' +
       rows.map(function (m) {
-        var cons = [m.consent.promoEmail ? "📧" : "", m.consent.promoWhatsapp ? "🟢" : ""].join(" ") || "—";
+        var cons = [m.consent.promoEmail ? "Email" : "", m.consent.promoWhatsapp ? "WhatsApp" : ""].join(" · ") || "—";
         return "<tr><td><b>" + PFX.esc(m.name) + "</b><br><span class='meta'>" + PFX.esc(m.email) + "</span>" + (m.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + "</td>" +
           "<td>" + PFX.esc(m.membershipId) + "</td>" +
           "<td><span class='badge " + (m.status === "active" ? "badge-ok" : m.status === "pending" ? "badge-warn" : "badge-neutral") + "'>" + m.status + "</span></td>" +
-          "<td>" + (m.verified ? "✅" : "⏳") + "</td>" +
+          "<td>" + (m.verified ? '<span class="badge badge-ok">Verified</span>' : '<span class="badge badge-neutral">Pending</span>') + "</td>" +
           "<td class='meta'>" + PFX.esc(m.source || "—") + (m.referralCode ? "<br>ref: " + PFX.esc(m.referralCode) : "") + "</td>" +
           "<td>" + cons + "</td>" +
           "<td><button class='btn btn-ghost btn-sm' data-view='" + m.id + "'>Open</button></td></tr>";
@@ -106,7 +106,7 @@
     document.getElementById("dConsent").innerHTML = (current.consentHistory || []).length
       ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>When</th><th>Type</th><th>Value</th><th>Note</th></tr></thead><tbody>' +
         current.consentHistory.map(function (c) {
-          return "<tr><td>" + PFX.fmtDate(c.at) + "</td><td>" + PFX.esc(c.type) + "</td><td>" + (c.value ? "✅ yes" : "❌ no") + "</td><td class='meta'>" + PFX.esc(c.note || "") + "</td></tr>";
+          return "<tr><td>" + PFX.fmtDate(c.at) + "</td><td>" + PFX.esc(c.type) + "</td><td>" + (c.value ? '<span class="badge badge-ok">Yes</span>' : '<span class="badge badge-neutral">No</span>') + "</td><td class='meta'>" + PFX.esc(c.note || "") + "</td></tr>";
         }).join("") + "</tbody></table></div>"
       : '<p class="meta">No history.</p>';
     document.getElementById("dTags").innerHTML = (current.tags || []).map(function (t) {

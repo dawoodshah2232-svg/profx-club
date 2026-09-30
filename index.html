@@ -6,7 +6,7 @@
 <title>ProFX Club — Free forex trader community</title>
 <meta name="description" content="Join ProFX Club free: beginner forex classes, live webinars, trader community and assistance. No deposit, no broker account, no payment required.">
 <link rel="icon" href="assets/favicon.png">
-<link rel="stylesheet" href="css/style.css?v=20260930b">
+<link rel="stylesheet" href="css/style.css?v=20260930c">
 </head>
 <body data-page="home" data-joinbar="1">
 <a class="skip" href="#main">Skip to content</a>
@@ -14,41 +14,64 @@
 <div class="mobile-drawer" id="chrome-drawer"></div>
 
 <main id="main">
-<section class="hero">
-  <div class="container hero-grid">
-    <div>
+<section class="hero-layered">
+  <div class="hero-bg" style="background-image:url('assets/images/hero-home.jpg')" role="img" aria-label="Trading desk with multiple monitors showing forex charts"></div>
+  <div class="hero-veil"></div>
+  <div class="float-card" style="top:20%;right:7%"><b>AED 0</b><span>Cost of membership — forever</span></div>
+  <div class="float-card" style="top:50%;right:15%;animation-delay:1.6s"><b>4-week path</b><span>Structured beginner learning</span></div>
+  <div class="float-card" style="top:72%;right:6%;animation-delay:3.2s"><b>Weekly</b><span>Free classes &amp; webinars</span></div>
+  <div class="hero-veil-b"></div>
+  <div class="container hero-inner">
+    <div style="max-width:660px">
       <span class="eyebrow reveal"><span class="dot"></span> Free membership · No payment</span>
-      <h1 class="reveal d1">Join the <span class="em">free</span> forex trader community.</h1>
-      <p class="lead reveal d2">Free beginner classes, live webinars, trader networking and assistance. No broker account, no deposit, no trading activity required — ever.</p>
-      <div class="reveal d3" style="display:flex;gap:.8rem;margin-top:1.4rem;flex-wrap:wrap">
+      <h1 class="reveal d1">Learn forex the honest way. Free.</h1>
+      <p class="lead reveal d2">ProFX Club is a free trader community: beginner classes, live webinars, networking and trader assistance. No broker account, no deposit, no trading activity required — ever.</p>
+      <div class="hero-ctas reveal d3">
         <a class="btn btn-primary btn-lg" href="join.html">Join Free</a>
-        <a class="btn btn-ghost btn-lg" href="events.html">See free classes</a>
-      </div>
-      <div class="hero-proof reveal d4">
-        <div><b>AED 0</b><span>Cost of membership</span></div>
-        <div><b>Weekly</b><span>Beginner class (planned)</span></div>
-        <div><b>Dubai, UAE</b><span>Community base</span></div>
-      </div>
-    </div>
-    <div class="reveal d2">
-      <div class="signup-card">
-        <h3>Join free in 1 minute</h3>
-        <p>Name, email and acceptance of the membership terms — that's all.</p>
-        <div class="form-error" id="quickErr" role="alert"></div>
-        <form id="quickJoin" novalidate>
-          <div class="field"><label for="qName">Full name</label><input type="text" id="qName" name="name" autocomplete="name" required></div>
-          <div class="field"><label for="qEmail">Email address</label><input type="email" id="qEmail" name="email" autocomplete="email" required></div>
-          <div class="honeypot"><label>Leave blank<input type="text" name="company" tabindex="-1" autocomplete="off"></label></div>
-          <label class="check-row"><input type="checkbox" id="qTerms" required><span>I accept the <a href="terms.html">membership terms</a> and the <a href="privacy.html">privacy notice</a>.</span></label>
-          <button class="btn btn-primary" type="submit" style="width:100%">Join Free</button>
-          <p class="form-note">Already a member? <a href="signin.html">Sign in</a> — we won't create a duplicate account.</p>
-        </form>
+        <a class="btn btn-ghost btn-lg" href="learn.html" style="border-color:rgba(255,255,255,.45);color:#fff;background:rgba(255,255,255,.08)">Explore the learning path</a>
       </div>
     </div>
   </div>
 </section>
 
+<div class="stats-strip">
+  <div class="container stats-grid">
+    <div class="stat reveal"><b>AED <em>0</em></b><span>Cost to join and stay a member</span></div>
+    <div class="stat reveal d1"><b><span class="count" data-count="4">4</span> <em>weeks</em></b><span>Structured beginner learning path</span></div>
+    <div class="stat reveal d2"><b><span class="count" data-count="1">1</span><em>+</em></b><span>Free class every week (planned)</span></div>
+    <div class="stat reveal d3"><b>0 <em>deposit</em></b><span>Joining never needs a broker account</span></div>
+  </div>
+</div>
+
 <section class="section">
+  <div class="container">
+    <div class="split">
+      <div>
+        <span class="eyebrow reveal">Join in 1 minute</span>
+        <h2 class="reveal d1">Free membership starts here.</h2>
+        <p class="lead reveal d2">Name, email and acceptance of the membership terms — that's all. Marketing consent is optional, joining never requires it, and duplicate signups are directed to sign-in, never duplicated.</p>
+        <p class="reveal d3"><a class="btn btn-ghost" href="signin.html">Already a member? Sign in</a></p>
+      </div>
+      <div class="reveal d2">
+        <div class="signup-card">
+          <h3>Join free now</h3>
+          <p>Start learning today — book your first free class right after.</p>
+          <div class="form-error" id="quickErr" role="alert"></div>
+          <form id="quickJoin" novalidate>
+            <div class="field"><label for="qName">Full name</label><input type="text" id="qName" name="name" autocomplete="name" required></div>
+            <div class="field"><label for="qEmail">Email address</label><input type="email" id="qEmail" name="email" autocomplete="email" required></div>
+            <div class="honeypot"><label>Leave blank<input type="text" name="company" tabindex="-1" autocomplete="off"></label></div>
+            <label class="check-row"><input type="checkbox" id="qTerms" required><span>I accept the <a href="terms.html">membership terms</a> and the <a href="privacy.html">privacy notice</a>.</span></label>
+            <button class="btn btn-primary" type="submit" style="width:100%">Join Free</button>
+            <p class="form-note">Education only. Not financial advice. No guaranteed returns.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section alt">
   <div class="container">
     <div class="page-head">
       <div><span class="eyebrow reveal">Next confirmed session</span>
@@ -60,18 +83,32 @@
   </div>
 </section>
 
-<section class="section alt">
+<section class="section">
   <div class="container">
     <span class="eyebrow reveal">Member benefits</span>
     <h2 class="reveal d1">What you get as a member</h2>
     <p class="lead reveal d2">Everything listed here is included in free membership. Optional travel and third-party professional services are priced separately and clearly disclosed.</p>
-    <div class="grid g3" style="margin-top:1.4rem">
-      <div class="card reveal"><div class="icon-chip">🎓</div><h3>Free education</h3><p class="meta">Weekly beginner classes, expert webinars every two weeks, monthly networking. Beginner path: Week 1 terminology, Week 2 risk concepts, Week 3 trading plans, Week 4 broker checks &amp; fraud awareness.</p></div>
-      <div class="card reveal d1"><div class="icon-chip">💬</div><h3>Trader community</h3><p class="meta">Telegram announcements and optional moderated discussion spaces. Joining is always voluntary — never automatic.</p></div>
-      <div class="card reveal d2"><div class="icon-chip">🛟</div><h3>Trader assistance</h3><p class="meta">Private intake, complaint-preparation resources and referrals to qualified professionals — with your explicit consent before anything is shared.</p></div>
-      <div class="card reveal"><div class="icon-chip">📓</div><h3>Learning resources</h3><p class="meta">Trading journal, risk-planning worksheet, beginner glossary, broker due-diligence and fraud-awareness checklists.</p></div>
-      <div class="card reveal d1"><div class="icon-chip">🤝</div><h3>Networking</h3><p class="meta">Peer discussions, moderated question sessions and member meetups. Build your network, not your deposit.</p></div>
-      <div class="card reveal d2"><div class="icon-chip">✈️</div><h3>Travel &amp; experiences</h3><p class="meta">Travel and social opportunities with transparent inclusions and separate pricing. At launch: interest list only.</p></div>
+    <div class="feature-grid">
+      <div class="fcard reveal"><div class="ficon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></div><h3>Free education</h3><p>Weekly beginner classes, expert webinars every two weeks, monthly networking. A 4-week beginner path takes you from terminology to broker checks.</p></div>
+      <div class="fcard reveal d1"><div class="ficon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><h3>Trader community</h3><p>Telegram announcements and optional moderated discussion spaces. Joining is always voluntary — never automatic.</p></div>
+      <div class="fcard reveal d2"><div class="ficon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>Trader assistance</h3><p>Private intake, complaint-preparation resources and referrals to qualified professionals — with your explicit consent before anything is shared.</p></div>
+      <div class="fcard reveal"><div class="ficon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><h3>Learning resources</h3><p>Trading journal, risk-planning worksheet, beginner glossary, broker due-diligence and fraud-awareness checklists.</p></div>
+      <div class="fcard reveal d1"><div class="ficon"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div><h3>Networking</h3><p>Peer discussions, moderated question sessions and member meetups. Build your network, not your deposit.</p></div>
+      <div class="fcard reveal d2"><div class="ficon"><svg viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></div><h3>Travel &amp; experiences</h3><p>Travel and social opportunities with transparent inclusions and separate pricing. At launch: interest list only.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section band-dark">
+  <div class="container">
+    <div class="split rev">
+      <div>
+        <span class="eyebrow reveal">Learn the honest way</span>
+        <h2 class="reveal d1">A 4-week path from zero to informed.</h2>
+        <p class="lead reveal d2">Week 1: terminology and market structure. Week 2: leverage, margin and risk — with honest hypothetical examples. Week 3: trading plans and journaling. Week 4: broker checks and fraud awareness.</p>
+        <p class="reveal d3"><a class="btn btn-primary" href="learn.html">Start the learning path</a></p>
+      </div>
+      <div class="split-media reveal d2"><img src="assets/images/mentorship.jpg" alt="Two traders discussing charts together at a desk" loading="lazy"></div>
     </div>
   </div>
 </section>
@@ -88,6 +125,45 @@
   </div>
 </section>
 
+<section class="section">
+  <div class="container">
+    <div class="split">
+      <div class="split-media reveal"><img src="assets/images/meetup-group.jpg" alt="Small group of traders in a casual discussion" loading="lazy"></div>
+      <div>
+        <span class="eyebrow reveal d1">Community</span>
+        <h2 class="reveal d1">A community, not a course.</h2>
+        <p class="lead reveal d2">Moderated discussions, city meetups, live question sessions — and announcements that respect your inbox. You join groups only if you want to; nothing is automatic.</p>
+        <p class="reveal d3"><a class="btn btn-ghost" href="community.html">Explore the community</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="container">
+    <div class="grid g2">
+      <div class="ev-card reveal">
+        <div class="ev-media"><img src="assets/images/journal-desk.jpg" alt="Trader's desk with notebook and charts" loading="lazy"></div>
+        <div class="ev-body">
+          <span class="eyebrow">Trader assistance</span>
+          <h3 style="margin-top:.4rem">Had a problem with a broker?</h3>
+          <p>Private intake, complaint-preparation resources and referrals to qualified professionals — only with your explicit consent.</p>
+          <a class="btn btn-ghost btn-sm" href="assistance.html">How assistance works</a>
+        </div>
+      </div>
+      <div class="ev-card reveal d1">
+        <div class="ev-media"><img src="assets/images/hero-travel.jpg" alt="Dubai skyline at dusk" loading="lazy"></div>
+        <div class="ev-body">
+          <span class="eyebrow">Travel &amp; experiences</span>
+          <h3 style="margin-top:.4rem">Travel with fellow traders.</h3>
+          <p>Expos, city meetups and social experiences with transparent inclusions. At launch: interest list only — no bookings.</p>
+          <a class="btn btn-ghost btn-sm" href="travel.html">Register your interest</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="section alt">
   <div class="container" style="max-width:780px">
     <span class="eyebrow reveal">FAQs</span>
@@ -96,21 +172,19 @@
   </div>
 </section>
 
-<section class="section">
-  <div class="container">
-    <div class="card reveal" style="background:var(--navy);color:#eaf0fa;border:0;text-align:center;padding:2.6rem 1.6rem">
-      <h2 style="color:#fff">Your trading education starts free.</h2>
-      <p style="color:#a9b8d4;max-width:52ch;margin:.6rem auto 1.4rem">Join ProFX Club today — book your first class, meet other traders, and learn without risking a dirham.</p>
-      <a class="btn btn-primary btn-lg" href="join.html">Join Free now</a>
-      <p class="form-note" style="margin-top:.9rem">Education only. Not financial advice. No guaranteed returns.</p>
-    </div>
+<section class="band-dark">
+  <div class="container" style="text-align:center;padding:4rem 1rem">
+    <h2 class="reveal">Your trading education starts free.</h2>
+    <p class="lead reveal d1" style="margin:.8rem auto 1.6rem;max-width:54ch">Join ProFX Club today — book your first class, meet other traders, and learn without risking a dirham.</p>
+    <p class="reveal d2"><a class="btn btn-primary btn-lg" href="join.html">Join Free now</a></p>
+    <p class="form-note reveal d3" style="margin-top:1rem;color:#8fa1c2">Education only. Not financial advice. No guaranteed returns.</p>
   </div>
 </section>
 </main>
 
 <footer id="chrome-footer"></footer>
-<script src="js/db.js?v=20260930b"></script>
-<script src="js/site.js?v=20260930b"></script>
+<script src="js/db.js?v=20260930c"></script>
+<script src="js/site.js?v=20260930c"></script>
 <script>
 (function () {
   /* next confirmed session */

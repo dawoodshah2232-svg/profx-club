@@ -68,11 +68,36 @@
     });
   });
 
-  /* reveal */
+  /* reveal — also catches elements injected later by inline scripts */
   var io = new IntersectionObserver(function (es) {
     es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
   }, { threshold: 0.1 });
-  document.querySelectorAll(".reveal").forEach(function (el) { io.observe(el); });
+  function watch(scope) { scope.querySelectorAll(".reveal:not(.in)").forEach(function (el) { io.observe(el); }); }
+  watch(document);
+  if (window.MutationObserver) {
+    new MutationObserver(function (muts) {
+      muts.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.querySelectorAll) watch(n); }); });
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+  window.PFX_refreshReveal = function () { watch(document); };
+
+  /* animated counters (honest numbers only) */
+  var cio = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      var el = e.target, target = parseInt(el.getAttribute("data-count"), 10) || 0, t0 = null;
+      cio.unobserve(el);
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = target; return; }
+      function step(ts) {
+        if (!t0) t0 = ts;
+        var p = Math.min((ts - t0) / 1100, 1), v = Math.round(target * (1 - Math.pow(1 - p, 3)));
+        el.textContent = v;
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll("[data-count]").forEach(function (el) { cio.observe(el); });
 
   var yr = document.getElementById("yr"); if (yr) yr.textContent = new Date().getFullYear();
 })();
