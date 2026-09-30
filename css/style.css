@@ -70,9 +70,11 @@ h3{font-size:1.15rem;font-weight:700}
 .burger span{display:block;width:22px;height:2px;background:var(--navy);margin:5px 0;border-radius:2px}
 .mobile-drawer{display:none}
 @media(max-width:900px){
-  .nav-links,.nav-cta .btn-ghost{display:none}
+  /* Mobile header: clean logo + burger only. The sticky bottom join-bar
+     already carries the persistent Join Free CTA (per spec), so the header
+     pill is redundant and crowds the logo on small screens. */
+  .nav-links,.nav-cta{display:none}
   .burger{display:block;margin-left:auto}
-  .nav-cta{margin-left:0}
   .mobile-drawer{display:block;position:fixed;inset:var(--nav-h) 0 auto 0;background:#fff;border-bottom:1px solid var(--line);
     padding:.8rem 4%;max-height:0;overflow:hidden;transition:max-height .25s ease;z-index:59}
   .mobile-drawer.open{max-height:70vh;overflow:auto;box-shadow:var(--shadow)}
