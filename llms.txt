@@ -86,3 +86,11 @@ Beginner-friendly, honest trading education. No guaranteed outcomes, no hype.
 - [Alerts and Watchlists That Save Time](https://dawoodshah2232-svg.github.io/profx-club/blog/alerts-watchlists-save-time.html): Stop watching charts all day. Build watchlists and price alerts that bring the market to you.
 - [Spreads and Commissions Explained](https://dawoodshah2232-svg.github.io/profx-club/blog/spreads-commissions-explained.html): Every trade has a cost. How spreads and commissions work, why they matter more than you think, and how to minimise them.
 - [Weekend Routine: Review Like a Pro](https://dawoodshah2232-svg.github.io/profx-club/blog/weekend-review-routine.html): Markets close on weekends — your edge compounds. A simple 60-minute weekend routine to review, plan and improve.
+
+## ProFX Media products
+- ProFX League (trading competition, divisions, entry discounts, leaderboard): https://dawoodshah2232-svg.github.io/profx-club/league.html
+- ProFX Expo (agenda, speakers, exhibitors, expo passes): https://dawoodshah2232-svg.github.io/profx-club/expo.html
+- ProFX Summit (B2B leadership edition): https://dawoodshah2232-svg.github.io/profx-club/summit.html
+- ProFX Awards (categories, nominations, gala night): https://dawoodshah2232-svg.github.io/profx-club/awards.html
+- Demo checkout (passes & league entry with discount codes): https://dawoodshah2232-svg.github.io/profx-club/checkout.html
+Sample discount codes (demo): EARLYBIRD20 (20% off passes & league), LEAGUE50 (50% off league), EXPO25 (25% off passes), MEMBER15, SUMMIT20, AWARDS15, STUDENT10, GROUP20.

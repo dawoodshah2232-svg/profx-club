@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Expo Passes — ProFX Club</title>
+<link rel="icon" href="../assets/favicon.png">
+<link rel="stylesheet" href="../css/style.css?v=20261007">
+</head>
+<body data-page="passes">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html" aria-label="ProFX Club — Member dashboard"><img class="logo-img" src="../assets/logo-full.png" alt="ProFX Club"><span class="logo-sub">Member dashboard</span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="appSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO</b> — passes shown are sample. Ordering a pass behaves like the real system; no payment is taken.</div>
+    <div class="page-head"><div><h1>My Expo Passes</h1><p class="lead">Your ProFX Expo passes, and the passes available to you as a member. <span class="badge badge-demo">SAMPLE</span></p></div></div>
+
+    <div id="msg"></div>
+
+    <div class="card" style="margin-bottom:1.2rem">
+      <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg> My passes</h3>
+      <div class="tbl-wrap" style="margin-top:.8rem"><table class="tbl" id="passTbl">
+        <thead><tr><th>Reference</th><th>Pass</th><th>Paid</th><th>Discount</th><th>Status</th><th>Ordered</th></tr></thead>
+        <tbody id="passRows"></tbody>
+      </table></div>
+      <div id="passEmpty"></div>
+    </div>
+
+    <h3 style="margin:1.6rem 0 .7rem">Get a pass</h3>
+    <div class="card" style="margin-bottom:1.2rem">
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end">
+        <div style="flex:1;min-width:200px">
+          <label class="meta" for="psCode"><b>Discount code</b> <span class="meta">(applies to all passes below)</span></label>
+          <input id="psCode" class="field" style="margin-top:.4rem;width:100%" placeholder="e.g. EXPO25" autocomplete="off">
+        </div>
+        <button class="btn btn-ghost" id="psApply" type="button">Apply</button>
+      </div>
+      <p class="meta" id="psCodeMsg" style="margin-top:.5rem"></p>
+      <p class="meta" style="margin-top:.4rem"><b>DEMO</b> — no payment is taken. Ordering reserves your pass in the demo database.</p>
+    </div>
+    <div class="grid g2" id="passCards"></div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20261007"></script>
+<script src="../js/app.js?v=20261007"></script>
+<script>
+(function () {
+  "use strict";
+  var me = window.PFX_ME;
+  var passes = PFX.db.passes || [];
+  var psCode = "", psPct = 0;
+
+  function msg(html, cls) { document.getElementById("msg").innerHTML = '<div class="' + cls + '">' + html + "</div>"; window.scrollTo(0, 0); }
+  function passById(id) { return PFX.passById ? PFX.passById(id) : passes.filter(function (p) { return p.id === id; })[0]; }
+  function priceFor(p) { return p.price * (1 - psPct / 100); }
+
+  function renderMine() {
+    var mine = PFX.myPasses(me.id) || [];
+    var tb = document.getElementById("passRows");
+    tb.innerHTML = mine.map(function (o) {
+      var p = passById(o.passId);
+      var st = String(o.status || "reserved");
+      var cls = st === "reserved" || st === "active" || st === "confirmed" ? "badge-ok" : st === "cancelled" ? "badge-full" : "badge-neutral";
+      return "<tr><td><b>" + PFX.esc(o.ref) + "</b></td>" +
+        "<td>" + PFX.esc(p ? p.name : o.passName || o.passId) + "</td>" +
+        "<td>" + PFX.money(o.total != null ? o.total : (p ? p.price : 0), p ? p.currency : "USD") + "</td>" +
+        "<td>" + (o.code ? PFX.esc(o.code) + " (" + (o.discountPct || 0) + "%)" : "—") + "</td>" +
+        "<td><span class=\"badge " + cls + "\">" + PFX.esc(st) + "</span></td>" +
+        "<td class=\"meta\">" + PFX.fmtDate(o.createdAt || o.at) + "</td></tr>";
+    }).join("");
+    document.getElementById("passEmpty").innerHTML = mine.length ? "" :
+      '<div class="empty">You don\'t have a pass yet. Browse the passes below or <a href="../expo.html#passes">see all passes</a>.</div>';
+  }
+
+  function renderCards() {
+    document.getElementById("passCards").innerHTML = passes.map(function (p) {
+      var perks = (p.perks || []).map(function (x) { return "<li>" + PFX.esc(x) + "</li>"; }).join("");
+      return '<div class="card pass-card">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap">' +
+        '<h3>' + PFX.esc(p.name) + '</h3>' +
+        (p.badge ? '<span class="badge badge-info">' + PFX.esc(p.badge) + "</span>" : "") + "</div>" +
+        '<p class="meta" style="margin:.4rem 0">' + PFX.esc(p.tagline || "") + ' <span class="badge badge-demo">SAMPLE</span></p>' +
+        '<div style="font-size:1.6rem;font-weight:800;margin:.4rem 0">' + PFX.money(p.price, p.currency) + "</div>" +
+        (psPct ? '<p class="meta">With code <b>' + PFX.esc(psCode) + '</b>: <b>' + PFX.money(priceFor(p), p.currency) + "</b></p>" : "") +
+        (perks ? '<ul class="meta" style="margin:.4rem 0 1rem;padding-left:1.2rem">' + perks + "</ul>" : "") +
+        '<button class="btn btn-primary btn-sm" data-pass="' + p.id + '">Get this pass</button></div>';
+    }).join("");
+  }
+
+  function refresh() { renderMine(); renderCards(); }
+
+  document.getElementById("psApply").addEventListener("click", function () {
+    var code = document.getElementById("psCode").value.trim();
+    var m = document.getElementById("psCodeMsg");
+    if (!code) { psCode = ""; psPct = 0; m.textContent = "No code entered — full price applies."; refresh(); return; }
+    var res = PFX.validateDiscount(code, "pass");
+    if (res.ok) {
+      psCode = res.code; psPct = res.pct;
+      m.innerHTML = '<span class="badge badge-ok">Code ' + PFX.esc(res.code) + ' — ' + res.pct + "% off all passes</span>";
+    } else {
+      psCode = ""; psPct = 0;
+      m.innerHTML = '<span class="badge badge-full">' + PFX.esc(res.error || "Invalid code") + "</span>";
+    }
+    refresh();
+  });
+
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-pass]");
+    if (!b) return;
+    var p = passById(b.dataset.pass);
+    if (!p) return;
+    if (!confirm("Get the " + p.name + " pass" + (psPct ? " with code " + psCode + " (" + psPct + "% off)" : "") + "? DEMO — no payment is taken.")) return;
+    var res = PFX.orderPass(me.id, p.id, psCode);
+    if (res.ok) {
+      msg("Pass reserved! Reference <b>" + PFX.esc(res.order.ref) + "</b> — " + PFX.esc(res.order.passName || p.name) +
+        ", paid " + PFX.money(res.order.total, p.currency) + "." +
+        (res.order.discountPct ? " Discount " + PFX.esc(res.order.code) + " (" + res.order.discountPct + "%)." : ""), "success");
+      document.getElementById("psCode").value = ""; psCode = ""; psPct = 0;
+      document.getElementById("psCodeMsg").textContent = "";
+      refresh();
+    } else msg(PFX.esc(res.error || "Couldn't reserve your pass."), "warn");
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>

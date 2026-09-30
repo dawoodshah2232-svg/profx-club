@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>League — ProFX Club CRM</title>
+<link rel="icon" href="../assets/favicon.png">
+<link rel="stylesheet" href="../css/style.css?v=20261007">
+</head>
+<body data-page="league">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html" aria-label="ProFX Club — Admin CRM"><img class="logo-img" src="../assets/logo-full.png" alt="ProFX Club"><span class="logo-sub">Admin CRM</span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO DATA</b> — league entries, rounds and the leaderboard below are sample data for this demo.</div>
+    <div class="page-head"><div><h1>League Management</h1><p class="lead">Entries, divisions, rounds and the leaderboard. Demo data.</p></div></div>
+
+    <div class="stat-row">
+      <div class="stat"><b id="stEntries">—</b><span>Total entries</span></div>
+      <div class="stat"><b id="stRevenue">—</b><span>Entry revenue (demo)</span></div>
+      <div class="stat"><b id="stDivs">—</b><span>Divisions</span></div>
+      <div class="stat"><b id="stRounds">—</b><span>Open rounds</span></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.2rem">
+      <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Rounds</h3>
+      <div class="tbl-wrap" style="margin-top:.8rem"><table class="tbl"><thead><tr><th>Round</th><th>Division</th><th>Status</th><th>Note</th></tr></thead><tbody id="roundRows"></tbody></table></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.2rem">
+      <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4z"/><path d="M7 6h10"/></svg> Divisions</h3>
+      <div class="tbl-wrap" style="margin-top:.8rem"><table class="tbl"><thead><tr><th>Division</th><th>Entry fee</th><th>Format</th><th>Max traders</th><th>Entries</th></tr></thead><tbody id="divRows"></tbody></table></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.2rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+        <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> All entries</h3>
+        <div class="field" style="margin:0;min-width:220px"><select id="entryFilter" aria-label="Filter entries by division"></select></div>
+      </div>
+      <div class="tbl-wrap" style="margin-top:.8rem"><table class="tbl"><thead><tr><th>Trader</th><th>Member</th><th>Division</th><th>P&amp;L %</th><th>Trades</th><th>Fee paid</th><th>Code</th><th>Status</th><th>Entered</th></tr></thead><tbody id="entryRows"></tbody></table></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+        <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Leaderboard</h3>
+        <div class="field" style="margin:0;min-width:220px"><select id="lbFilter" aria-label="Leaderboard division"></select></div>
+      </div>
+      <div class="tbl-wrap" style="margin-top:.8rem"><table class="tbl"><thead><tr><th>#</th><th>Trader</th><th>Country</th><th>P&amp;L %</th><th>Trades</th><th>Win rate</th><th>Status</th></tr></thead><tbody id="lbRows"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20261007"></script>
+<script src="../js/admin.js?v=20261007"></script>
+<script>
+(function () {
+  "use strict";
+  function divName(id) { var d = PFX.divisionById(id); return d ? d.name : id; }
+  function entryFeePaid(e) { return (e.total != null ? e.total : (e.entryFee || 0)); }
+  function statusBadge(s) {
+    if (s === "active") return '<span class="badge badge-ok">active</span>';
+    if (s === "open") return '<span class="badge badge-ok">open</span>';
+    if (s === "eliminated") return '<span class="badge badge-neutral">eliminated</span>';
+    if (s === "upcoming") return '<span class="badge badge-neutral">upcoming</span>';
+    if (s === "closed") return '<span class="badge badge-warn">closed</span>';
+    return '<span class="badge badge-neutral">' + PFX.esc(s || "—") + "</span>";
+  }
+  function renderStats() {
+    var es = PFX.db.leagueEntries, rev = 0;
+    es.forEach(function (e) { rev += Number(entryFeePaid(e)) || 0; });
+    document.getElementById("stEntries").textContent = es.length;
+    document.getElementById("stRevenue").textContent = PFX.money(rev, "USD");
+    document.getElementById("stDivs").textContent = PFX.db.leagueDivisions.length;
+    document.getElementById("stRounds").textContent = PFX.db.leagueRounds.filter(function (r) { return r.status === "open"; }).length;
+  }
+  function renderRounds() {
+    document.getElementById("roundRows").innerHTML = PFX.db.leagueRounds.map(function (r) {
+      return "<tr><td><b>" + PFX.esc(r.name) + "</b>" + (r.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + "</td>" +
+        "<td>" + PFX.esc(divName(r.divisionId)) + "</td><td>" + statusBadge(r.status) + "</td>" +
+        '<td class="meta">' + PFX.esc(r.note || "—") + "</td></tr>";
+    }).join("") || '<tr><td colspan="4" class="meta">No rounds yet.</td></tr>';
+  }
+  function renderDivs() {
+    document.getElementById("divRows").innerHTML = PFX.db.leagueDivisions.map(function (d) {
+      var n = PFX.db.leagueEntries.filter(function (e) { return e.divisionId === d.id; }).length;
+      return "<tr><td><b>" + PFX.esc(d.name) + "</b>" + (d.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + "</td>" +
+        "<td>" + PFX.money(d.entryFee, "USD") + "</td>" +
+        '<td class="meta">' + PFX.esc(d.format || "—") + "</td>" +
+        "<td>" + (d.maxTraders != null ? d.maxTraders : "—") + "</td>" +
+        "<td><b>" + n + "</b></td></tr>";
+    }).join("") || '<tr><td colspan="5" class="meta">No divisions yet.</td></tr>';
+  }
+  function renderEntryFilter() {
+    var sel = document.getElementById("entryFilter");
+    sel.innerHTML = '<option value="">All divisions</option>' + PFX.db.leagueDivisions.map(function (d) {
+      return '<option value="' + PFX.esc(d.id) + '">' + PFX.esc(d.name) + "</option>";
+    }).join("");
+  }
+  function renderEntries() {
+    var divId = document.getElementById("entryFilter").value;
+    var es = PFX.db.leagueEntries.filter(function (e) { return !divId || e.divisionId === divId; });
+    document.getElementById("entryRows").innerHTML = es.map(function (e) {
+      var m = e.memberId ? PFX.memberById(e.memberId) : null;
+      return "<tr><td><b>" + PFX.esc(e.trader || "—") + "</b>" +
+        ((e.sample || e.demo) ? ' <span class="badge badge-demo">SAMPLE</span>' : "") +
+        (e.ref ? '<br><span class="meta">' + PFX.esc(e.ref) + "</span>" : "") + "</td>" +
+        "<td>" + (m ? PFX.esc(m.email) : '<span class="meta">—</span>') + "</td>" +
+        "<td>" + PFX.esc(divName(e.divisionId)) + "</td>" +
+        "<td>" + (e.pnlPct != null ? (Number(e.pnlPct) > 0 ? "+" : "") + Number(e.pnlPct).toFixed(1) + "%" : '<span class="meta">—</span>') + "</td>" +
+        "<td>" + (e.trades != null ? e.trades : '<span class="meta">—</span>') + "</td>" +
+        "<td>" + PFX.money(entryFeePaid(e), "USD") + "</td>" +
+        "<td>" + (e.code ? '<span class="badge badge-info">' + PFX.esc(e.code) + "</span>" : '<span class="meta">—</span>') + "</td>" +
+        "<td>" + statusBadge(e.status) + "</td>" +
+        '<td class="meta">' + (e.createdAt ? PFX.fmtDate(e.createdAt) : "—") + "</td></tr>";
+    }).join("") || '<tr><td colspan="9" class="meta">No entries yet.</td></tr>';
+  }
+  function renderLbFilter() {
+    var sel = document.getElementById("lbFilter");
+    sel.innerHTML = PFX.db.leagueDivisions.map(function (d, i) {
+      return '<option value="' + PFX.esc(d.id) + '"' + (i === 0 ? " selected" : "") + ">" + PFX.esc(d.name) + "</option>";
+    }).join("");
+  }
+  function renderLeaderboard() {
+    var divId = document.getElementById("lbFilter").value;
+    var rows = PFX.leagueLeaderboard(divId);
+    document.getElementById("lbRows").innerHTML = rows.map(function (e, i) {
+      return "<tr><td><b>" + (i + 1) + "</b></td>" +
+        "<td><b>" + PFX.esc(e.trader || "—") + "</b>" + ((e.sample || e.demo) ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + "</td>" +
+        "<td>" + PFX.esc(e.country || "—") + "</td>" +
+        "<td><b>" + (e.pnlPct != null ? (Number(e.pnlPct) > 0 ? "+" : "") + Number(e.pnlPct).toFixed(1) + "%" : "—") + "</b></td>" +
+        "<td>" + (e.trades != null ? e.trades : "—") + "</td>" +
+        "<td>" + (e.winRate != null ? Number(e.winRate).toFixed(0) + "%" : "—") + "</td>" +
+        "<td>" + statusBadge(e.status) + "</td></tr>";
+    }).join("") || '<tr><td colspan="7" class="meta">No leaderboard rows for this division.</td></tr>';
+  }
+  document.getElementById("entryFilter").addEventListener("change", renderEntries);
+  document.getElementById("lbFilter").addEventListener("change", renderLeaderboard);
+  renderStats(); renderRounds(); renderDivs(); renderEntryFilter(); renderEntries(); renderLbFilter(); renderLeaderboard();
+})();
+</script>
+</body>
+</html>

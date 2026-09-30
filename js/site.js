@@ -7,6 +7,8 @@
     ["Learn", "learn.html", "learn"],
     ["Blog", "blog/index.html", "blog"],
     ["Events", "events.html", "events"],
+    ["League", "league.html", "league"],
+    ["Expo", "expo.html", "expo"],
     ["Community", "community.html", "community"],
     ["Assistance", "assistance.html", "assistance"],
     ["Travel", "travel.html", "travel"],
@@ -34,7 +36,7 @@
     '<div><a class="logo" href="index.html" style="margin-bottom:.2rem" aria-label="ProFX Club home"><img class="logo-foot" src="assets/logo-white.png" alt="ProFX Club"></a>' +
     '<div class="tagline">Educate, Entertain &amp; Evolve</div>' +
     '<p style="font-size:.9rem;max-width:34ch">Free forex trader membership: classes, webinars, community and assistance. No deposit, no broker account required.</p></div>' +
-    '<div><h4>Explore</h4><a href="learn.html">Learn</a><a href="blog/index.html">Blog</a><a href="events.html">Events</a><a href="community.html">Community</a><a href="travel.html">Travel</a></div>' +
+    '<div><h4>Explore</h4><a href="learn.html">Learn</a><a href="blog/index.html">Blog</a><a href="events.html">Events</a><a href="league.html">ProFX League</a><a href="expo.html">ProFX Expo</a><a href="summit.html">ProFX Summit</a><a href="awards.html">ProFX Awards</a><a href="community.html">Community</a><a href="travel.html">Travel</a></div>' +
     '<div><h4>Support</h4><a href="assistance.html">Trader assistance</a><a href="about.html">About &amp; contact</a><a href="join.html">Join free</a><a href="signin.html">Sign in</a></div>' +
     '<div><h4>Policies</h4><a href="terms.html">Membership terms</a><a href="privacy.html">Privacy notice</a><a href="community-rules.html">Community rules</a><a href="risk.html">Education risk notice</a></div>' +
     "</div>" +

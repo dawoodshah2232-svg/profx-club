@@ -30,13 +30,17 @@
     cog: "<svg class='ni' aria-hidden='true' viewBox='0 0 24 24'><circle cx='12' cy='12' r='3'/><path d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'/></svg>",
     search: "<svg class='ni' aria-hidden='true' viewBox='0 0 24 24'><circle cx='11' cy='11' r='8'/><path d='m21 21-4.35-4.35'/></svg>",
     globe: "<svg class='ni' aria-hidden='true' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/></svg>",
-    power: "<svg class='ni' aria-hidden='true' viewBox='0 0 24 24'><path d='M18.36 6.64a9 9 0 1 1-12.73 0'/><path d='M12 2v10'/></svg>"
+    power: "<svg class='ni' aria-hidden='true' viewBox='0 0 24 24'><path d='M18.36 6.64a9 9 0 1 1-12.73 0'/><path d='M12 2v10'/></svg>",
+    trophy: "<svg class='ni' aria-hidden='true' viewBox='0 0 24 24'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22'/><path d='M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg>",
+    ticket: "<svg class='ni' aria-hidden='true' viewBox='0 0 24 24'><path d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/><path d='M13 5v2M13 17v2M13 11v2'/></svg>"
   };
   var MODS = [
     ["Dashboard", "index.html", "dashboard", "dash"],
     ["Members", "members.html", "members", "users"],
     ["Education", "education.html", "education", "learn"],
     ["Events", "events.html", "events", "events"],
+    ["League", "league.html", "league", "trophy"],
+    ["Passes", "passes.html", "passes", "ticket"],
     ["Community", "community.html", "community", "community"],
     ["Assistance", "assistance.html", "assistance", "help"],
     ["Campaigns", "campaigns.html", "campaigns", "mega"],

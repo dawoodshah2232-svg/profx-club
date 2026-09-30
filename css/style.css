@@ -458,3 +458,49 @@ footer{border-top:4px solid var(--emerald)}
 .blog-nav{padding:1rem 1.2rem;text-decoration:none;color:inherit;display:block}
 .blog-nav span{font-size:.78rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
 .blog-nav b{display:block;margin-top:.3rem;font-size:.95rem}
+
+/* ---------- ProFX Media products: passes, league, checkout ---------- */
+.pass-grid{display:grid;gap:1.1rem;margin:1.4rem 0}
+@media(min-width:900px){.pass-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:640px) and (max-width:899px){.pass-grid{grid-template-columns:repeat(2,1fr)}}
+.pass-card{background:#fff;border:1px solid var(--line,#e6e9f0);border-radius:16px;padding:1.4rem;display:flex;flex-direction:column;gap:.7rem;position:relative;box-shadow:0 2px 10px rgba(10,30,80,.05)}
+.pass-card.hl{border:2px solid var(--green,#28c070);box-shadow:0 8px 28px rgba(40,192,112,.16)}
+.pass-badge{position:absolute;top:-12px;left:1.2rem;background:linear-gradient(135deg,var(--navy,#0a2540),var(--green,#28c070));color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:.28rem .7rem;border-radius:999px}
+.pass-card h3{margin:.4rem 0 0;font-size:1.15rem}
+.pass-tag{color:var(--muted,#5b6472);font-size:.9rem;margin:0}
+.pass-price{font-size:1.9rem;font-weight:800;letter-spacing:-.02em}
+.pass-price small{font-size:.85rem;font-weight:600;color:var(--muted,#5b6472)}
+.pass-perks{list-style:none;margin:.2rem 0 0;padding:0;display:grid;gap:.45rem;font-size:.9rem}
+.pass-perks li{padding-left:1.5rem;position:relative}
+.pass-perks li::before{content:"";position:absolute;left:0;top:.32rem;width:.85rem;height:.85rem;border-radius:50%;background:var(--green,#28c070) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/.55rem no-repeat}
+.pass-card .btn{margin-top:auto}
+.disc-strip{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0}
+.disc-code{background:#f2f7ff;border:1px dashed var(--navy,#0a2540);border-radius:10px;padding:.5rem .8rem;font-size:.85rem}
+.disc-code b{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
+.rank-1,.rank-2,.rank-3{font-weight:800}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;min-width:1.7rem;height:1.7rem;border-radius:50%;background:#eef1f6;font-size:.8rem;font-weight:800}
+tr.r1 .rank-badge{background:#ffd94d}tr.r2 .rank-badge{background:#dfe3ea}tr.r3 .rank-badge{background:#f0c08a}
+.pnl-pos{color:#0a9b52;font-weight:700}.pnl-neg{color:#d33;font-weight:700}
+.agenda-day{margin:1.2rem 0}
+.agenda-item{display:flex;gap:1rem;padding:.85rem 0;border-bottom:1px solid var(--line,#e6e9f0)}
+.agenda-time{flex:0 0 4.6rem;font-weight:800;color:var(--navy,#0a2540)}
+.co-summary{background:#f7faf9;border:1px solid var(--line,#e6e9f0);border-radius:14px;padding:1.2rem;margin:1rem 0}
+.co-row{display:flex;justify-content:space-between;gap:1rem;padding:.4rem 0;font-size:.95rem}
+.co-row.total{border-top:2px solid var(--navy,#0a2540);margin-top:.5rem;padding-top:.8rem;font-weight:800;font-size:1.1rem}
+.co-row .disc{color:#0a9b52;font-weight:700}
+.stat-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:.9rem;margin:1.4rem 0}
+@media(min-width:760px){.stat-strip{grid-template-columns:repeat(4,1fr)}}
+.stat-strip .stat{background:#fff;border:1px solid var(--line,#e6e9f0);border-radius:14px;padding:1rem;text-align:center}
+.stat-strip .stat b{display:block;font-size:1.5rem;letter-spacing:-.02em}
+.stat-strip .stat span{font-size:.82rem;color:var(--muted,#5b6472)}
+.spk-grid{display:grid;gap:1rem;margin:1.2rem 0}
+@media(min-width:700px){.spk-grid{grid-template-columns:repeat(3,1fr)}}
+.spk-card{background:#fff;border:1px solid var(--line,#e6e9f0);border-radius:14px;padding:1.1rem}
+.spk-card h3{margin:.2rem 0;font-size:1rem}
+.spk-role{font-size:.82rem;color:var(--muted,#5b6472);margin:0 0 .4rem}
+.form-row{display:flex;gap:.7rem;flex-wrap:wrap}
+.form-row .fg{flex:1 1 180px;display:grid;gap:.3rem}
+.fg label{font-size:.82rem;font-weight:700}
+.inp,select.inp,textarea.inp{width:100%;padding:.65rem .8rem;border:1px solid var(--line,#e6e9f0);border-radius:10px;font:inherit;background:#fff}
+.use-bar{height:.45rem;background:#edf0f5;border-radius:999px;overflow:hidden;min-width:90px}
+.use-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--navy,#0a2540),var(--green,#28c070))}

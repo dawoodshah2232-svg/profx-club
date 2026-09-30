@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProFX League — ProFX Club</title>
+<link rel="icon" href="../assets/favicon.png">
+<link rel="stylesheet" href="../css/style.css?v=20261007">
+</head>
+<body data-page="league">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html" aria-label="ProFX Club — Member dashboard"><img class="logo-img" src="../assets/logo-full.png" alt="ProFX Club"><span class="logo-sub">Member dashboard</span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="appSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO</b> — league data is sample. Entries, fees, discounts and standings behave like the real system.</div>
+    <div class="page-head"><div><h1>ProFX League</h1><p class="lead">Your entries, the live leaderboard, and new division entries. <span class="badge badge-demo">SAMPLE</span></p></div></div>
+
+    <div id="msg"></div>
+
+    <div class="stat-row">
+      <div class="stat"><b id="stEntries">—</b><span>My entries</span></div>
+      <div class="stat"><b id="stBest">—</b><span>Highest division</span></div>
+      <div class="stat"><b id="stTraders">—</b><span>Leaderboard traders</span></div>
+      <div class="stat"><b id="stRounds">—</b><span>Open rounds</span></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.2rem">
+      <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4z"/><path d="M7 6H4a1 1 0 0 0-1 1c0 2.5 2 4 4 4M17 6h3a1 1 0 0 1 1 1c0 2.5-2 4-4 4"/></svg> My entries</h3>
+      <div class="tbl-wrap" style="margin-top:.8rem"><table class="tbl" id="entryTbl">
+        <thead><tr><th>Reference</th><th>Division</th><th>Paid</th><th>Discount</th><th>Status</th><th>Entered</th></tr></thead>
+        <tbody id="entryRows"></tbody>
+      </table></div>
+      <div id="entryEmpty"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.2rem">
+      <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Enter a division</h3>
+      <p class="meta" style="margin:.4rem 0 .9rem">Pick a division, apply a league discount code if you have one, then enter. Entry fees are collected in this demo — no real payment is taken.</p>
+      <div class="grid g2" style="margin-top:.4rem">
+        <div>
+          <label class="meta" for="divSel"><b>Division</b></label>
+          <select id="divSel" class="field" style="margin-top:.4rem;width:100%"></select>
+          <p class="meta" id="divInfo" style="margin-top:.5rem"></p>
+        </div>
+        <div>
+          <label class="meta" for="lgCode"><b>Discount code</b> <span class="meta">(optional)</span></label>
+          <div style="display:flex;gap:.5rem;margin-top:.4rem">
+            <input id="lgCode" class="field" style="flex:1" placeholder="e.g. EARLYBIRD" autocomplete="off">
+            <button class="btn btn-ghost btn-sm" id="lgApply" type="button">Apply</button>
+          </div>
+          <p class="meta" id="lgCodeMsg" style="margin-top:.5rem"></p>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1rem">
+        <div><span class="meta">Total due</span><div id="lgTotal" style="font-size:1.4rem;font-weight:800"></div></div>
+        <button class="btn btn-primary" id="lgEnter" type="button">Enter league</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+        <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg> Leaderboard</h3>
+        <select id="lbDiv" class="field" aria-label="Leaderboard division"></select>
+      </div>
+      <p class="meta" style="margin:.4rem 0 .8rem">Standings are illustrative sample data, sorted by P&amp;L %. <span class="badge badge-demo">SAMPLE</span></p>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>#</th><th>Trader</th><th>Country</th><th>P&amp;L %</th><th>Trades</th><th>Win rate</th><th>Status</th></tr></thead>
+        <tbody id="lbRows"></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20261007"></script>
+<script src="../js/app.js?v=20261007"></script>
+<script>
+(function () {
+  "use strict";
+  var me = window.PFX_ME;
+  var divs = PFX.db.leagueDivisions || [];
+  var lgCode = "", lgPct = 0;
+
+  function msg(html, cls) { document.getElementById("msg").innerHTML = '<div class="' + cls + '">' + html + "</div>"; window.scrollTo(0, 0); }
+  function divById(id) { return PFX.divisionById ? PFX.divisionById(id) : divs.filter(function (d) { return d.id === id; })[0]; }
+  function roundsOpen() {
+    var r = PFX.db.leagueRounds || (PFX.db.league && PFX.db.league.rounds) || [];
+    return r.filter(function (x) { return x.status === "open"; });
+  }
+  function selDiv() { return divById(document.getElementById("divSel").value) || divs[0]; }
+  function totalFor(d) { return d.entryFee * (1 - lgPct / 100); }
+
+  function renderStats(mine) {
+    document.getElementById("stEntries").textContent = mine.length;
+    var best = null;
+    mine.forEach(function (e) {
+      var d = divById(e.divisionId);
+      if (d && (!best || d.entryFee > best.entryFee)) best = d;
+    });
+    document.getElementById("stBest").textContent = best ? best.name : "—";
+    var traders = 0;
+    divs.forEach(function (d) { traders += (PFX.leagueLeaderboard(d.id) || []).length; });
+    document.getElementById("stTraders").textContent = traders;
+    document.getElementById("stRounds").textContent = roundsOpen().length;
+  }
+
+  function renderMine(mine) {
+    var tb = document.getElementById("entryRows");
+    tb.innerHTML = mine.map(function (e) {
+      var d = divById(e.divisionId);
+      var st = String(e.status || "entered");
+      var cls = st === "entered" || st === "active" ? "badge-ok" : st === "eliminated" ? "badge-full" : "badge-neutral";
+      return "<tr><td><b>" + PFX.esc(e.ref) + "</b></td>" +
+        "<td>" + PFX.esc(d ? d.name : e.divisionId) + "</td>" +
+        "<td>" + PFX.money(e.total != null ? e.total : (d ? d.entryFee : 0), d ? d.currency : "USD") + "</td>" +
+        "<td>" + (e.code ? PFX.esc(e.code) + " (" + (e.discountPct || 0) + "%)" : "—") + "</td>" +
+        "<td><span class=\"badge " + cls + "\">" + PFX.esc(st) + "</span></td>" +
+        "<td class=\"meta\">" + PFX.fmtDate(e.createdAt || e.at) + "</td></tr>";
+    }).join("");
+    document.getElementById("entryEmpty").innerHTML = mine.length ? "" : '<div class="empty">You haven\'t entered a division yet — pick one below to join the league.</div>';
+  }
+
+  function renderEnter() {
+    var ds = document.getElementById("divSel");
+    ds.innerHTML = divs.map(function (d) {
+      return "<option value=\"" + d.id + "\">" + PFX.esc(d.name) + " — " + PFX.money(d.entryFee, d.currency) + "</option>";
+    }).join("");
+    var lb = document.getElementById("lbDiv");
+    lb.innerHTML = divs.map(function (d) { return "<option value=\"" + d.id + "\">" + PFX.esc(d.name) + "</option>"; }).join("");
+    refreshTotal();
+  }
+
+  function refreshTotal() {
+    var d = selDiv();
+    if (!d) return;
+    document.getElementById("divInfo").textContent = d.format + (d.maxTraders ? " · up to " + d.maxTraders + " traders" : "");
+    var cur = d.currency || "USD";
+    document.getElementById("lgTotal").textContent = PFX.money(totalFor(d), cur) +
+      (lgPct ? "  (" + lgPct + "% off " + PFX.money(d.entryFee, cur) + ")" : "");
+  }
+
+  function renderBoard() {
+    var id = document.getElementById("lbDiv").value || (divs[0] && divs[0].id);
+    var rows = PFX.leagueLeaderboard(id) || [];
+    document.getElementById("lbRows").innerHTML = rows.length ? rows.map(function (r, i) {
+      var cls = r.status === "qualified" ? "badge-ok" : r.status === "eliminated" ? "badge-full" : "badge-neutral";
+      var pnl = (r.pnlPct > 0 ? "+" : "") + Number(r.pnlPct).toFixed(1) + "%";
+      return "<tr><td><b>" + (i + 1) + "</b></td>" +
+        "<td>" + PFX.esc(r.trader || r.name || "—") + "</td>" +
+        "<td>" + PFX.esc(r.country || "—") + "</td>" +
+        "<td><b style=\"color:" + (r.pnlPct >= 0 ? "var(--emerald)" : "var(--danger,#c0392b)") + "\">" + pnl + "</b></td>" +
+        "<td>" + PFX.esc(r.trades != null ? r.trades : "—") + "</td>" +
+        "<td>" + PFX.esc(r.winRate != null ? r.winRate + "%" : "—") + "</td>" +
+        "<td><span class=\"badge " + cls + "\">" + PFX.esc(r.status || "active") + "</span></td></tr>";
+    }).join("") : '<tr><td colspan="7"><div class="empty">No standings for this division yet.</div></td></tr>';
+  }
+
+  function refresh() {
+    var mine = PFX.myLeagueEntries(me.id) || [];
+    renderStats(mine);
+    renderMine(mine);
+    refreshTotal();
+    renderBoard();
+  }
+
+  document.getElementById("divSel").addEventListener("change", refreshTotal);
+  document.getElementById("lbDiv").addEventListener("change", renderBoard);
+  document.getElementById("lgApply").addEventListener("click", function () {
+    var code = document.getElementById("lgCode").value.trim();
+    var m = document.getElementById("lgCodeMsg");
+    if (!code) { lgCode = ""; lgPct = 0; m.textContent = "No code entered — full price applies."; refreshTotal(); return; }
+    var res = PFX.validateDiscount(code, "league");
+    if (res.ok) {
+      lgCode = res.code; lgPct = res.pct;
+      m.innerHTML = '<span class="badge badge-ok">Code ' + PFX.esc(res.code) + ' — ' + res.pct + "% off</span>";
+    } else {
+      lgCode = ""; lgPct = 0;
+      m.innerHTML = '<span class="badge badge-full">' + PFX.esc(res.error || "Invalid code") + "</span>";
+    }
+    refreshTotal();
+  });
+  document.getElementById("lgEnter").addEventListener("click", function () {
+    var d = selDiv();
+    if (!d) return;
+    var res = PFX.enterLeague(me.id, d.id, lgCode);
+    if (res.ok) {
+      msg("You're in! Entry <b>" + PFX.esc(res.entry.ref) + "</b> for " + PFX.esc(d.name) +
+        " — paid " + PFX.money(res.entry.total, d.currency) + "." +
+        (res.entry.discountPct ? " Discount " + PFX.esc(res.entry.code) + " (" + res.entry.discountPct + "%)." : ""), "success");
+      document.getElementById("lgCode").value = ""; lgCode = ""; lgPct = 0;
+      document.getElementById("lgCodeMsg").textContent = "";
+      refresh();
+    } else msg(PFX.esc(res.error || "Couldn't complete your entry."), "warn");
+  });
+
+  renderEnter();
+  refresh();
+})();
+</script>
+</body>
+</html>

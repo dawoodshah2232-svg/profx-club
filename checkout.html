@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — Passes &amp; League Entry | ProFX Club</title>
+<meta name="description" content="Demo checkout for ProFX Expo passes and ProFX League entries. Apply a discount code and confirm — no payment is taken.">
+<link rel="canonical" href="https://dawoodshah2232-svg.github.io/profx-club/checkout.html">
+<meta property="og:title" content="Checkout — Passes &amp; League Entry | ProFX Club">
+<meta property="og:description" content="Demo checkout for ProFX Expo passes and ProFX League entries. Apply a discount code and confirm — no payment is taken.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dawoodshah2232-svg.github.io/profx-club/checkout.html">
+<meta property="og:image" content="https://dawoodshah2232-svg.github.io/profx-club/assets/logo-full.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Checkout — Passes &amp; League Entry | ProFX Club">
+<meta name="twitter:description" content="Demo checkout for ProFX Expo passes and ProFX League entries. Apply a discount code and confirm — no payment is taken.">
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="css/style.css?v=20261007">
+</head>
+<body data-page="checkout" data-joinbar="1">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="chrome-nav"></header>
+<div class="mobile-drawer" id="chrome-drawer"></div>
+
+<main id="main">
+<section class="page-hero">
+  <div class="hero-bg" style="background-image:url('assets/images/journal-desk.jpg')" role="img" aria-label="Desk with a trading journal"></div>
+  <div class="hero-veil"></div>
+  <div class="container hero-inner">
+    <span class="eyebrow reveal">Demo checkout</span>
+    <h1 class="reveal d1">Confirm your <span class="grad-text-light">order</span>.</h1>
+    <p class="lead reveal d2">Review the order, apply a discount code, and confirm. This is a demonstration — no payment is taken.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:760px">
+    <div class="demo-banner reveal"><b>DEMO</b> — this checkout is a demonstration. No payment is taken and no real order is placed.</div>
+    <div id="checkoutRoot" class="reveal d1"></div>
+    <p class="reveal" style="margin-top:1.4rem;font-size:.9rem;color:var(--muted,#666)">ProFX League, ProFX Expo, ProFX Summit and ProFX Awards are event brands of ProFX Media. <a href="https://www.profxexpo.com" target="_blank" rel="noopener">Official ProFX Expo site</a>.</p>
+  </div>
+</section>
+</main>
+
+<footer id="chrome-footer"></footer>
+<script src="js/db.js?v=20261007"></script>
+<script src="js/site.js?v=20261007"></script>
+<script>
+(function () {
+  "use strict";
+  var root = document.getElementById("checkoutRoot");
+  var params = new URLSearchParams(window.location.search);
+  var item = params.get("item") || "";
+  var kind = "", id = "";
+  if (item.indexOf("pass-") === 0) { kind = "pass"; id = item.slice(5); }
+  else if (item.indexOf("league-") === 0) { kind = "league"; id = item.slice(7); }
+
+  var record = kind === "pass" ? PFX.passById(id) : (kind === "league" ? PFX.divisionById(id) : null);
+  var me = PFX.currentMember();
+  var appliedCode = "", appliedPct = 0;
+
+  function moneyLine() {
+    var base = kind === "pass" ? record.price : record.entryFee;
+    var cur = record.currency;
+    var total = PFX.priceAfterDiscount(base, appliedPct);
+    var html = '<div style="display:grid;gap:.5rem;margin:1rem 0">' +
+      '<div style="display:flex;justify-content:space-between"><span>Base price</span><b>' + PFX.money(base, cur) + '</b></div>';
+    if (appliedPct > 0) {
+      html += '<div style="display:flex;justify-content:space-between;color:#15803d"><span>Discount (' + PFX.esc(appliedCode) + ' — ' + appliedPct + '%)</span><b>−' + PFX.money(base - total, cur) + '</b></div>';
+    }
+    html += '<div style="display:flex;justify-content:space-between;font-size:1.25rem;border-top:1px solid var(--line,#e5e7eb);padding-top:.7rem"><span><b>Total</b></span><b>' + PFX.money(total, cur) + '</b></div></div>';
+    return html;
+  }
+
+  function render(msgHtml) {
+    var title = kind === "pass" ? record.name : record.name;
+    var sub = kind === "pass" ? PFX.esc(record.tagline) : PFX.esc(record.format);
+    var cta = kind === "pass" ? "Confirm pass" : "Confirm league entry";
+    root.innerHTML =
+      '<div class="card"><div id="coMsg">' + (msgHtml || "") + '</div>' +
+      '<h3>' + PFX.esc(title) + ' <span class="badge badge-demo">SAMPLE</span></h3><p>' + sub + '</p>' +
+      moneyLine() +
+      '<div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem">' +
+        '<input class="input" id="discCode" type="text" placeholder="Discount code (optional)" value="' + PFX.esc(appliedCode) + '" style="max-width:220px;text-transform:uppercase">' +
+        '<button class="btn btn-ghost btn-sm" id="applyDisc" type="button">Apply code</button>' +
+        (appliedCode ? '<button class="btn btn-ghost btn-sm" id="removeDisc" type="button">Remove</button>' : "") +
+      '</div>' +
+      '<div style="display:flex;gap:.6rem;flex-wrap:wrap">' +
+        '<button class="btn btn-primary" id="confirmBtn" type="button">' + cta + '</button>' +
+        '<a class="btn btn-ghost" href="' + (kind === "pass" ? "expo.html#passes" : "league.html") + '">Back</a>' +
+      '</div>' +
+      '<p style="font-size:.85rem;color:var(--muted,#666);margin-top:1rem">Signed in as <b>' + PFX.esc(me.name) + '</b> (' + PFX.esc(me.email) + '). DEMO — no payment is taken.</p></div>';
+    document.getElementById("applyDisc").addEventListener("click", function () {
+      var code = document.getElementById("discCode").value;
+      var v = PFX.validateDiscount(code, kind);
+      if (!v.ok) { render('<div class="demo-banner" style="margin-bottom:1rem"><b>Code not applied:</b> ' + PFX.esc(v.error) + '</div>'); return; }
+      appliedCode = v.code; appliedPct = v.pct;
+      render('<div class="demo-banner" style="margin-bottom:1rem"><b>Code applied:</b> ' + PFX.esc(v.code) + ' — ' + v.pct + '% off.</div>');
+    });
+    var rm = document.getElementById("removeDisc");
+    if (rm) rm.addEventListener("click", function () { appliedCode = ""; appliedPct = 0; render(""); });
+    document.getElementById("confirmBtn").addEventListener("click", function () {
+      var res = kind === "pass" ? PFX.orderPass(me.id, id, appliedCode) : PFX.enterLeague(me.id, id, appliedCode);
+      if (!res.ok) {
+        render('<div class="demo-banner" style="margin-bottom:1rem"><b>Could not confirm:</b> ' + PFX.esc(res.error) + '</div>');
+        return;
+      }
+      var r = kind === "pass" ? res.order : res.entry;
+      var base = kind === "pass" ? record.price : record.entryFee;
+      var portal = kind === "pass" ? "app/passes.html" : "app/league.html";
+      var what = kind === "pass" ? "pass" : "league entry";
+      root.innerHTML = '<div class="card" style="text-align:center">' +
+        '<div class="ficon" style="margin:0 auto 1rem"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div>' +
+        '<h3>Confirmed — thank you!</h3>' +
+        '<p>Your ' + what + ' <b>' + PFX.esc(kind === "pass" ? record.name : record.name) + '</b> is confirmed.</p>' +
+        '<p>Reference: <b>' + PFX.esc(r.ref) + '</b><br>Total: <b>' + PFX.money(r.total, r.currency) + '</b>' +
+        (r.code ? '<br>Discount code: <b>' + PFX.esc(r.code) + '</b> (' + r.discountPct + '% off)' : "") + '</p>' +
+        '<p><span class="badge badge-demo">DEMO</span> <span style="font-size:.9rem">No payment was taken.</span></p>' +
+        '<div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">' +
+        '<a class="btn btn-primary" href="' + portal + '">View in member portal</a>' +
+        '<a class="btn btn-ghost" href="index.html">Back to home</a></div></div>';
+      window.scrollTo(0, 0);
+    });
+  }
+
+  if (!record) {
+    root.innerHTML = '<div class="card" style="text-align:center"><h3>Nothing to check out</h3>' +
+      '<p>This checkout link is missing or invalid. Choose a pass or a league division to continue.</p>' +
+      '<div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">' +
+      '<a class="btn btn-primary" href="expo.html#passes">Browse expo passes</a>' +
+      '<a class="btn btn-ghost" href="league.html">Browse league divisions</a></div></div>';
+    return;
+  }
+  if (!me) {
+    var label = kind === "pass" ? "get a pass" : "enter the league";
+    root.innerHTML = '<div class="card" style="text-align:center"><h3>Sign in to continue</h3>' +
+      '<p>You need a free club membership to ' + label + '. Joining takes a minute and costs nothing.</p>' +
+      '<div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1rem">' +
+      '<a class="btn btn-primary" href="join.html">Join free</a>' +
+      '<a class="btn btn-ghost" href="signin.html">Sign in</a></div></div>';
+    return;
+  }
+  render("");
+})();
+</script>
+</body>
+</html>

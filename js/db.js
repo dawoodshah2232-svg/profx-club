@@ -1,17 +1,17 @@
 /* ProFX Club — demo data layer (localStorage). Replaces Phase 2 PHP+MySQL API.
    All seeded content is SAMPLE/DEMO data, labelled as such everywhere.
-   DB v3: expanded sample data; notifications, learning progress, announcements, discussion prompts,
+   DB v4: ProFX Media products (passes, league, discounts, awards); notifications, learning progress, announcements, discussion prompts,
    assistance reply threads, integrations/social settings, richer sample data. */
 (function () {
   "use strict";
-  var KEY = "profxclub_db_v3";
+  var KEY = "profxclub_db_v4";
   function uid(p) { return (p || "id") + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 9); }
   function now() { return new Date().toISOString(); }
 
   /* ---------- seed ---------- */
   function seed() {
     return {
-      v: 3,
+      v: 4,
       settings: {
         brand: { name: "ProFX Club", tagline: "Free forex trader community", logo: "" /* owner input pending */ },
         org: { name: "ProFX Media FZ-LLC", entityNote: "Responsible operating entity details to be confirmed by the owner.", supportEmail: "" },
@@ -2203,7 +2203,99 @@
   "at": "2026-09-30T10:00:00+04:00",
   "kind": "interest-only"
  }
-]
+],
+      /* ---------- ProFX Media products — SAMPLE data. Real editions, dates, venues and
+         prizes are confirmed by the owner before publication. ---------- */
+      passes: [
+        { "id": "pass_visitor", "name": "Visitor Pass", "price": 0, "currency": "USD", "tagline": "Explore the expo floor", "badge": "Free",
+          "perks": ["2-day exhibition access", "Selected conference sessions", "Official networking via the event app", "Business lounge access"], "sample": true },
+        { "id": "pass_trader", "name": "Trader Pass", "price": 49, "currency": "USD", "tagline": "Built for active traders", "badge": "Popular",
+          "perks": ["Everything in Visitor", "Verified-trader identity", "Dedicated trader lounge", "Trader strategy hub sessions", "Trader's clinic access", "Lucky-draw entry"], "sample": true },
+        { "id": "pass_premium", "name": "Premium Pass", "price": 149, "currency": "USD", "tagline": "Learn, network, get seen", "badge": "Best value",
+          "perks": ["Everything in Trader", "All workshops & masterclasses", "Priority seating at keynotes", "B2B meeting-zone access", "Expo goodie bag", "Certificate of attendance"], "sample": true },
+        { "id": "pass_vip", "name": "VIP Pass", "price": 299, "currency": "USD", "tagline": "The full ProFX experience", "badge": "VIP",
+          "perks": ["Everything in Premium", "Awards gala night seat", "VIP networking dinner", "Speaker meet & greet", "Front-row reserved seating", "Concierge support"], "sample": true }
+      ],
+      discountCodes: [
+        { "code": "EARLYBIRD20", "pct": 20, "appliesTo": ["pass", "league"], "maxUses": 200, "used": 34, "active": true, "note": "SAMPLE — early-bird launch offer" },
+        { "code": "LEAGUE50", "pct": 50, "appliesTo": ["league"], "maxUses": 100, "used": 12, "active": true, "note": "SAMPLE — league launch" },
+        { "code": "EXPO25", "pct": 25, "appliesTo": ["pass"], "maxUses": 150, "used": 41, "active": true, "note": "SAMPLE — expo season" },
+        { "code": "MEMBER15", "pct": 15, "appliesTo": ["pass", "league"], "maxUses": 500, "used": 88, "active": true, "note": "SAMPLE — club member benefit" },
+        { "code": "SUMMIT20", "pct": 20, "appliesTo": ["pass"], "maxUses": 80, "used": 9, "active": true, "note": "SAMPLE — summit edition" },
+        { "code": "AWARDS15", "pct": 15, "appliesTo": ["pass"], "maxUses": 60, "used": 5, "active": true, "note": "SAMPLE — awards gala" },
+        { "code": "STUDENT10", "pct": 10, "appliesTo": ["pass", "league"], "maxUses": 300, "used": 22, "active": true, "note": "SAMPLE — student rate" },
+        { "code": "GROUP20", "pct": 20, "appliesTo": ["pass"], "maxUses": 40, "used": 3, "active": true, "note": "SAMPLE — group bookings" }
+      ],
+      leagueDivisions: [
+        { "id": "div_qualifier", "name": "Qualifier Division", "entryFee": 25, "currency": "USD", "format": "Online qualifier — top traders advance to the live arena", "maxTraders": 500, "sample": true },
+        { "id": "div_pro", "name": "Pro Division", "entryFee": 75, "currency": "USD", "format": "Live arena heats on the expo floor, expert commentary", "maxTraders": 120, "sample": true },
+        { "id": "div_elite", "name": "Elite Division", "entryFee": 150, "currency": "USD", "format": "Grand-final championship stage", "maxTraders": 32, "sample": true }
+      ],
+      leagueRounds: [
+        { "id": "rnd_1", "name": "Round 1 — Online Qualifier", "divisionId": "div_qualifier", "status": "open", "note": "SAMPLE — dates to be announced" },
+        { "id": "rnd_2", "name": "Semifinal — Live Arena Heats", "divisionId": "div_pro", "status": "upcoming", "note": "SAMPLE — dates to be announced" },
+        { "id": "rnd_3", "name": "Grand Final — Championship Stage", "divisionId": "div_elite", "status": "upcoming", "note": "SAMPLE — dates to be announced" }
+      ],
+      /* SAMPLE leaderboard — illustrative standings, not real results */
+      leagueEntries: [
+        { "id": "lge_sample_01", "trader": "Omar K.", "country": "UAE", "divisionId": "div_pro", "pnlPct": 18.4, "trades": 24, "winRate": 62, "status": "qualified", "sample": true },
+        { "id": "lge_sample_02", "trader": "Priya S.", "country": "India", "divisionId": "div_pro", "pnlPct": 15.1, "trades": 21, "winRate": 57, "status": "qualified", "sample": true },
+        { "id": "lge_sample_03", "trader": "Daniel M.", "country": "UK", "divisionId": "div_pro", "pnlPct": 12.8, "trades": 19, "winRate": 58, "status": "qualified", "sample": true },
+        { "id": "lge_sample_04", "trader": "Fatima A.", "country": "UAE", "divisionId": "div_pro", "pnlPct": 11.2, "trades": 26, "winRate": 54, "status": "qualified", "sample": true },
+        { "id": "lge_sample_05", "trader": "Chen W.", "country": "Singapore", "divisionId": "div_pro", "pnlPct": 9.6, "trades": 22, "winRate": 55, "status": "qualified", "sample": true },
+        { "id": "lge_sample_06", "trader": "Lucas R.", "country": "Brazil", "divisionId": "div_pro", "pnlPct": 8.3, "trades": 20, "winRate": 50, "status": "qualified", "sample": true },
+        { "id": "lge_sample_07", "trader": "Aisha R.", "country": "Pakistan", "divisionId": "div_qualifier", "pnlPct": 14.7, "trades": 18, "winRate": 61, "status": "active", "sample": true },
+        { "id": "lge_sample_08", "trader": "Yuki T.", "country": "Japan", "divisionId": "div_qualifier", "pnlPct": 11.9, "trades": 23, "winRate": 56, "status": "active", "sample": true },
+        { "id": "lge_sample_09", "trader": "Marco D.", "country": "Italy", "divisionId": "div_qualifier", "pnlPct": 10.4, "trades": 17, "winRate": 59, "status": "active", "sample": true },
+        { "id": "lge_sample_10", "trader": "Sara N.", "country": "Egypt", "divisionId": "div_qualifier", "pnlPct": 8.8, "trades": 25, "winRate": 52, "status": "active", "sample": true },
+        { "id": "lge_sample_11", "trader": "Viktor P.", "country": "Georgia", "divisionId": "div_elite", "pnlPct": 21.3, "trades": 15, "winRate": 67, "status": "finalist", "sample": true },
+        { "id": "lge_sample_12", "trader": "Nadia H.", "country": "UAE", "divisionId": "div_elite", "pnlPct": 19.0, "trades": 16, "winRate": 63, "status": "finalist", "sample": true }
+      ],
+      passOrders: [],
+      awardCategories: [
+        { "id": "awd_1", "name": "Best Forex Broker — MENA", "desc": "Outstanding trading conditions and client service in the region.", "sample": true },
+        { "id": "awd_2", "name": "Best Trading Platform", "desc": "Innovation, reliability and trader experience.", "sample": true },
+        { "id": "awd_3", "name": "Best Fintech Innovation", "desc": "Breakthrough technology shaping financial markets.", "sample": true },
+        { "id": "awd_4", "name": "Best Crypto Exchange", "desc": "Security, liquidity and product depth.", "sample": true },
+        { "id": "awd_5", "name": "Best Trading Educator", "desc": "Exceptional contribution to trader education.", "sample": true },
+        { "id": "awd_6", "name": "Rising Star Broker", "desc": "Fastest-growing new brokerage brand.", "sample": true },
+        { "id": "awd_7", "name": "Best IB / Affiliate Program", "desc": "Partner support, payouts and transparency.", "sample": true },
+        { "id": "awd_8", "name": "Trader's Choice Award", "desc": "Voted by the trading community.", "sample": true }
+      ],
+      awardNominations: [],
+      expoAgenda: [
+        { "id": "agd_e1", "day": "Day 1", "time": "10:00", "title": "Opening ceremony & keynote", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_e2", "day": "Day 1", "time": "11:30", "title": "Live trading: ProFX League arena heats", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_e3", "day": "Day 1", "time": "14:00", "title": "Panel: the future of forex & fintech", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_e4", "day": "Day 1", "time": "16:00", "title": "Workshop: risk management masterclass", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_e5", "day": "Day 2", "time": "10:30", "title": "Keynote: trading psychology at scale", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_e6", "day": "Day 2", "time": "13:00", "title": "Startup showcase & B2B networking", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_e7", "day": "Day 2", "time": "15:30", "title": "ProFX League grand final — live", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_e8", "day": "Day 2", "time": "19:30", "title": "ProFX Awards & gala night", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true }
+      ],
+      expoSpeakers: [
+        { "id": "spk_1", "name": "Keynote Speaker", "role": "Industry leader", "topic": "The future of forex", "note": "SAMPLE — speaker lineup to be confirmed", "sample": true },
+        { "id": "spk_2", "name": "Trading Strategist", "role": "Pro trader", "topic": "Live market breakdowns", "note": "SAMPLE — speaker lineup to be confirmed", "sample": true },
+        { "id": "spk_3", "name": "Risk Specialist", "role": "Risk manager", "topic": "Risk masterclass", "note": "SAMPLE — speaker lineup to be confirmed", "sample": true },
+        { "id": "spk_4", "name": "Fintech Founder", "role": "CEO", "topic": "AI in trading", "note": "SAMPLE — speaker lineup to be confirmed", "sample": true },
+        { "id": "spk_5", "name": "Regulatory Expert", "role": "Compliance advisor", "topic": "Regulation outlook", "note": "SAMPLE — speaker lineup to be confirmed", "sample": true },
+        { "id": "spk_6", "name": "Psychology Coach", "role": "Performance coach", "topic": "Trading mindset", "note": "SAMPLE — speaker lineup to be confirmed", "sample": true }
+      ],
+      expoExhibitors: [
+        { "id": "exh_1", "name": "Sample Brokerage", "type": "Broker", "note": "SAMPLE — exhibitor list to be confirmed", "sample": true },
+        { "id": "exh_2", "name": "Sample Liquidity", "type": "Liquidity provider", "note": "SAMPLE — exhibitor list to be confirmed", "sample": true },
+        { "id": "exh_3", "name": "Sample PayTech", "type": "Payments", "note": "SAMPLE — exhibitor list to be confirmed", "sample": true },
+        { "id": "exh_4", "name": "Sample Fintech", "type": "Fintech", "note": "SAMPLE — exhibitor list to be confirmed", "sample": true },
+        { "id": "exh_5", "name": "Sample Platform", "type": "Technology", "note": "SAMPLE — exhibitor list to be confirmed", "sample": true },
+        { "id": "exh_6", "name": "Sample Media", "type": "Media partner", "note": "SAMPLE — exhibitor list to be confirmed", "sample": true }
+      ],
+      summitAgenda: [
+        { "id": "agd_s1", "time": "10:00", "title": "Summit opening & industry outlook", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_s2", "time": "11:15", "title": "CEO panel: the business of brokerage", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_s3", "time": "13:30", "title": "Institutional roundtable (invite only)", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_s4", "time": "15:00", "title": "Regulation & licensing workshop", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true },
+        { "id": "agd_s5", "time": "16:30", "title": "Closing keynote & VIP networking", "desc": "SAMPLE agenda — confirmed program to be announced.", "sample": true }
+      ],
     };
   }
 
@@ -2398,6 +2490,133 @@
         events: db.events.filter(function (e) { return e.title.toLowerCase().indexOf(q) > -1; }).slice(0, 8),
         assistance: db.assistance.filter(function (a) { return (a.category + " " + a.provider + " " + a.id).toLowerCase().indexOf(q) > -1; }).slice(0, 8)
       };
+    },
+    /* ---------- ProFX Media products: passes, league, discounts, awards ---------- */
+    money: function (n, cur) {
+      return (cur || "USD") + " " + (Math.round(n * 100) / 100).toFixed(2).replace(/\.00$/, "");
+    },
+    /* discount codes — kind is "pass" or "league" */
+    validateDiscount: function (code, kind) {
+      code = String(code || "").trim().toUpperCase();
+      if (!code) return { ok: false, error: "Enter a discount code." };
+      var c = db.discountCodes.find(function (d) { return d.code === code; });
+      if (!c) return { ok: false, error: "Code not recognized." };
+      if (!c.active) return { ok: false, error: "This code is no longer active." };
+      if (c.appliesTo.indexOf(kind) < 0) return { ok: false, error: "This code doesn't apply here." };
+      if (c.used >= c.maxUses) return { ok: false, error: "This code has reached its usage limit." };
+      return { ok: true, pct: c.pct, code: c.code };
+    },
+    priceAfterDiscount: function (price, pct) {
+      return Math.round(price * (1 - pct / 100) * 100) / 100;
+    },
+    orderPass: function (memberId, passId, code) {
+      var me = memberId ? PFX.memberById(memberId) : null;
+      if (!me) return { ok: false, error: "Sign in to get a pass." };
+      var pass = db.passes.find(function (p) { return p.id === passId; });
+      if (!pass) return { ok: false, error: "Pass not found." };
+      var pct = 0, usedCode = "";
+      if (code) {
+        var v = PFX.validateDiscount(code, "pass");
+        if (!v.ok) return v;
+        pct = v.pct; usedCode = v.code;
+      }
+      var total = PFX.priceAfterDiscount(pass.price, pct);
+      var order = {
+        id: uid("ord"), ref: "PFX-" + Date.now().toString(36).toUpperCase(),
+        memberId: me.id, passId: pass.id, passName: pass.name,
+        price: pass.price, discountPct: pct, code: usedCode, total: total,
+        currency: pass.currency, status: "confirmed", createdAt: now(), demo: true
+      };
+      db.passOrders.push(order);
+      if (usedCode) { var c = db.discountCodes.find(function (d) { return d.code === usedCode; }); if (c) c.used++; }
+      save();
+      audit("pass.order", pass.name + " → " + PFX.money(total, pass.currency) + (usedCode ? " (" + usedCode + ")" : "") + " [" + me.id + "]", me.id);
+      notify(me.id, "booking", "Pass confirmed", "Your " + pass.name + " is confirmed. Reference " + order.ref + ". (DEMO — no payment taken.)", "app/passes.html");
+      return { ok: true, order: order };
+    },
+    enterLeague: function (memberId, divisionId, code) {
+      var me = memberId ? PFX.memberById(memberId) : null;
+      if (!me) return { ok: false, error: "Sign in to enter the league." };
+      var div = db.leagueDivisions.find(function (d) { return d.id === divisionId; });
+      if (!div) return { ok: false, error: "Division not found." };
+      var existing = db.leagueEntries.find(function (e) { return e.memberId === me.id && e.divisionId === divisionId && e.status !== "withdrawn"; });
+      if (existing) return { ok: false, error: "You're already entered in this division.", entry: existing };
+      var pct = 0, usedCode = "";
+      if (code) {
+        var v = PFX.validateDiscount(code, "league");
+        if (!v.ok) return v;
+        pct = v.pct; usedCode = v.code;
+      }
+      var total = PFX.priceAfterDiscount(div.entryFee, pct);
+      var entry = {
+        id: uid("lge"), ref: "LG-" + Date.now().toString(36).toUpperCase(),
+        memberId: me.id, trader: me.name, country: me.country || "",
+        divisionId: div.id, pnlPct: 0, trades: 0, winRate: 0,
+        entryFee: div.entryFee, discountPct: pct, code: usedCode, total: total,
+        currency: div.currency, status: "entered", createdAt: now(), demo: true
+      };
+      db.leagueEntries.push(entry);
+      if (usedCode) { var c = db.discountCodes.find(function (d) { return d.code === usedCode; }); if (c) c.used++; }
+      save();
+      audit("league.enter", div.name + " → " + PFX.money(total, div.currency) + (usedCode ? " (" + usedCode + ")" : "") + " [" + me.id + "]", me.id);
+      notify(me.id, "booking", "League entry confirmed", "You're in the " + div.name + ". Reference " + entry.ref + ". (DEMO — no payment taken.)", "app/league.html");
+      return { ok: true, entry: entry };
+    },
+    myPasses: function (memberId) {
+      return db.passOrders.filter(function (o) { return o.memberId === memberId; })
+        .sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+    },
+    myLeagueEntries: function (memberId) {
+      return db.leagueEntries.filter(function (e) { return e.memberId === memberId; })
+        .sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+    },
+    leagueLeaderboard: function (divisionId) {
+      return db.leagueEntries
+        .filter(function (e) { return e.divisionId === divisionId && e.status !== "withdrawn"; })
+        .sort(function (a, b) { return b.pnlPct - a.pnlPct; });
+    },
+    divisionById: function (id) { return db.leagueDivisions.find(function (d) { return d.id === id; }) || null; },
+    passById: function (id) { return db.passes.find(function (p) { return p.id === id; }) || null; },
+    nominateAward: function (data) {
+      data = data || {};
+      var nominee = String(data.nominee || "").trim(), categoryId = String(data.categoryId || "").trim();
+      if (!nominee || !categoryId) return { ok: false, error: "Nominee and category are required." };
+      if (!db.awardCategories.some(function (c) { return c.id === categoryId; })) return { ok: false, error: "Category not found." };
+      var n = {
+        id: uid("nom"), nominee: nominee, categoryId: categoryId,
+        reason: String(data.reason || "").trim(), nominator: String(data.nominator || "").trim(),
+        email: String(data.email || "").trim(), status: "received", createdAt: now(), demo: true
+      };
+      db.awardNominations.push(n); save();
+      audit("awards.nominate", nominee + " → " + categoryId, data.memberId || "guest");
+      return { ok: true, nomination: n };
+    },
+    /* admin: discount code management */
+    adminAddDiscount: function (d) {
+      var code = String(d.code || "").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "");
+      var pct = parseInt(d.pct, 10);
+      if (!code) return { ok: false, error: "Code is required." };
+      if (!(pct > 0 && pct <= 100)) return { ok: false, error: "Discount must be 1–100%." };
+      if (db.discountCodes.some(function (x) { return x.code === code; })) return { ok: false, error: "Code already exists." };
+      var appliesTo = (d.appliesTo === "pass" || d.appliesTo === "league") ? [d.appliesTo] : ["pass", "league"];
+      var maxUses = parseInt(d.maxUses, 10); if (!(maxUses > 0)) maxUses = 100;
+      db.discountCodes.push({ code: code, pct: pct, appliesTo: appliesTo, maxUses: maxUses, used: 0, active: true, note: "Added by admin" });
+      save(); audit("discount.add", code + " " + pct + "%", "admin");
+      return { ok: true };
+    },
+    adminToggleDiscount: function (code) {
+      var c = db.discountCodes.find(function (d) { return d.code === code; });
+      if (!c) return { ok: false };
+      c.active = !c.active; save();
+      audit("discount.toggle", code + " → " + (c.active ? "active" : "inactive"), "admin");
+      return { ok: true, active: c.active };
+    },
+    adminDeleteDiscount: function (code) {
+      var i = db.discountCodes.findIndex(function (d) { return d.code === code; });
+      if (i < 0) return { ok: false };
+      db.discountCodes.splice(i, 1); save();
+      audit("discount.delete", code, "admin");
+      return { ok: true };
     },
     logConsent: function (member, type, value, note) {
       member.consentHistory = member.consentHistory || [];

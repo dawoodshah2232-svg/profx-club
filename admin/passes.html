@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Passes &amp; Discounts — ProFX Club CRM</title>
+<link rel="icon" href="../assets/favicon.png">
+<link rel="stylesheet" href="../css/style.css?v=20261007">
+</head>
+<body data-page="passes">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html" aria-label="ProFX Club — Admin CRM"><img class="logo-img" src="../assets/logo-full.png" alt="ProFX Club"><span class="logo-sub">Admin CRM</span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO DATA</b> — pass orders and discount codes below are sample data for this demo. No real payments are taken.</div>
+    <div class="page-head"><div><h1>Passes &amp; Discounts</h1><p class="lead">Expo pass orders and discount code management.</p></div></div>
+    <div id="msg"></div>
+
+    <div class="stat-row">
+      <div class="stat"><b id="stOrders">—</b><span>Pass orders</span></div>
+      <div class="stat"><b id="stRevenue">—</b><span>Pass revenue (demo)</span></div>
+      <div class="stat"><b id="stActive">—</b><span>Active discount codes</span></div>
+      <div class="stat"><b id="stUses">—</b><span>Total code redemptions</span></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.2rem">
+      <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a3 3 0 0 0 0 6v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a3 3 0 0 0 0-6z"/><path d="M13 5v2M13 11v2M13 17v2"/></svg> Pass orders</h3>
+      <div class="tbl-wrap" style="margin-top:.8rem"><table class="tbl"><thead><tr><th>Reference</th><th>Member</th><th>Pass</th><th>Price</th><th>Discount</th><th>Total paid</th><th>Date</th><th>Status</th></tr></thead><tbody id="orderRows"></tbody></table></div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59c0 .53.21 1.04.59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r=".8"/></svg> Discount codes</h3>
+        <div class="tbl-wrap" style="margin-top:.8rem"><table class="tbl"><thead><tr><th>Code</th><th>Off</th><th>Applies to</th><th>Used</th><th>Status</th><th>Actions</th></tr></thead><tbody id="codeRows"></tbody></table></div>
+        <p class="meta" style="margin-top:.6rem">Seeded codes are <span class="badge badge-demo">SAMPLE</span> data. Deleting a code is permanent in this demo database.</p>
+      </div>
+      <div class="card">
+        <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Add discount code</h3>
+        <div class="form-error" id="dcErr" role="alert" style="display:none;margin-top:.8rem"></div>
+        <div style="margin-top:.8rem">
+          <div class="field"><label>Code *</label><input type="text" id="dcCode" placeholder="e.g. EARLYBIRD20" style="text-transform:uppercase"></div>
+          <div class="grid g2">
+            <div class="field"><label>Discount % (1–100) *</label><input type="number" id="dcPct" min="1" max="100" value="10"></div>
+            <div class="field"><label>Max uses *</label><input type="number" id="dcMax" min="1" value="100"></div>
+          </div>
+          <div class="field"><label>Applies to</label><select id="dcApplies"><option value="both">Both — passes &amp; league</option><option value="pass">Expo passes only</option><option value="league">League entries only</option></select></div>
+          <button class="btn btn-primary" id="dcAdd">Add code</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20261007"></script>
+<script src="../js/admin.js?v=20261007"></script>
+<script>
+(function () {
+  "use strict";
+  function msg(h, c) { document.getElementById("msg").innerHTML = '<div class="' + c + '">' + h + "</div>"; }
+  function clearMsg() { document.getElementById("msg").innerHTML = ""; }
+  function renderStats() {
+    var os = PFX.db.passOrders, rev = 0;
+    os.forEach(function (o) { rev += Number(o.total) || 0; });
+    var codes = PFX.db.discountCodes, uses = 0;
+    codes.forEach(function (c) { uses += Number(c.used) || 0; });
+    document.getElementById("stOrders").textContent = os.length;
+    document.getElementById("stRevenue").textContent = PFX.money(rev, "USD");
+    document.getElementById("stActive").textContent = codes.filter(function (c) { return c.active; }).length;
+    document.getElementById("stUses").textContent = uses;
+  }
+  function renderOrders() {
+    var os = PFX.db.passOrders.slice().sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); });
+    document.getElementById("orderRows").innerHTML = os.map(function (o) {
+      var m = o.memberId ? PFX.memberById(o.memberId) : null;
+      return "<tr><td><b>" + PFX.esc(o.ref || o.id) + "</b>" + (o.demo ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + "</td>" +
+        "<td>" + PFX.esc(m ? m.name : "—") + '<br><span class="meta">' + PFX.esc(m ? m.email : "") + "</span></td>" +
+        "<td>" + PFX.esc(o.passName || o.passId) + "</td>" +
+        "<td>" + PFX.money(o.price, o.currency) + "</td>" +
+        "<td>" + (o.discountPct ? o.discountPct + "%" + (o.code ? ' <span class="badge badge-info">' + PFX.esc(o.code) + "</span>" : "") : '<span class="meta">—</span>') + "</td>" +
+        "<td><b>" + PFX.money(o.total, o.currency) + "</b></td>" +
+        '<td class="meta">' + (o.createdAt ? PFX.fmtDate(o.createdAt) : "—") + "</td>" +
+        '<td><span class="badge ' + (o.status === "confirmed" ? "badge-ok" : "badge-neutral") + '">' + PFX.esc(o.status || "—") + "</span></td></tr>";
+    }).join("") || '<tr><td colspan="8" class="meta">No pass orders yet.</td></tr>';
+  }
+  function renderCodes() {
+    var cs = PFX.db.discountCodes.slice().sort(function (a, b) { return String(a.code).localeCompare(String(b.code)); });
+    document.getElementById("codeRows").innerHTML = cs.map(function (c) {
+      var used = Number(c.used) || 0, max = Number(c.maxUses) || 0;
+      var pct = max > 0 ? Math.min(100, Math.round(used / max * 100)) : 0;
+      return "<tr><td><b>" + PFX.esc(c.code) + "</b>" + (c.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") +
+        (c.note ? '<br><span class="meta">' + PFX.esc(c.note) + "</span>" : "") + "</td>" +
+        "<td><b>" + c.pct + "%</b></td>" +
+        '<td class="meta">' + PFX.esc((c.appliesTo || []).join(" + ") || "—") + "</td>" +
+        '<td style="min-width:130px"><span class="meta">' + used + " / " + (max || "∞") + "</span>" +
+        '<div style="height:6px;background:var(--line,#e5e7eb);border-radius:99px;margin-top:4px"><div style="height:100%;width:' + pct + '%;background:var(--green,#22a35c);border-radius:99px"></div></div></td>' +
+        '<td><span class="badge ' + (c.active ? "badge-ok" : "badge-neutral") + '">' + (c.active ? "active" : "paused") + "</span></td>" +
+        '<td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" data-toggle="' + PFX.esc(c.code) + '">' + (c.active ? "Pause" : "Activate") + "</button> " +
+        '<button class="btn btn-danger btn-sm" data-del="' + PFX.esc(c.code) + '">Delete</button></td></tr>';
+    }).join("") || '<tr><td colspan="6" class="meta">No discount codes yet.</td></tr>';
+    document.querySelectorAll("[data-toggle]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var res = PFX.adminToggleDiscount(b.dataset.toggle);
+        if (res.ok) { msg("Code " + PFX.esc(b.dataset.toggle) + " is now " + (res.active ? "active" : "paused") + ".", "success"); renderAll(); }
+        else msg("Could not update code.", "warn");
+      });
+    });
+    document.querySelectorAll("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (!confirm("Delete discount code " + b.dataset.del + "? This cannot be undone.")) return;
+        var res = PFX.adminDeleteDiscount(b.dataset.del);
+        if (res.ok) { msg("Code deleted.", "success"); renderAll(); }
+        else msg(res.error || "Could not delete code.", "warn");
+      });
+    });
+  }
+  function renderAll() { clearMsg(); renderStats(); renderOrders(); renderCodes(); }
+  document.getElementById("dcAdd").addEventListener("click", function () {
+    var err = document.getElementById("dcErr"); err.style.display = "none";
+    var code = document.getElementById("dcCode").value.trim().toUpperCase(),
+      pct = parseInt(document.getElementById("dcPct").value, 10),
+      max = parseInt(document.getElementById("dcMax").value, 10),
+      applies = document.getElementById("dcApplies").value;
+    if (code.length < 3) { err.textContent = "Code must be at least 3 characters."; err.style.display = "block"; return; }
+    if (!(pct >= 1 && pct <= 100)) { err.textContent = "Discount must be between 1 and 100%."; err.style.display = "block"; return; }
+    if (!(max >= 1)) { err.textContent = "Max uses must be at least 1."; err.style.display = "block"; return; }
+    var res = PFX.adminAddDiscount({ code: code, pct: pct, appliesTo: applies, maxUses: max });
+    if (!res.ok) { err.textContent = res.error || "Could not add code."; err.style.display = "block"; return; }
+    document.getElementById("dcCode").value = "";
+    msg("Discount code " + PFX.esc(code) + " added (" + pct + "% off).", "success");
+    renderStats(); renderCodes();
+  });
+  renderAll();
+})();
+</script>
+</body>
+</html>
