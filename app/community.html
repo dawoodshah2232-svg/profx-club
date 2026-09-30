@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Community — ProFX Club</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="community">
 <header class="nav"><div class="container nav-inner">
@@ -16,8 +16,25 @@
   <aside class="side" id="appSide"></aside>
   <div class="main">
     <div class="page-head"><div><h1>Community</h1><p class="lead">Official club spaces. Joining is always voluntary — we never add you automatically.</p></div></div>
+    <div id="msg"></div>
     <div class="demo-banner"><b>NO LINKS PUBLISHED YET</b> — the owner has not supplied official Telegram/WhatsApp links. When they do, the join buttons will appear here automatically. We never invent destinations.</div>
     <div id="dest" class="grid g2"></div>
+
+    <h3 style="margin:1.8rem 0 .7rem">Upcoming gatherings</h3>
+    <div id="gatherings"></div>
+
+    <h3 style="margin:1.8rem 0 .7rem">Discussion prompts <span class="badge badge-demo">SAMPLE</span></h3>
+    <p class="meta" style="margin-bottom:.7rem">Weekly prompts from the community team. In this demo there is no posting — save a prompt to attend and discuss it at the next meetup.</p>
+    <div id="discussions"></div>
+
+    <h3 style="margin:1.8rem 0 .7rem">Member directory <span class="badge badge-demo">SAMPLE</span></h3>
+    <p class="meta" style="margin-bottom:.7rem">Only members who opted in appear here — name, membership ID, city/country and interests. Nothing else is ever shared.</p>
+    <div class="card" style="margin-bottom:1rem">
+      <label class="check-row" style="color:var(--ink)"><input type="checkbox" id="dirOpt"><span>Show my profile in the member directory</span></label>
+      <p class="meta">Turn this off any time to disappear from the directory instantly.</p>
+    </div>
+    <div id="directory" class="grid g2"></div>
+
     <div class="card" style="margin-top:1.2rem">
       <h3>House rules</h3>
       <ul style="color:var(--muted);font-size:.95rem;padding-left:1.2rem;margin-top:.4rem">
@@ -32,12 +49,17 @@
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/app.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/app.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
+  var me = window.PFX_ME;
   var c = PFX.db.settings.community;
+
+  function msg(html, cls) { document.getElementById("msg").innerHTML = '<div class="' + cls + '">' + html + "</div>"; window.scrollTo(0, 0); }
+
+  /* ---- community links: managed channels + active socials ---- */
   function card(label, d, icon) {
     var ok = d.active && d.url;
     return '<div class="card"><div class="icon-chip">' + icon + '</div><h3>' + label + '</h3>' +
@@ -46,12 +68,79 @@
           : '<p class="warn" style="margin:.6rem 0"><b>Not available yet.</b> The official link hasn\'t been published — please check back. We won\'t guess or fabricate it.</p>') +
       '</div>';
   }
-  document.getElementById("dest").innerHTML =
-    card("Telegram announcements", c.telegramAnnouncements, "<svg class='ni' viewBox='0 0 24 24' aria-hidden='true'><path d='m3 11 18-5v12L3 14v-3z'/><path d='M11.6 16.8a3 3 0 1 1-5.8-1.6'/></svg>") +
-    card("Telegram discussion", c.telegramDiscussion, "<svg class='ni' viewBox='0 0 24 24' aria-hidden='true'><path d='M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z'/></svg>") +
-    card("WhatsApp community", c.whatsapp, "<svg class='ni' viewBox='0 0 24 24' aria-hidden='true'><path d='M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z'/></svg>");
+  var ICON_TG = "<svg class='ni' viewBox='0 0 24 24' aria-hidden='true'><path d='m3 11 18-5v12L3 14v-3z'/><path d='M11.6 16.8a3 3 0 1 1-5.8-1.6'/></svg>";
+  var ICON_CHAT = "<svg class='ni' viewBox='0 0 24 24' aria-hidden='true'><path d='M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z'/></svg>";
+  var ICON_NET = "<svg class='ni' viewBox='0 0 24 24' aria-hidden='true'><circle cx='12' cy='12' r='10'/><path d='M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/></svg>";
+  var destHtml = card("Telegram announcements", c.telegramAnnouncements, ICON_TG) +
+    card("Telegram discussion", c.telegramDiscussion, ICON_CHAT) +
+    card("WhatsApp community", c.whatsapp, ICON_CHAT);
+  (PFX.db.settings.socials || []).forEach(function (s) {
+    var ok = s.active && s.url;
+    destHtml += '<div class="card"><div class="icon-chip">' + ICON_NET + '</div><h3>' + PFX.esc(s.label || s.network) + '</h3>' +
+      '<p class="meta">Official social channel</p>' +
+      (ok ? '<a class="btn btn-primary btn-sm" data-join href="' + PFX.esc(s.url) + '" target="_blank" rel="noopener">Open</a>'
+          : '<p class="warn" style="margin:.6rem 0"><b>Not available yet.</b> This channel hasn\'t been published — please check back.</p>') + '</div>';
+  });
+  document.getElementById("dest").innerHTML = destHtml;
   document.querySelectorAll("[data-join]").forEach(function (a) {
-    a.addEventListener("click", function () { PFX.audit("community.join_click", a.href, window.PFX_ME.id); });
+    a.addEventListener("click", function () { PFX.audit("community.join_click", a.href, me.id); });
+  });
+
+  /* ---- upcoming gatherings: meetups first, then other published events ---- */
+  var now = new Date();
+  var up = PFX.db.events.filter(function (e) { return e.status === "published" && new Date(e.startsAt) > now; })
+    .sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
+  var meetups = up.filter(function (e) { return e.kind === "Online meetup"; });
+  var others = up.filter(function (e) { return e.kind !== "Online meetup"; });
+  var list = meetups.concat(others);
+  document.getElementById("gatherings").innerHTML = list.length ? list.map(function (e) {
+    return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+      '<p class="meta"><b>' + PFX.fmtDate(e.startsAt) + '</b> · ' + PFX.esc(e.timezone) + '</p>' +
+      '<p class="meta">Host: ' + PFX.esc(e.host) + ' · ' + PFX.esc(e.kind) + '</p></div>' +
+      '<a class="btn btn-ghost btn-sm" href="events.html">Book</a></div>';
+  }).join("") : '<div class="empty">No gatherings scheduled yet.</div>';
+
+  /* ---- discussion prompts: read-only ---- */
+  var discs = PFX.db.discussions.slice().sort(function (a, b) { return b.at.localeCompare(a.at); });
+  document.getElementById("discussions").innerHTML = discs.length ? discs.map(function (d) {
+    return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(d.prompt) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+      '<p class="meta">' + PFX.esc(d.detail || "") + '</p>' +
+      '<p class="meta">' + PFX.fmtDate(d.at) + ' · No posting in demo — save to attend and discuss at the next meetup.</p></div>' +
+      '<button class="btn btn-ghost btn-sm" data-save="' + d.id + '">Save to attend</button></div>';
+  }).join("") : '<div class="empty">No discussion prompts yet.</div>';
+
+  /* ---- member directory: opt-in members only ---- */
+  function renderDirectory() {
+    var members = PFX.db.members.filter(function (m) { return m.directoryOptIn && m.status === "active"; });
+    document.getElementById("directory").innerHTML = members.length ? members.map(function (m) {
+      var where = [m.city, m.country].filter(Boolean).join(", ");
+      var ints = (m.interests || []).map(function (i) { return '<span class="badge badge-info">' + PFX.esc(i) + '</span>'; }).join(" ");
+      return '<div class="card"><h3>' + PFX.esc(m.name) + (m.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") +
+        (m.id === me.id ? ' <span class="badge badge-neutral">You</span>' : "") + '</h3>' +
+        '<p class="meta">' + PFX.esc(m.membershipId) + (where ? ' · ' + PFX.esc(where) : "") + '</p>' +
+        (ints ? '<div style="margin-top:.5rem;display:flex;gap:.4rem;flex-wrap:wrap">' + ints + '</div>' : "") + '</div>';
+    }).join("") : '<div class="empty">No members have opted into the directory yet.</div>';
+  }
+  var dirOpt = document.getElementById("dirOpt");
+  dirOpt.checked = !!me.directoryOptIn;
+  dirOpt.addEventListener("change", function () {
+    me.directoryOptIn = dirOpt.checked;
+    PFX.save();
+    PFX.audit("member.directory_optin", String(me.directoryOptIn), me.id);
+    renderDirectory();
+    msg(dirOpt.checked ? "You're now visible in the member directory." : "You're hidden from the member directory.", "success");
+  });
+  renderDirectory();
+
+  document.addEventListener("click", function (ev) {
+    var s = ev.target.closest("[data-save]");
+    if (s) {
+      var d = PFX.db.discussions.find(function (x) { return x.id === s.dataset.save; });
+      if (!d) return;
+      PFX.notify(me.id, "reminder", "Discussion saved",
+        "You saved this prompt — bring it up at the next meetup: " + d.prompt, "community.html");
+      msg("Saved. We'll remind you before the next meetup.", "success");
+    }
   });
 })();
 </script>

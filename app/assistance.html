@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Assistance — ProFX Club</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="assistance">
 <header class="nav"><div class="container nav-inner">
@@ -53,20 +53,33 @@
         <p class="meta" id="tMeta"></p>
         <div id="tBody" style="margin-top:1rem"></div>
         <hr style="border:0;border-top:1px solid var(--line);margin:1rem 0">
-        <div class="field"><label for="tReply">Reply to support</label><textarea id="tReply" style="min-height:80px"></textarea></div>
+        <div class="field"><label for="tReply">Reply to support</label><textarea id="tReply" style="min-height:80px" placeholder="Write your reply…"></textarea></div>
         <button class="btn btn-primary btn-sm" id="tSend">Send reply</button>
       </div>
     </div>
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/app.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/app.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
   var me = window.PFX_ME;
   var FLOW = ["new", "reviewing", "awaiting member", "referral offered", "referred", "resolved", "closed"];
+
+  function visibleReplies(a) {
+    /* Only replies the member is allowed to see. privateNotes are NEVER read here. */
+    var out = [];
+    (a.replies || []).forEach(function (r) {
+      if (r.visibleToMember === false) return;
+      out.push({ at: r.at, author: r.author === "staff" ? "Support" : "You", text: r.text });
+    });
+    (a.messages || []).forEach(function (m) {
+      out.push({ at: m.at, author: m.from === "staff" ? "Support" : "You", text: m.text });
+    });
+    return out.sort(function (x, y) { return String(x.at).localeCompare(String(y.at)); });
+  }
 
   function listView() {
     document.getElementById("form").style.display = "none";
@@ -74,8 +87,10 @@
     var mine = PFX.db.assistance.filter(function (a) { return a.memberId === me.id; })
       .sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
     document.getElementById("list").innerHTML = mine.length ? mine.map(function (a) {
+      var n = visibleReplies(a).length;
+      var last = (a.replies || []).concat(a.messages || []).map(function (r) { return r.at; }).sort().pop();
       return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(a.category) + ' — ' + PFX.esc(a.provider) + (a.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
-        '<p class="meta">Opened ' + PFX.fmtDate(a.createdAt) + '</p>' +
+        '<p class="meta">Opened ' + PFX.fmtDate(a.createdAt) + (last ? ' · Last activity ' + PFX.fmtDate(last) : "") + ' · ' + n + ' message' + (n === 1 ? "" : "s") + '</p>' +
         '<span class="badge badge-info">' + PFX.esc(a.status) + '</span></div>' +
         '<button class="btn btn-ghost btn-sm" data-open="' + a.id + '">Open</button></div>';
     }).join("") : '<div class="empty">No requests yet. If you have a problem with a broker, start one — it\'s private.</div>';
@@ -89,16 +104,26 @@
     document.getElementById("thread").style.display = "block";
     document.getElementById("tTitle").textContent = a.category + " — " + a.provider;
     document.getElementById("tMeta").textContent = "Status: " + a.status + " · Opened " + PFX.fmtDate(a.createdAt) + " · " + a.country;
-    var html = '<div class="timeline">';
-    html += '<div><b>You submitted the request</b><br><span class="meta">' + PFX.esc(a.facts) + '<br>Requested help: ' + PFX.esc(a.requestedHelp) + '</span></div>';
-    (a.messages || []).forEach(function (m) {
-      html += '<div><b>' + (m.from === "staff" ? "Support" : "You") + '</b> <span class="meta">' + PFX.fmtDate(m.at) + '</span><br><span class="meta">' + PFX.esc(m.text) + '</span></div>';
+
+    /* message timeline — member-visible replies only */
+    var html = '<h3 style="margin-bottom:.4rem">Conversation</h3><div class="timeline">';
+    html += '<div><b>You submitted the request</b> <span class="meta">' + PFX.fmtDate(a.createdAt) + '</span><br><span class="meta">' + PFX.esc(a.facts) + '<br>Requested help: ' + PFX.esc(a.requestedHelp) + '</span></div>';
+    visibleReplies(a).forEach(function (r) {
+      html += '<div><b>' + PFX.esc(r.author) + '</b> <span class="meta">' + PFX.fmtDate(r.at) + '</span><br><span class="meta">' + PFX.esc(r.text) + '</span></div>';
     });
+    html += "</div>";
+
+    /* status timeline */
+    html += '<h3 style="margin:1.2rem 0 .4rem">Status history</h3><div class="timeline">';
+    (a.history || []).slice().sort(function (x, y) { return String(x.at).localeCompare(String(y.at)); }).forEach(function (h) {
+      html += '<div><b>' + PFX.esc(h.action) + '</b> <span class="meta">' + PFX.fmtDate(h.at) + ' · by ' + PFX.esc(h.by) + '</span></div>';
+    });
+    html += "</div>";
+
     if (a.status === "referral offered") {
       html += '<div class="notice"><b>Referral offered.</b> Support proposed a professional referral. Nothing is shared until you approve in writing below.</div>' +
         '<button class="btn btn-primary btn-sm" id="consentYes">I approve sharing my case with the proposed professional</button>';
     }
-    html += "</div>";
     document.getElementById("tBody").innerHTML = html;
     var cy = document.getElementById("consentYes");
     if (cy) cy.addEventListener("click", function () {
@@ -112,9 +137,13 @@
     document.getElementById("tSend").onclick = function () {
       var t = document.getElementById("tReply").value.trim();
       if (!t) return;
-      a.messages.push({ at: PFX.now(), from: "member", text: t });
+      a.replies = a.replies || [];
+      a.replies.push({ id: PFX.uid("rpl"), at: PFX.now(), author: "member", visibleToMember: true, text: t });
       if (a.status === "awaiting member") { a.status = "reviewing"; a.history.push({ at: PFX.now(), by: "member", action: "replied → reviewing" }); }
+      a.history.push({ at: PFX.now(), by: "member", action: "reply sent" });
       PFX.save(); PFX.audit("assistance.reply", a.id, me.id);
+      PFX.notify(me.id, "assistance", "Reply sent to support", "Your reply on \"" + a.category + " — " + a.provider + "\" was delivered to the support team.", "assistance.html");
+      document.getElementById("tReply").value = "";
       openThread(id);
     };
   }
@@ -139,11 +168,12 @@
       category: cat, country: country, provider: provider, facts: facts,
       dates: document.getElementById("aDates").value.trim(), requestedHelp: help,
       contactPref: document.getElementById("aPref").value,
-      status: "new", privateNotes: [], messages: [], referralConsent: null,
+      status: "new", privateNotes: [], replies: [], messages: [], referralConsent: null,
       history: [{ at: PFX.now(), by: "member", action: "created" }]
     };
     PFX.db.assistance.push(a); PFX.save();
     PFX.audit("assistance.create", a.id + " " + cat, me.id);
+    PFX.notify(me.id, "assistance", "Request received", "Your assistance request (" + cat + ") is with the support team. We'll reply here.", "assistance.html");
     document.getElementById("msg").innerHTML = '<div class="success">Request submitted privately. Support will review it and reply here.</div>';
     listView();
   });

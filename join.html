@@ -6,7 +6,7 @@
 <title>Join Free — ProFX Club</title>
 <meta name="description" content="Join ProFX Club free: name, email, accept terms, verify email. No payment, no broker account required.">
 <link rel="icon" href="assets/favicon.png">
-<link rel="stylesheet" href="css/style.css?v=20260930c">
+<link rel="stylesheet" href="css/style.css?v=20261001">
 </head>
 <body data-page="join">
 <a class="skip" href="#main">Skip to content</a>
@@ -74,8 +74,8 @@
 </main>
 
 <footer id="chrome-footer"></footer>
-<script src="js/db.js?v=20260930c"></script>
-<script src="js/site.js?v=20260930c"></script>
+<script src="js/db.js?v=20261001"></script>
+<script src="js/site.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
@@ -84,6 +84,22 @@
   try {
     var q = JSON.parse(sessionStorage.getItem("profx_pending_join") || "null");
     if (q) { document.getElementById("jName").value = q.name || ""; document.getElementById("jEmail").value = q.email || ""; }
+  } catch (e) {}
+  /* referral link: join.html?ref=CODE → prefill the referral field */
+  try {
+    var rc = new URLSearchParams(location.search).get("ref");
+    if (rc) {
+      rc = rc.trim().toUpperCase();
+      var jRef = document.getElementById("jRef");
+      if (jRef && PFX.db.referralCodes.some(function (c) { return c.code === rc; })) {
+        jRef.value = rc;
+        var wrap = jRef.closest(".field");
+        var note = document.createElement("p");
+        note.className = "form-note";
+        note.textContent = "You were invited with referral code " + rc + " — it will be credited at signup.";
+        wrap.appendChild(note);
+      }
+    }
   } catch (e) {}
   function showErr(id, msg) { var el = document.getElementById(id); el.textContent = msg; el.style.display = "block"; }
 
@@ -132,14 +148,16 @@
     if (document.getElementById("vInput").value.trim() !== pending.code)
       return showErr("vErr", "That code doesn't match. Check the code shown above and try again.");
     /* create the member record */
+    var myRef = PFX.newReferralCode(pending.name);
     var m = {
       id: PFX.uid("mem"), membershipId: PFX.nextMembershipId(),
       name: pending.name, email: pending.email,
       status: "active", verified: true, createdAt: PFX.now(),
       source: document.referrer ? new URL(document.referrer).pathname : "direct",
-      referralCode: pending.ref || "",
+      referralCode: myRef, referredBy: pending.ref || "",
       city: "", country: "", experience: "", language: "", interests: [],
       whatsapp: pending.whatsapp || "",
+      avatar: "", preferences: { language: "English", timezone: "Asia/Dubai" }, directoryOptIn: false,
       consent: { terms: true, privacy: true, promoEmail: pending.promoEmail, promoWhatsapp: pending.promoWhatsapp },
       consentHistory: [
         { at: PFX.now(), type: "terms", value: true, note: "accepted at registration" },
@@ -149,7 +167,14 @@
       ],
       tags: []
     };
-    PFX.db.members.push(m); PFX.save();
+    PFX.db.members.push(m);
+    PFX.db.referralCodes.push({ code: myRef, memberId: m.id, createdAt: PFX.now(), note: "auto" });
+    /* credit the referrer */
+    if (pending.ref) {
+      var referrer = PFX.db.referralCodes.find(function (c) { return c.code === pending.ref; });
+      if (referrer) PFX.notify(referrer.memberId, "referral", "New referral signed up", "Someone joined ProFX Club using your referral code " + pending.ref + ".", "profile.html");
+    }
+    PFX.save();
     PFX.audit("member.register", m.membershipId + " " + m.email, m.id);
     localStorage.removeItem(PENDING);
     PFX.setSession({ memberId: m.id, at: PFX.now() });

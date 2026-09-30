@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Content — ProFX Club CRM</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="content">
 <header class="nav"><div class="container nav-inner">
@@ -15,23 +15,43 @@
 <div class="app">
   <aside class="side" id="adminSide"></aside>
   <div class="main">
-    <div class="page-head"><div><h1>Content</h1><p class="lead">Homepage sections, FAQs, policy versions. Changes publish immediately.</p></div></div>
+    <div class="demo-banner"><b>DEMO DATA</b> — all content is editable sample data. Publish only owner-confirmed items.</div>
+    <div class="page-head"><div><h1>Content</h1><p class="lead">Homepage sections, lessons, resources, educators, FAQs, policy notes &amp; versions. Changes publish immediately (demo).</p></div></div>
     <div id="msg"></div>
 
     <div class="card">
-      <h3>Homepage copy</h3>
+      <h3>Homepage copy <span class="badge badge-demo">DEMO</span></h3>
       <div class="field" style="margin-top:.8rem"><label for="hH1">Hero headline</label><input type="text" id="hH1"></div>
       <div class="field"><label for="hLead">Hero subheading</label><textarea id="hLead" style="min-height:70px"></textarea></div>
       <div class="field"><label for="hBen">Benefits section title</label><input type="text" id="hBen"></div>
       <button class="btn btn-primary" id="hSave">Save homepage copy</button>
     </div>
 
+    <div class="page-head" style="margin-top:1.6rem"><div><h3>Lessons (beginner path) <span class="badge badge-demo">DEMO</span></h3></div><button class="btn btn-primary btn-sm" id="lNew">+ Lesson</button></div>
+    <div id="lessons"></div>
+
+    <div class="page-head" style="margin-top:1.6rem"><div><h3>Resources <span class="badge badge-demo">DEMO</span></h3></div><button class="btn btn-primary btn-sm" id="rNew">+ Resource</button></div>
+    <div id="resources"></div>
+
+    <div class="page-head" style="margin-top:1.6rem"><div><h3>Educators <span class="badge badge-demo">DEMO</span></h3></div><button class="btn btn-primary btn-sm" id="eNew">+ Educator</button></div>
+    <div id="educators"></div>
+
     <div class="page-head" style="margin-top:1.6rem"><div><h3>FAQs</h3></div><button class="btn btn-primary btn-sm" id="fNew">+ FAQ</button></div>
     <div id="faqs"></div>
 
     <div class="card" style="margin-top:1.6rem">
+      <h3>Policy notes <span class="badge badge-demo">DEMO</span></h3>
+      <p class="meta">Working text for the four policy documents. Publish only owner-approved versions.</p>
+      <div class="field" style="margin-top:.8rem"><label for="pnTerms">Membership terms note</label><textarea id="pnTerms" style="min-height:60px"></textarea></div>
+      <div class="field"><label for="pnPrivacy">Privacy note</label><textarea id="pnPrivacy" style="min-height:60px"></textarea></div>
+      <div class="field"><label for="pnRules">Community rules note</label><textarea id="pnRules" style="min-height:60px"></textarea></div>
+      <div class="field"><label for="pnRisk">Risk notice note</label><textarea id="pnRisk" style="min-height:60px"></textarea></div>
+      <button class="btn btn-primary" id="pnSave">Save policy notes</button>
+    </div>
+
+    <div class="card" style="margin-top:1.6rem">
       <h3>Policy versions</h3>
-      <p class="meta">Bump the version whenever the owner approves new text. Current versions:</p>
+      <p class="meta">Bump the version whenever the owner approves new text.</p>
       <div class="grid g2" style="margin-top:.8rem">
         <div class="field"><label>Membership terms</label><input type="text" id="pvTerms"></div>
         <div class="field"><label>Privacy notice</label><input type="text" id="pvPrivacy"></div>
@@ -43,23 +63,43 @@
   </div>
 </div>
 
-<div class="modal-back" id="fModal"><div class="modal">
-  <h3 id="fTitle">Add FAQ</h3>
-  <div class="field"><label for="fQ">Question</label><input type="text" id="fQ"></div>
-  <div class="field"><label for="fA">Answer</label><textarea id="fA"></textarea></div>
-  <div style="display:flex;gap:.6rem;justify-content:flex-end">
-    <button class="btn btn-ghost" id="fNo">Back</button>
-    <button class="btn btn-primary" id="fYes">Save</button>
+<div class="modal-back" id="gModal"><div class="modal">
+  <h3 id="gTitle">Item</h3>
+  <div class="form-error" id="gErr" role="alert"></div>
+  <div id="gFields"></div>
+  <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.8rem">
+    <button class="btn btn-ghost" id="gNo">Back</button>
+    <button class="btn btn-primary" id="gYes">Save</button>
   </div>
 </div></div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/admin.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/admin.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
-  var editingFaq = null;
   function msg(h, c) { document.getElementById("msg").innerHTML = '<div class="' + c + '">' + h + '</div>'; window.scrollTo(0, 0); }
+  function row(title, sub, sample, idAttr, idVal) {
+    return '<div class="list-row"><div class="grow"><h3>' + title + (sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
+      '<p class="meta">' + sub + '</p></div>' +
+      '<button class="btn btn-ghost btn-sm" ' + idAttr + '="' + idVal + '">Edit</button> ' +
+      '<button class="btn btn-danger btn-sm" ' + idAttr + 'del="' + idVal + '">Remove</button></div>';
+  }
+  function renderAll() {
+    document.getElementById("lessons").innerHTML = PFX.db.lessons.map(function (l) {
+      return row("Week " + l.week + " — " + PFX.esc(l.title), PFX.esc(l.outcomes || ""), l.sample, "data-lesson", l.id);
+    }).join("");
+    document.getElementById("resources").innerHTML = PFX.db.resources.map(function (r) {
+      return row(PFX.esc(r.title), PFX.esc(r.kind) + " · access: " + PFX.esc(r.access) + " · " + PFX.esc(r.summary || "").slice(0, 90), r.sample, "data-res", r.id);
+    }).join("");
+    document.getElementById("educators").innerHTML = PFX.db.educators.map(function (e) {
+      return row(PFX.esc(e.name), PFX.esc(e.credentials || "") + " · langs: " + PFX.esc((e.langs || []).join(", ")) + " · " + PFX.esc(e.bio || "").slice(0, 90), e.sample, "data-edu", e.id);
+    }).join("");
+    document.getElementById("faqs").innerHTML = PFX.db.faqs.map(function (f, i) {
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(f.q) + '</h3><p class="meta">' + PFX.esc(f.a.slice(0, 120)) + '…</p></div>' +
+        '<button class="btn btn-ghost btn-sm" data-faq="' + i + '">Edit</button> <button class="btn btn-danger btn-sm" data-faqdel="' + i + '">Remove</button></div>';
+    }).join("");
+  }
   function load() {
     var h = PFX.db.settings.home;
     document.getElementById("hH1").value = h.heroH1;
@@ -70,11 +110,107 @@
     document.getElementById("pvPrivacy").value = pv.privacy;
     document.getElementById("pvRules").value = pv.communityRules;
     document.getElementById("pvRisk").value = pv.riskNotice;
-    document.getElementById("faqs").innerHTML = PFX.db.faqs.map(function (f, i) {
-      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(f.q) + '</h3><p class="meta">' + PFX.esc(f.a.slice(0, 120)) + '…</p></div>' +
-        '<button class="btn btn-ghost btn-sm" data-faq="' + i + '">Edit</button> <button class="btn btn-danger btn-sm" data-faqdel="' + i + '">Remove</button></div>';
-    }).join("");
+    var pn = PFX.db.settings.policyNotes;
+    document.getElementById("pnTerms").value = pn.membership || "";
+    document.getElementById("pnPrivacy").value = pn.privacy || "";
+    document.getElementById("pnRules").value = pn.communityRules || "";
+    document.getElementById("pnRisk").value = pn.riskNotice || "";
+    renderAll();
   }
+  /* generic modal editor */
+  var gKind = null, gId = null;
+  function field(id, label, val, type) {
+    return '<div class="field"><label for="' + id + '">' + label + '</label>' +
+      (type === "ta" ? '<textarea id="' + id + '" style="min-height:80px">' + PFX.esc(val || "") + '</textarea>' :
+        '<input type="' + (type || "text") + '" id="' + id + '" value="' + PFX.esc(val || "") + '">') + "</div>";
+  }
+  function openEditor(kind, id) {
+    gKind = kind; gId = id || null;
+    var F = document.getElementById("gFields"), T = document.getElementById("gTitle");
+    document.getElementById("gErr").style.display = "none";
+    if (kind === "lesson") {
+      var l = id ? PFX.db.lessons.find(function (x) { return x.id === id; }) : {};
+      T.textContent = id ? "Edit lesson" : "Add lesson";
+      F.innerHTML = field("gfWeek", "Week number *", l.week || "", "number") + field("gfTitle", "Title *", l.title || "") +
+        field("gfOut", "Learning outcomes", l.outcomes || "", "ta") + field("gfUrl", "Recording URL (empty = not available yet)", l.recordingUrl || "");
+    } else if (kind === "resource") {
+      var r = id ? PFX.db.resources.find(function (x) { return x.id === id; }) : {};
+      T.textContent = id ? "Edit resource" : "Add resource";
+      F.innerHTML = field("gfTitle", "Title *", r.title || "") + field("gfKind", "Kind (PDF, Worksheet, Template…)", r.kind || "") +
+        field("gfSummary", "Summary *", r.summary || "", "ta") + field("gfAccess", "Access (members / public)", r.access || "members");
+    } else if (kind === "educator") {
+      var e = id ? PFX.db.educators.find(function (x) { return x.id === id; }) : {};
+      T.textContent = id ? "Edit educator" : "Add educator";
+      F.innerHTML = field("gfName", "Name *", e.name || "") + field("gfCred", "Credentials", e.credentials || "") +
+        field("gfLangs", "Languages (comma-separated)", (e.langs || []).join(", ")) + field("gfBio", "Bio *", e.bio || "", "ta");
+    } else if (kind === "faq") {
+      var i = (id === null || id === undefined) ? -1 : id;
+      var f = i >= 0 ? PFX.db.faqs[i] : {};
+      T.textContent = i >= 0 ? "Edit FAQ" : "Add FAQ";
+      F.innerHTML = field("gfTitle", "Question *", f.q || "") + field("gfSummary", "Answer *", f.a || "", "ta");
+    }
+    document.getElementById("gModal").classList.add("open");
+  }
+  document.getElementById("gNo").addEventListener("click", function () { document.getElementById("gModal").classList.remove("open"); });
+  document.getElementById("gYes").addEventListener("click", function () {
+    var err = document.getElementById("gErr"); err.style.display = "none";
+    function need(v, m) { if (!v) { err.textContent = m; err.style.display = "block"; return false; } return true; }
+    function val(id) { var n = document.getElementById(id); return n ? n.value.trim() : ""; }
+    if (gKind === "lesson") {
+      var wk = parseInt(val("gfWeek"), 10), ti = val("gfTitle");
+      if (!need(wk > 0, "Week number must be at least 1.")) return;
+      if (!need(ti.length > 3, "Give the lesson a title.")) return;
+      var obj = { week: wk, title: ti, outcomes: val("gfOut"), recordingUrl: val("gfUrl") };
+      if (gId) { var L = PFX.db.lessons.find(function (x) { return x.id === gId; }); L.week = obj.week; L.title = obj.title; L.outcomes = obj.outcomes; L.recordingUrl = obj.recordingUrl; PFX.audit("content.lesson_update", obj.title, "admin"); }
+      else { obj.id = PFX.uid("les"); obj.sample = false; PFX.db.lessons.push(obj); PFX.audit("content.lesson_add", obj.title, "admin"); }
+    } else if (gKind === "resource") {
+      var rt = val("gfTitle"), rs = val("gfSummary");
+      if (!need(rt.length > 3, "Give the resource a title.")) return;
+      if (!need(rs.length > 3, "Add a short summary.")) return;
+      var ro = { title: rt, kind: val("gfKind") || "PDF", summary: rs, access: val("gfAccess") || "members", file: "" };
+      if (gId) { var R = PFX.db.resources.find(function (x) { return x.id === gId; }); R.title = ro.title; R.kind = ro.kind; R.summary = ro.summary; R.access = ro.access; PFX.audit("content.resource_update", ro.title, "admin"); }
+      else { ro.id = PFX.uid("res"); ro.sample = false; PFX.db.resources.push(ro); PFX.audit("content.resource_add", ro.title, "admin"); }
+    } else if (gKind === "educator") {
+      var nm = val("gfName"), bi = val("gfBio");
+      if (!need(nm.length > 2, "Name is required.")) return;
+      if (!need(bi.length > 3, "Add a short bio.")) return;
+      var eo = { name: nm, credentials: val("gfCred") || "TBC", langs: val("gfLangs").split(",").map(function (s) { return s.trim(); }).filter(Boolean), bio: bi, photo: "" };
+      if (gId) { var E = PFX.db.educators.find(function (x) { return x.id === gId; }); E.name = eo.name; E.credentials = eo.credentials; E.langs = eo.langs; E.bio = eo.bio; PFX.audit("content.educator_update", eo.name, "admin"); }
+      else { eo.id = PFX.uid("edu"); eo.sample = false; PFX.db.educators.push(eo); PFX.audit("content.educator_add", eo.name, "admin"); }
+    } else if (gKind === "faq") {
+      var q = val("gfTitle"), a = val("gfSummary");
+      if (!need(q && a, "Question and answer are both required.")) return;
+      if (gId === null || gId === -1) PFX.db.faqs.push({ q: q, a: a });
+      else PFX.db.faqs[gId] = { q: q, a: a };
+      PFX.audit("content.faq_update", q, "admin");
+    }
+    PFX.save();
+    document.getElementById("gModal").classList.remove("open");
+    msg("Saved.", "success"); renderAll();
+  });
+  document.addEventListener("click", function (ev) {
+    var t = ev.target;
+    function data(name) { return t.closest("[" + name + "]"); }
+    var n;
+    if (t.id === "lNew") return openEditor("lesson", null);
+    if (t.id === "rNew") return openEditor("resource", null);
+    if (t.id === "eNew") return openEditor("educator", null);
+    if (t.id === "fNew") return openEditor("faq", null);
+    if ((n = data("data-lesson"))) return openEditor("lesson", n.getAttribute("data-lesson"));
+    if ((n = data("data-res"))) return openEditor("resource", n.getAttribute("data-res"));
+    if ((n = data("data-edu"))) return openEditor("educator", n.getAttribute("data-edu"));
+    if ((n = data("data-lessondel"))) { if (confirm("Remove this lesson?")) { PFX.db.lessons = PFX.db.lessons.filter(function (x) { return x.id !== n.getAttribute("data-lessondel"); }); PFX.save(); PFX.audit("content.lesson_remove", n.getAttribute("data-lessondel"), "admin"); msg("Lesson removed.", "success"); renderAll(); } return; }
+    if ((n = data("data-resdel"))) { if (confirm("Remove this resource?")) { PFX.db.resources = PFX.db.resources.filter(function (x) { return x.id !== n.getAttribute("data-resdel"); }); PFX.save(); PFX.audit("content.resource_remove", n.getAttribute("data-resdel"), "admin"); msg("Resource removed.", "success"); renderAll(); } return; }
+    if ((n = data("data-edudel"))) { if (confirm("Remove this educator?")) { PFX.db.educators = PFX.db.educators.filter(function (x) { return x.id !== n.getAttribute("data-edudel"); }); PFX.save(); PFX.audit("content.educator_remove", n.getAttribute("data-edudel"), "admin"); msg("Educator removed.", "success"); renderAll(); } return; }
+    var fe = data("data-faq");
+    if (fe) return openEditor("faq", parseInt(fe.getAttribute("data-faq"), 10));
+    var fd = data("data-faqdel");
+    if (fd && confirm("Remove this FAQ?")) {
+      PFX.db.faqs.splice(parseInt(fd.getAttribute("data-faqdel"), 10), 1);
+      PFX.save(); PFX.audit("content.faq_remove", fd.getAttribute("data-faqdel"), "admin");
+      msg("FAQ removed.", "success"); renderAll();
+    }
+  });
   document.getElementById("hSave").addEventListener("click", function () {
     var h = PFX.db.settings.home;
     h.heroH1 = document.getElementById("hH1").value.trim() || h.heroH1;
@@ -82,6 +218,15 @@
     h.benefitsTitle = document.getElementById("hBen").value.trim() || h.benefitsTitle;
     PFX.save(); PFX.audit("content.home_update", "homepage copy edited", "admin");
     msg("Homepage copy saved.", "success");
+  });
+  document.getElementById("pnSave").addEventListener("click", function () {
+    var pn = PFX.db.settings.policyNotes;
+    pn.membership = document.getElementById("pnTerms").value.trim();
+    pn.privacy = document.getElementById("pnPrivacy").value.trim();
+    pn.communityRules = document.getElementById("pnRules").value.trim();
+    pn.riskNotice = document.getElementById("pnRisk").value.trim();
+    PFX.save(); PFX.audit("content.policy_notes", "policy notes edited", "admin");
+    msg("Policy notes saved.", "success");
   });
   document.getElementById("pvSave").addEventListener("click", function () {
     var pv = PFX.db.settings.policyVersions;
@@ -91,37 +236,6 @@
     pv.riskNotice = document.getElementById("pvRisk").value.trim();
     PFX.save(); PFX.audit("content.policy_versions", JSON.stringify(pv), "admin");
     msg("Policy versions saved.", "success");
-  });
-  document.getElementById("fNew").addEventListener("click", function () {
-    editingFaq = null; document.getElementById("fTitle").textContent = "Add FAQ";
-    document.getElementById("fQ").value = ""; document.getElementById("fA").value = "";
-    document.getElementById("fModal").classList.add("open");
-  });
-  document.getElementById("fNo").addEventListener("click", function () { document.getElementById("fModal").classList.remove("open"); });
-  document.getElementById("fYes").addEventListener("click", function () {
-    var q = document.getElementById("fQ").value.trim(), a = document.getElementById("fA").value.trim();
-    if (!q || !a) return;
-    if (editingFaq === null) PFX.db.faqs.push({ q: q, a: a });
-    else PFX.db.faqs[editingFaq] = { q: q, a: a };
-    PFX.save(); PFX.audit("content.faq_update", q, "admin");
-    document.getElementById("fModal").classList.remove("open");
-    msg("FAQ saved.", "success"); load();
-  });
-  document.addEventListener("click", function (ev) {
-    var e = ev.target.closest("[data-faq]");
-    if (e) {
-      editingFaq = parseInt(e.dataset.faq, 10);
-      document.getElementById("fTitle").textContent = "Edit FAQ";
-      document.getElementById("fQ").value = PFX.db.faqs[editingFaq].q;
-      document.getElementById("fA").value = PFX.db.faqs[editingFaq].a;
-      document.getElementById("fModal").classList.add("open"); return;
-    }
-    var d = ev.target.closest("[data-faqdel]");
-    if (d && confirm("Remove this FAQ?")) {
-      PFX.db.faqs.splice(parseInt(d.dataset.faqdel, 10), 1);
-      PFX.save(); PFX.audit("content.faq_remove", d.dataset.faqdel, "admin");
-      msg("FAQ removed.", "success"); load();
-    }
   });
   load();
 })();

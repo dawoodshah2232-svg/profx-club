@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Learning — ProFX Club</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="learning">
 <header class="nav"><div class="container nav-inner">
@@ -19,56 +19,126 @@
     <div class="page-head"><div><h1>My Learning</h1><p class="lead">Your beginner path, recordings and resources.</p></div></div>
     <div id="msg"></div>
 
-    <h3 style="margin:.6rem 0 .7rem">Beginner path</h3>
+    <div class="card" style="margin-bottom:1.2rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+        <h3>Beginner path</h3>
+        <span class="badge badge-info" id="progLabel">0 of 4 complete</span>
+      </div>
+      <div class="pbar" aria-hidden="true"><span id="progFill"></span></div>
+      <p class="meta" id="progHint" style="margin-top:.5rem"></p>
+    </div>
     <div id="path" class="grid g2"></div>
 
-    <h3 style="margin:1.6rem 0 .7rem">Resource library</h3>
+    <h3 style="margin:1.8rem 0 .7rem">My badges</h3>
+    <div class="card">
+      <div id="badges"></div>
+      <p class="meta" style="margin-top:.7rem;font-style:italic">Attendance recognition — not accreditation.</p>
+    </div>
+
+    <h3 style="margin:1.8rem 0 .7rem">Resource library <span class="badge badge-demo">SAMPLE</span></h3>
+    <div class="toolbar">
+      <input type="search" id="resSearch" placeholder="Search resources…">
+      <select id="resKind" aria-label="Filter by kind">
+        <option value="">All kinds</option>
+      </select>
+    </div>
     <div id="res" class="grid g3"></div>
+    <p class="meta" style="margin-top:.6rem">Downloads are small sample text files for demo purposes — the real library ships with production content.</p>
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/app.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/app.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
   var me = window.PFX_ME;
-  me.progress = me.progress || {};
-  function render() {
-    document.getElementById("path").innerHTML = PFX.db.lessons.map(function (l) {
-      var done = !!me.progress[l.id];
+
+  function doneIds() {
+    var d = {};
+    PFX.db.progress.forEach(function (p) { if (p.memberId === me.id) d[p.lessonId] = true; });
+    return d;
+  }
+
+  function renderPath() {
+    var d = doneIds();
+    var prog = PFX.lessonProgress(me.id);
+    var pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
+    document.getElementById("progLabel").textContent = prog.done + " of " + prog.total + " complete";
+    document.getElementById("progFill").style.width = pct + "%";
+    document.getElementById("progHint").textContent = prog.done === prog.total
+      ? "Beginner path complete — well done."
+      : "Keep going: complete the remaining lessons to unlock the Path Complete badge.";
+    document.getElementById("path").innerHTML = PFX.db.lessons.slice().sort(function (a, b) { return a.week - b.week; }).map(function (l) {
+      var done = !!d[l.id];
       return '<div class="card"><h3>Week ' + l.week + ' ' + (done ? '<span class="badge badge-ok">Completed</span>' : "") + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
         '<p style="font-weight:700">' + PFX.esc(l.title) + '</p><p class="meta">Outcome: ' + PFX.esc(l.outcomes) + '</p>' +
         (l.recordingUrl ? '<p class="meta"><a href="' + PFX.esc(l.recordingUrl) + '">Watch recording</a></p>' : '<p class="meta">Recording: not published yet</p>') +
-        '<button class="btn ' + (done ? "btn-ghost" : "btn-primary") + ' btn-sm" data-done="' + l.id + '" style="margin-top:.6rem">' + (done ? "Mark as not done" : "Mark complete") + '</button></div>';
-    }).join("");
-    document.getElementById("res").innerHTML = PFX.db.resources.map(function (r) {
-      return '<div class="card"><div class="icon-chip"><svg class="" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div><h3>' + PFX.esc(r.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
-        '<p class="meta">' + PFX.esc(r.summary) + '</p><p class="meta">' + PFX.esc(r.kind) + '</p>' +
-        '<button class="btn btn-ghost btn-sm" data-access="' + r.id + '">Open</button></div>';
+        '<button class="btn ' + (done ? "btn-ghost" : "btn-primary") + ' btn-sm" data-done="' + l.id + '" style="margin-top:.6rem">' + (done ? "Undo — mark as not done" : "Mark complete") + '</button></div>';
     }).join("");
   }
+
+  function renderBadges() {
+    var badges = PFX.myBadges(me.id);
+    document.getElementById("badges").innerHTML = badges.length ? badges.map(function (b) {
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(b.label) + ' <span class="badge badge-ok">Earned</span></h3>' +
+        '<p class="meta">' + PFX.esc(b.detail) + '</p></div>' +
+        '<svg class="ni" viewBox="0 0 24 24" aria-hidden="true" style="width:26px;height:26px;color:#d4a017"><circle cx="12" cy="8" r="6"/><path d="M15.5 13l1.5 8-5-3-5 3 1.5-8"/></svg></div>';
+    }).join("") : '<div class="empty">No badges yet — complete a lesson or attend a session to earn one.</div>';
+  }
+
+  /* ---- resource library: search + kind filter + demo downloads ---- */
+  var kinds = [];
+  PFX.db.resources.forEach(function (r) { if (kinds.indexOf(r.kind) < 0) kinds.push(r.kind); });
+  document.getElementById("resKind").innerHTML = '<option value="">All kinds</option>' +
+    kinds.map(function (k) { return '<option value="' + PFX.esc(k) + '">' + PFX.esc(k) + '</option>'; }).join("");
+
+  function demoFile(r) {
+    var txt = "ProFX Club — SAMPLE resource (DEMO)\r\n" +
+      "==========================================\r\n" +
+      "Title: " + r.title + "\r\nKind: " + r.kind + "\r\n" +
+      "Summary: " + r.summary + "\r\n\r\n" +
+      "This is a demo placeholder file generated by the ProFX Club prototype.\r\n" +
+      "The real " + r.kind + " will be available in production.\r\n";
+    return "data:text/plain;charset=utf-8," + encodeURIComponent(txt);
+  }
+
+  function renderRes() {
+    var q = document.getElementById("resSearch").value.trim().toLowerCase();
+    var k = document.getElementById("resKind").value;
+    var list = PFX.db.resources.filter(function (r) {
+      var okK = !k || r.kind === k;
+      var okQ = !q || (r.title + " " + r.summary).toLowerCase().indexOf(q) > -1;
+      return okK && okQ;
+    });
+    document.getElementById("res").innerHTML = list.length ? list.map(function (r) {
+      return '<div class="card"><div class="icon-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>' +
+        '<h3>' + PFX.esc(r.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+        '<p class="meta">' + PFX.esc(r.summary) + '</p><p class="meta"><span class="badge badge-info">' + PFX.esc(r.kind) + '</span></p>' +
+        '<a class="btn btn-ghost btn-sm" href="' + demoFile(r) + '" download="' + PFX.esc(r.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()) + '-sample.txt" style="margin-top:.6rem">Download sample</a></div>';
+    }).join("") : '<div class="empty">No resources match your search.</div>';
+  }
+  document.getElementById("resSearch").addEventListener("input", renderRes);
+  document.getElementById("resKind").addEventListener("change", renderRes);
+
   document.addEventListener("click", function (ev) {
     var d = ev.target.closest("[data-done]");
     if (d) {
       var id = d.dataset.done;
-      me.progress[id] = !me.progress[id];
-      /* recommended lesson pointer */
-      var doneWeeks = PFX.db.lessons.filter(function (l) { return me.progress[l.id]; }).map(function (l) { return l.week; });
-      me.progress.week = Math.min(4, (doneWeeks.length ? Math.max.apply(null, doneWeeks) : 0) + 1);
-      PFX.save(); render();
+      if (doneIds()[id]) PFX.lessonUndone(me.id, id);
+      else PFX.lessonDone(me.id, id);
+      PFX.save(); renderPath(); renderBadges();
       document.getElementById("msg").innerHTML = '<div class="success">Progress saved.</div>';
       return;
     }
-    var a = ev.target.closest("[data-access]");
-    if (a) {
-      me.progress["res_" + a.dataset.access] = true; PFX.save();
-      PFX.audit("resource.access", a.dataset.access, me.id);
-      document.getElementById("msg").innerHTML = '<div class="notice">DEMO — in production this opens the file. Access logged.</div>';
-    }
   });
-  render();
+
+  renderPath(); renderBadges(); renderRes();
 })();
 </script>
+<style>
+.pbar{height:.6rem;background:#eef1f6;border-radius:999px;overflow:hidden;margin-top:.8rem}
+.pbar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--navy),var(--emerald));border-radius:999px;transition:width .3s ease}
+</style>
 </body>
 </html>

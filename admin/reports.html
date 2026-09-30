@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reports — ProFX Club CRM</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="reports">
 <header class="nav"><div class="container nav-inner">
@@ -26,14 +26,39 @@
         <dt>Registration conversion</dt><dd>Completed new registrations ÷ unique signup-page visitors (same period). Visitor tracking is a production integration.</dd>
         <dt>Verification rate</dt><dd>Email-verified members ÷ completed registrations.</dd>
         <dt>Activation</dt><dd>Verified members who book a class or access a resource within 7 days.</dd>
-        <dt>Attendance</dt><dd>Attendees ÷ confirmed bookings.</dd>
+        <dt>Attendance rate</dt><dd>Present ÷ (present + no-show). Attendance recorded by staff only; bookings without a recorded outcome are excluded from the denominator.</dd>
         <dt>Retention</dt><dd>Activated members returning for a meaningful activity within 30 days.</dd>
         <dt>Acquisition cost</dt><dd>Attributable campaign spend ÷ new verified members from that campaign.</dd>
+        <dt>Referral uses</dt><dd>Members whose <i>referredBy</i> field matches a member's referral code.</dd>
       </dl>
     </div>
 
     <div class="card" style="margin-top:1.2rem">
-      <h3>Registrations by source</h3>
+      <div class="page-head"><div><h3>Event attendance <span class="badge badge-demo">DEMO</span></h3><p class="meta">Attendance rate = present ÷ (present + no-show).</p></div>
+      <button class="btn btn-ghost btn-sm" data-csv="events">Download CSV</button></div>
+      <div class="tbl-wrap"><table class="tbl" id="tblEvents"><thead><tr><th>Event</th><th>Capacity</th><th>Confirmed</th><th>Waitlisted</th><th>Present</th><th>No-show</th><th>Attendance rate</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
+      <div class="page-head"><div><h3>Assistance by status &amp; category <span class="badge badge-demo">DEMO</span></h3></div>
+      <button class="btn btn-ghost btn-sm" data-csv="assistance">Download CSV</button></div>
+      <div class="tbl-wrap"><table class="tbl" id="tblAssistance"><thead><tr><th>Status</th><th>Cases</th><th>Categories</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
+      <div class="page-head"><div><h3>Members by status <span class="badge badge-demo">DEMO</span></h3></div>
+      <button class="btn btn-ghost btn-sm" data-csv="members">Download CSV</button></div>
+      <div class="tbl-wrap"><table class="tbl" id="tblMembers"><thead><tr><th>Status</th><th>Count</th><th>Verified</th><th>Promo email opt-in</th><th>Promo WhatsApp opt-in</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
+      <div class="page-head"><div><h3>Referrals <span class="badge badge-demo">DEMO</span></h3><p class="meta">Uses = members with referredBy matching the code.</p></div>
+      <button class="btn btn-ghost btn-sm" data-csv="referrals">Download CSV</button></div>
+      <div class="tbl-wrap"><table class="tbl" id="tblReferrals"><thead><tr><th>Member</th><th>Referral code</th><th>Uses</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
+      <h3>Registrations by source <span class="badge badge-demo">DEMO</span></h3>
       <div id="sources"></div>
     </div>
 
@@ -44,8 +69,8 @@
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/admin.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/admin.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
@@ -75,8 +100,68 @@
   var retRate = activated ? Math.round(retained / activated * 100) : 0;
   document.getElementById("stats").innerHTML =
     stat(completed, "Completed registrations") + stat(verRate + "%", "Verification rate") +
-    stat(actRate + "%", "Activation (7d)") + stat(attRate + "%", "Attendance") ;
+    stat(actRate + "%", "Activation (7d)") + stat(attRate + "%", "Attendance") + stat(retRate + "%", "Retention (30d)");
   function stat(v, l) { return '<div class="stat"><b>' + v + '</b><span>' + l + '</span></div>'; }
+
+  /* --- tables (arrays of rows for reuse by CSV) --- */
+  function rows(sel) {
+    return Array.prototype.map.call(document.querySelector(sel + " tbody").rows, function (tr) {
+      return Array.prototype.map.call(tr.cells, function (td) { return td.textContent.trim(); });
+    });
+  }
+  var counts = function (id, f) { return PFX.db.registrations.filter(function (r) { return r.eventId === id && f(r); }).length; };
+  var evRows = PFX.db.events.slice().sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); }).map(function (e) {
+    var c = counts(e.id, function (r) { return r.status === "confirmed"; }),
+        w = counts(e.id, function (r) { return r.status === "waitlisted"; }),
+        p = counts(e.id, function (r) { return r.attendance === "present"; }),
+        n = counts(e.id, function (r) { return r.attendance === "no-show"; });
+    var rate = (p + n) ? Math.round(p / (p + n) * 100) + "%" : "—";
+    return [e.title + (e.sample ? " (SAMPLE)" : ""), String(e.capacity), String(c), String(w), String(p), String(n), rate];
+  });
+  var asrBySt = {};
+  PFX.db.assistance.forEach(function (a) {
+    (asrBySt[a.status] = asrBySt[a.status] || { n: 0, cats: {} }).n++;
+    asrBySt[a.status].cats[a.category] = true;
+  });
+  var asrRows = Object.keys(asrBySt).map(function (s) {
+    return [s, String(asrBySt[s].n), Object.keys(asrBySt[s].cats).join(", ")];
+  });
+  var stOrder = ["active", "pending", "suspended", "closed"];
+  var memRows = stOrder.map(function (s) {
+    var ms = members.filter(function (m) { return m.status === s; });
+    return [s, String(ms.length), String(ms.filter(function (m) { return m.verified; }).length),
+      String(ms.filter(function (m) { return m.consent.promoEmail; }).length),
+      String(ms.filter(function (m) { return m.consent.promoWhatsapp; }).length)];
+  });
+  var refRows = members.filter(function (m) { return m.referralCode; }).map(function (m) {
+    return [m.name + " (" + m.email + ")", m.referralCode, String(PFX.referralUses(m.referralCode))];
+  });
+  function fill(id, data) {
+    document.querySelector("#" + id + " tbody").innerHTML = data.length
+      ? data.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + PFX.esc(c) + "</td>"; }).join("") + "</tr>"; }).join("")
+      : '<tr><td colspan="9" class="meta">No data.</td></tr>';
+  }
+  fill("tblEvents", evRows); fill("tblAssistance", asrRows); fill("tblMembers", memRows); fill("tblReferrals", refRows);
+
+  /* --- CSV export via Blob --- */
+  var TABLE_DATA = {
+    events: { name: "profx_events.csv", head: ["Event", "Capacity", "Confirmed", "Waitlisted", "Present", "No-show", "Attendance rate"], data: evRows },
+    assistance: { name: "profx_assistance.csv", head: ["Status", "Cases", "Categories"], data: asrRows },
+    members: { name: "profx_members.csv", head: ["Status", "Count", "Verified", "Promo email opt-in", "Promo WhatsApp opt-in"], data: memRows },
+    referrals: { name: "profx_referrals.csv", head: ["Member", "Referral code", "Uses"], data: refRows }
+  };
+  function csvCell(v) { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-csv]"); if (!b) return;
+    var t = TABLE_DATA[b.dataset.csv]; if (!t) return;
+    var csv = [t.head].concat(t.data).map(function (r) { return r.map(csvCell).join(","); }).join("\r\n");
+    var url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    var a = document.createElement("a"); a.href = url; a.download = t.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    PFX.audit("report.csv_export", t.name + " (" + t.data.length + " rows)", "admin");
+  });
+
   var bySrc = {};
   members.forEach(function (m) { var s = m.source || "direct"; bySrc[s] = (bySrc[s] || 0) + 1; });
   document.getElementById("sources").innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Source</th><th>Registrations</th><th>Verified</th></tr></thead><tbody>' +

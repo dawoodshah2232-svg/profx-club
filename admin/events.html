@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Events — ProFX Club CRM</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="events">
 <header class="nav"><div class="container nav-inner">
@@ -49,8 +49,8 @@
   </div>
 </div></div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/admin.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/admin.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
@@ -60,59 +60,97 @@
     var evs = PFX.db.events.slice().sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
     document.getElementById("list").innerHTML = evs.map(function (e) {
       var conf = PFX.regsForEvent(e.id, "confirmed").length, wl = PFX.regsForEvent(e.id, "waitlisted").length;
-      var full = PFX.eventSeatsLeft(e.id) === 0;
+      var left = PFX.eventSeatsLeft(e.id);
       return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + (e.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
         '<p class="meta">' + PFX.fmtDate(e.startsAt) + ' · ' + PFX.esc(e.timezone) + ' · ' + PFX.esc(e.language) + '</p>' +
         '<span class="badge ' + (e.status === "published" ? "badge-ok" : e.status === "draft" ? "badge-neutral" : "badge-warn") + '">' + e.status + '</span> ' +
-        (full ? '<span class="badge badge-full">Full</span> ' : "") +
-        '<span class="meta"> ' + conf + '/' + e.capacity + ' booked · ' + wl + ' waitlisted</span></div>' +
+        (left === 0 ? '<span class="badge badge-full">Full</span> ' : "") +
+        '<span class="meta"> ' + conf + '/' + e.capacity + ' booked · ' + left + ' seats left · ' + wl + ' waitlisted</span></div>' +
         '<button class="btn btn-ghost btn-sm" data-open="' + e.id + '">Manage</button></div>';
     }).join("");
   }
-  function open(id) {
+  function attBadge(r) {
+    if (r.attendance === "present") return '<span class="badge badge-ok">present</span>';
+    if (r.attendance === "no-show") return '<span class="badge badge-warn">no-show</span>';
+    return '<span class="meta">—</span>';
+  }
+  function open(id, fromSearch) {
     var e = PFX.db.events.find(function (x) { return x.id === id; });
     if (!e) return;
     document.getElementById("list").style.display = "none";
     var d = document.getElementById("detail"); d.style.display = "block";
     var regs = PFX.db.registrations.filter(function (r) { return r.eventId === id; })
       .sort(function (a, b) { return a.createdAt.localeCompare(b.createdAt); });
+    var confN = regs.filter(function (r) { return r.status === "confirmed"; }).length,
+        wlN = regs.filter(function (r) { return r.status === "waitlisted"; }).length,
+        left = PFX.eventSeatsLeft(id);
     d.innerHTML = '<button class="btn btn-ghost btn-sm" id="dBack">← All events</button>' +
-      '<div class="card" style="margin-top:.8rem"><div class="page-head"><div><h3>' + PFX.esc(e.title) + '</h3>' +
+      '<div class="card' + (fromSearch ? " flash" : "") + '" style="margin-top:.8rem"><div id="dMsg"></div>' +
+      '<div class="page-head"><div><h3>' + PFX.esc(e.title) + (e.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + "</h3>" +
       '<p class="meta">' + PFX.fmtDate(e.startsAt) + ' · ' + PFX.esc(e.timezone) + ' · ' + PFX.esc(e.language) + ' · Host: ' + PFX.esc(e.host) + ' · ' + PFX.esc(e.cost) + '</p></div>' +
-      '<div style="display:flex;gap:.5rem"><button class="btn btn-ghost btn-sm" id="dEdit">Edit</button>' +
-      '<select id="dStatus" style="width:auto">' + ["draft", "published", "full", "cancelled", "completed"].map(function (s) {
+      '<div style="display:flex;gap:.5rem;align-items:center"><button class="btn btn-ghost btn-sm" id="dEdit">Edit</button>' +
+      '<select id="dStatus" style="width:auto" aria-label="Event status">' + ["draft", "published", "full", "cancelled", "completed"].map(function (s) {
         return '<option' + (e.status === s ? " selected" : "") + '>' + s + '</option>';
       }).join("") + '</select></div></div>' +
+      '<dl class="kv" style="margin:.8rem 0"><dt>Capacity</dt><dd><b>' + e.capacity + '</b> · <b>' + confN + '</b> confirmed · <b>' + left + '</b> seats left · <b>' + wlN + '</b> waitlisted</dd></dl>' +
+      '<div class="field" style="max-width:340px"><label for="dCap">Change capacity</label>' +
+      '<div style="display:flex;gap:.5rem"><input type="number" id="dCap" value="' + e.capacity + '" min="1"><button class="btn btn-primary btn-sm" id="dCapBtn">Save</button></div>' +
+      '<p class="meta">Cannot be set below the confirmed booking count. Waitlisted members are not auto-promoted.</p></div>' +
+      '<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0 1rem"><button class="btn btn-ghost btn-sm" id="dPromote">Promote first waitlisted</button></div>' +
       '<h4>Registrations (' + regs.length + ')</h4>' +
-      (regs.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Member</th><th>Status</th><th>Booked</th><th></th></tr></thead><tbody>' +
+      (regs.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Member</th><th>Booking</th><th>Attendance</th><th>Booked</th><th>Mark attendance</th></tr></thead><tbody>' +
         regs.map(function (r) {
           var m = PFX.memberById(r.memberId);
+          var canMark = r.status === "confirmed" || r.status === "waitlisted";
           return '<tr><td>' + PFX.esc(m ? m.name : r.memberId) + '<br><span class="meta">' + PFX.esc(m ? m.email : "") + '</span></td>' +
             '<td><span class="badge ' + (r.status === "confirmed" ? "badge-ok" : r.status === "waitlisted" ? "badge-warn" : "badge-neutral") + '">' + r.status + '</span></td>' +
+            '<td>' + attBadge(r) + '</td>' +
             '<td class="meta">' + PFX.fmtDate(r.createdAt) + '</td>' +
-            '<td>' + ((r.status === "confirmed" || r.status === "waitlisted") ? '<button class="btn btn-ghost btn-sm" data-attend="' + r.id + '" title="Mark attended">✓ Attended</button> <button class="btn btn-ghost btn-sm" data-noshow="' + r.id + '">No-show</button> <button class="btn btn-danger btn-sm" data-adcancel="' + r.id + '">Cancel</button>' : "") + '</td></tr>';
+            '<td>' + (canMark
+              ? '<button class="btn btn-ghost btn-sm" data-att="present" data-reg="' + r.id + '">Present</button> ' +
+                '<button class="btn btn-ghost btn-sm" data-att="no-show" data-reg="' + r.id + '">No-show</button> ' +
+                '<button class="btn btn-ghost btn-sm" data-att="clear" data-reg="' + r.id + '">Clear</button>'
+              : '<span class="meta">—</span>') +
+              ((r.status === "confirmed" || r.status === "waitlisted") ? ' <button class="btn btn-danger btn-sm" data-adcancel="' + r.id + '">Cancel</button>' : "") + '</td></tr>';
         }).join("") + '</tbody></table></div>' : '<p class="meta">No registrations yet.</p>') +
       '</div>';
-    document.getElementById("dBack").addEventListener("click", function () { d.style.display = "none"; document.getElementById("list").style.display = "block"; render(); });
+    function dmsg(h, c) { document.getElementById("dMsg").innerHTML = '<div class="' + c + '">' + h + "</div>"; }
+    document.getElementById("dBack").addEventListener("click", function () { d.style.display = "none"; document.getElementById("list").style.display = "block"; render(); if (history.replaceState) history.replaceState(null, "", "events.html"); });
     document.getElementById("dEdit").addEventListener("click", function () { openModal(e); });
     document.getElementById("dStatus").addEventListener("change", function (ev) {
       var from = e.status; e.status = ev.target.value; PFX.save();
       PFX.audit("event.status", e.title + " " + from + " → " + e.status, "admin");
       msg("Event status updated to " + e.status + ".", "success"); render();
     });
-    d.querySelectorAll("[data-attend],[data-noshow],[data-adcancel]").forEach(function (b) {
+    document.getElementById("dCapBtn").addEventListener("click", function () {
+      var res = PFX.setCapacity(e.id, document.getElementById("dCap").value);
+      if (!res.ok) { dmsg(res.error, "warn"); return; }
+      dmsg("Capacity updated to " + e.capacity + ".", "success"); render(); open(id);
+    });
+    document.getElementById("dPromote").addEventListener("click", function () {
+      var res = PFX.promoteWaitlist(e.id);
+      if (!res.ok) { dmsg(res.error || "Could not promote.", "warn"); return; }
+      dmsg("First waitlisted member promoted to confirmed.", "success"); render(); open(id);
+    });
+    d.querySelectorAll("[data-att]").forEach(function (b) {
       b.addEventListener("click", function () {
-        var r = PFX.db.registrations.find(function (x) { return x.id === (b.dataset.attend || b.dataset.noshow || b.dataset.adcancel); });
-        if (!r) return;
-        if (b.dataset.adcancel) { PFX.cancelBooking(r.id, "admin"); msg("Registration cancelled; place released.", "success"); }
-        else { r.status = b.dataset.attend ? "attended" : "no-show"; r.history.push({ at: PFX.now(), action: r.status, by: "admin" }); PFX.save(); PFX.audit("event.attendance", r.id + " → " + r.status, "admin"); msg("Marked " + r.status + ".", "success"); }
-        open(id);
+        var val = b.dataset.att === "clear" ? null : b.dataset.att;
+        var res = PFX.markAttendance(b.dataset.reg, val);
+        if (res.ok) { dmsg("Attendance marked: " + (val || "cleared") + ".", "success"); render(); open(id); }
+        else dmsg("Could not mark attendance.", "warn");
+      });
+    });
+    d.querySelectorAll("[data-adcancel]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        PFX.cancelBooking(b.dataset.adcancel, "admin");
+        msg("Registration cancelled; place released.", "success"); render(); open(id);
       });
     });
   }
   function openModal(e) {
     editing = e || null;
     document.getElementById("emTitle").textContent = e ? "Edit event" : "New event";
+    document.getElementById("emErr").style.display = "none";
     document.getElementById("emName").value = e ? e.title : "";
     document.getElementById("emStart").value = e ? e.startsAt.slice(0, 16) : "";
     document.getElementById("emCap").value = e ? e.capacity : 100;
@@ -166,6 +204,10 @@
     var o = ev.target.closest("[data-open]"); if (o) open(o.dataset.open);
   });
   render();
+  try {
+    var qid = new URLSearchParams(location.search).get("id");
+    if (qid && PFX.db.events.some(function (e) { return e.id === qid; })) open(qid, true);
+  } catch (e) { /* ignore */ }
 })();
 </script>
 </body>

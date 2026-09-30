@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Events — ProFX Club</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="events">
 <header class="nav"><div class="container nav-inner">
@@ -20,14 +20,29 @@
 
     <div id="msg"></div>
 
+    <div class="card" style="margin-bottom:1.2rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+        <h3 id="calTitle">Calendar</h3>
+        <div style="display:flex;gap:.5rem">
+          <button class="btn btn-ghost btn-sm" id="calPrev" aria-label="Previous month">‹ Prev</button>
+          <button class="btn btn-ghost btn-sm" id="calToday">Today</button>
+          <button class="btn btn-ghost btn-sm" id="calNext" aria-label="Next month">Next ›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="calGrid" style="margin-top:.8rem"></div>
+      <p class="meta" style="margin-top:.6rem"><span class="cal-dot"></span> Event day — tap a date to see its events. All dates shown are <span class="badge badge-demo">SAMPLE</span>.</p>
+      <div id="calDay"></div>
+    </div>
+
     <h3 style="margin:1rem 0 .7rem">Upcoming events</h3>
     <div id="upcoming"></div>
 
     <h3 style="margin:1.6rem 0 .7rem">My bookings</h3>
     <div id="mine"></div>
 
-    <h3 style="margin:1.6rem 0 .7rem">Past events</h3>
-    <div id="past"></div>
+    <h3 style="margin:1.6rem 0 .7rem">Bookings history</h3>
+    <p class="meta" style="margin-bottom:.7rem">Past events with your attendance record, plus any cancelled bookings.</p>
+    <div id="history"></div>
   </div>
 </div>
 
@@ -40,29 +55,45 @@
   </div>
 </div></div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/app.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/app.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
   var me = window.PFX_ME;
   var now = new Date();
   var pendingEv = null;
+  var CAL = { y: now.getFullYear(), m: now.getMonth(), sel: null };
 
   function msg(html, cls) { document.getElementById("msg").innerHTML = '<div class="' + cls + '">' + html + "</div>"; window.scrollTo(0, 0); }
+
+  function icsFor(e) {
+    var dt = function (iso) { return new Date(iso).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"; };
+    var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ProFX Club//Demo//EN", "BEGIN:VEVENT",
+      "UID:" + e.id + "@profxclub.demo",
+      "DTSTAMP:" + dt(new Date().toISOString()),
+      "DTSTART:" + dt(e.startsAt),
+      "SUMMARY:ProFX Club — " + e.title.replace(/[\r\n]/g, " "),
+      "DESCRIPTION:Free member event (" + e.kind + "). Host: " + e.host + ". DEMO data.",
+      "END:VEVENT", "END:VCALENDAR"];
+    return "data:text/calendar;charset=utf-8," + encodeURIComponent(lines.join("\r\n"));
+  }
+  function calBtn(e) {
+    return '<a class="btn btn-ghost btn-sm" href="' + icsFor(e) + '" download="profx-' + e.id + '.ics"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> Calendar file</a>';
+  }
 
   function evCard(e) {
     var left = PFX.eventSeatsLeft(e.id);
     var my = PFX.db.registrations.find(function (r) { return r.eventId === e.id && r.memberId === me.id && (r.status === "confirmed" || r.status === "waitlisted"); });
     var action;
-    if (my) action = '<span class="badge ' + (my.status === "confirmed" ? "badge-ok" : "badge-warn") + '">' + (my.status === "confirmed" ? "Booked" : "Waitlisted #" + (waitPos(e.id, my.id)) ) + '</span>';
+    if (my) action = '<span class="badge ' + (my.status === "confirmed" ? "badge-ok" : "badge-warn") + '">' + (my.status === "confirmed" ? "Booked" : "Waitlisted #" + waitPos(e.id, my.id)) + '</span>';
     else if (left > 0) action = '<button class="btn btn-primary btn-sm" data-book="' + e.id + '">Book free place</button>';
     else action = '<button class="btn btn-ghost btn-sm" data-book="' + e.id + '">Join waitlist</button>';
     return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
       '<p class="meta"><b>' + PFX.fmtDate(e.startsAt) + '</b> · ' + PFX.esc(e.timezone) + ' · ' + PFX.esc(e.language) + '</p>' +
       '<p class="meta">Host: ' + PFX.esc(e.host) + ' · ' + PFX.esc(e.kind) + ' · ' + PFX.esc(e.cost) + '</p>' +
       '<div style="margin-top:.5rem">' + (left > 0 ? '<span class="badge badge-ok">' + left + ' of ' + e.capacity + ' left</span>' : '<span class="badge badge-full">Full</span>') + '</div></div>' +
-      '<div>' + action + '</div></div>';
+      '<div style="display:flex;gap:.5rem;flex-wrap:wrap">' + calBtn(e) + action + '</div></div>';
   }
   function waitPos(eventId, memberId) {
     var wl = PFX.db.registrations.filter(function (r) { return r.eventId === eventId && r.status === "waitlisted"; })
@@ -71,37 +102,89 @@
     return 1;
   }
 
+  /* ---- month calendar ---- */
+  function eventsOn(y, m, d) {
+    return PFX.db.events.filter(function (e) {
+      var dt = new Date(e.startsAt);
+      return dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === d;
+    }).sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
+  }
+  function renderCal() {
+    var y = CAL.y, m = CAL.m;
+    document.getElementById("calTitle").textContent = new Date(y, m, 1).toLocaleString("en-GB", { month: "long", year: "numeric" });
+    var first = new Date(y, m, 1).getDay(); /* 0=Sun */
+    var days = new Date(y, m + 1, 0).getDate();
+    var today = new Date();
+    var html = ["S", "M", "T", "W", "T", "F", "S"].map(function (d) { return '<div class="cal-dow">' + d + "</div>"; }).join("");
+    for (var i = 0; i < first; i++) html += '<div class="cal-day cal-pad"></div>';
+    for (var d = 1; d <= days; d++) {
+      var evs = eventsOn(y, m, d);
+      var isToday = y === today.getFullYear() && m === today.getMonth() && d === today.getDate();
+      var sel = CAL.sel && CAL.sel.y === y && CAL.sel.m === m && CAL.sel.d === d;
+      html += '<button type="button" class="cal-day' + (isToday ? " today" : "") + (evs.length ? " has-ev" : "") + (sel ? " sel" : "") + '" data-calday="' + d + '"' +
+        (evs.length ? "" : ' disabled style="cursor:default"') + '>' + d + (evs.length ? '<span class="cal-dot"></span>' : "") + "</button>";
+    }
+    document.getElementById("calGrid").innerHTML = html;
+    if (CAL.sel && CAL.sel.y === y && CAL.sel.m === m) renderCalDay();
+    else document.getElementById("calDay").innerHTML = "";
+  }
+  function renderCalDay() {
+    var s = CAL.sel;
+    var evs = eventsOn(s.y, s.m, s.d);
+    document.getElementById("calDay").innerHTML = '<div style="margin-top:.9rem"><h3 style="margin-bottom:.6rem">' +
+      new Date(s.y, s.m, s.d).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) + "</h3>" +
+      (evs.length ? evs.map(evCard).join("") : '<div class="empty">No events this day.</div>') + "</div>";
+  }
+  document.getElementById("calPrev").addEventListener("click", function () { CAL.m--; if (CAL.m < 0) { CAL.m = 11; CAL.y--; } CAL.sel = null; renderCal(); });
+  document.getElementById("calNext").addEventListener("click", function () { CAL.m++; if (CAL.m > 11) { CAL.m = 0; CAL.y++; } CAL.sel = null; renderCal(); });
+  document.getElementById("calToday").addEventListener("click", function () { CAL.y = now.getFullYear(); CAL.m = now.getMonth(); CAL.sel = null; renderCal(); });
+
   function render() {
+    renderCal();
     var up = PFX.db.events.filter(function (e) { return e.status === "published" && new Date(e.startsAt) > now; })
       .sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
     document.getElementById("upcoming").innerHTML = up.length ? up.map(evCard).join("") : '<div class="empty">No upcoming events.</div>';
-    var mine = PFX.db.registrations.filter(function (r) { return r.memberId === me.id && r.status !== "cancelled"; })
+
+    /* my bookings: active only */
+    var mine = PFX.db.registrations.filter(function (r) { return r.memberId === me.id && (r.status === "confirmed" || r.status === "waitlisted"); })
       .sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
     document.getElementById("mine").innerHTML = mine.length ? mine.map(function (r) {
       var e = PFX.db.events.find(function (x) { return x.id === r.eventId; });
       if (!e) return "";
-      var ics = 'data:text/calendar;charset=utf-8,' + encodeURIComponent([
-        "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT",
-        "UID:" + r.id + "@profxclub",
-        "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z",
-        "DTSTART:" + new Date(e.startsAt).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z",
-        "SUMMARY:ProFX Club — " + e.title,
-        "DESCRIPTION:Free member event. Status: " + r.status,
-        "END:VEVENT", "END:VCALENDAR"].join("\r\n"));
       var cancelBtn = (r.status === "confirmed" || r.status === "waitlisted")
         ? ' <button class="btn btn-danger btn-sm" data-cancel="' + r.id + '">Cancel</button>' : "";
       return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + '</h3>' +
         '<p class="meta">' + PFX.fmtDate(e.startsAt) + ' · ' + PFX.esc(e.timezone) + '</p>' +
-        '<span class="badge ' + (r.status === "confirmed" ? "badge-ok" : r.status === "waitlisted" ? "badge-warn" : "badge-neutral") + '">' + r.status + '</span></div>' +
-        '<div style="display:flex;gap:.5rem;flex-wrap:wrap"><a class="btn btn-ghost btn-sm" href="' + ics + '" download="profx-event.ics"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Calendar</a>' + cancelBtn + '</div></div>';
+        '<span class="badge ' + (r.status === "confirmed" ? "badge-ok" : "badge-warn") + '">' + r.status + '</span></div>' +
+        '<div style="display:flex;gap:.5rem;flex-wrap:wrap">' + calBtn(e) + cancelBtn + '</div></div>';
     }).join("") : '<div class="empty">You have no bookings yet — book your first free class above.</div>';
-    var past = PFX.db.events.filter(function (e) { return new Date(e.startsAt) <= now; });
-    document.getElementById("past").innerHTML = past.length ? past.map(function (e) {
-      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + ' <span class="badge badge-demo">SAMPLE</span></h3><p class="meta">' + PFX.fmtDate(e.startsAt) + '</p></div><span class="badge badge-neutral">Completed</span></div>';
-    }).join("") : '<div class="empty">No past events.</div>';
+
+    /* history: cancelled regs + regs for past events, with attendance */
+    var pastRegs = PFX.db.registrations.filter(function (r) {
+      if (r.memberId !== me.id) return false;
+      var e = PFX.db.events.find(function (x) { return x.id === r.eventId; });
+      if (!e) return false;
+      return r.status === "cancelled" || new Date(e.startsAt) <= now;
+    }).sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+    document.getElementById("history").innerHTML = pastRegs.length ? pastRegs.map(function (r) {
+      var e = PFX.db.events.find(function (x) { return x.id === r.eventId; });
+      var att = r.attendance === "present" ? '<span class="badge badge-ok">Attended</span>'
+        : r.attendance === "no-show" ? '<span class="badge badge-warn">No-show</span>'
+        : '<span class="badge badge-neutral">Not recorded</span>';
+      var st = r.status === "cancelled" ? '<span class="badge badge-neutral">Cancelled</span>' : att;
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+        '<p class="meta">' + PFX.fmtDate(e.startsAt) + ' · booking ' + r.status + '</p></div>' + st + '</div>';
+    }).join("") : '<div class="empty">No history yet.</div>';
   }
 
   document.addEventListener("click", function (ev) {
+    var cd = ev.target.closest("[data-calday]");
+    if (cd && !cd.disabled) {
+      var d = parseInt(cd.dataset.calday, 10);
+      CAL.sel = { y: CAL.y, m: CAL.m, d: d };
+      renderCal();
+      return;
+    }
     var b = ev.target.closest("[data-book]");
     if (b) {
       var e = PFX.db.events.find(function (x) { return x.id === b.dataset.book; });
@@ -136,5 +219,14 @@
   render();
 })();
 </script>
+<style>
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{text-align:center;font-size:.72rem;font-weight:800;color:var(--faint);text-transform:uppercase;padding:.3rem 0}
+.cal-day{aspect-ratio:1;min-height:44px;border:1px solid var(--line-2);background:#fff;border-radius:10px;font-weight:700;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative}
+.cal-day.cal-pad{border:0;background:transparent}
+.cal-day.today{border-color:var(--emerald);box-shadow:0 0 0 1px var(--emerald)}
+.cal-day.sel{background:var(--navy);color:#fff;border-color:var(--navy)}
+.cal-dot{width:6px;height:6px;border-radius:50%;background:var(--emerald)}
+</style>
 </body>
 </html>

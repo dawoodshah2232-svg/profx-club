@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — ProFX Club CRM</title>
+<link rel="icon" href="../assets/favicon.png">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
+</head>
+<body data-page="settings">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html" aria-label="ProFX Club — Admin CRM"><img class="logo-img" src="../assets/logo-shield.png" alt="ProFX Club"><span class="logo-sub">Admin CRM</span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO DATA</b> — integration credentials are stored in localStorage only. Nothing is connected in this prototype.</div>
+    <div class="page-head"><div><h1>Settings</h1><p class="lead">Integrations, social media links, community links.</p></div></div>
+    <div id="msg"></div>
+
+    <div class="card">
+      <h3>Integrations <span class="badge badge-demo">DEMO — stored locally, not connected</span></h3>
+      <p class="meta" style="margin-top:.4rem">Provider credentials are kept in this browser's demo database only. Production connects real providers from this panel.</p>
+
+      <h4 style="margin:1.2rem 0 .4rem">Email provider</h4>
+      <div class="grid g2">
+        <div class="field"><label for="emProvider">Provider (e.g. Brevo, Mailgun, Resend)</label><input type="text" id="emProvider"></div>
+        <div class="field"><label for="emKey">API key</label><input type="password" id="emKey" autocomplete="off" placeholder="stored locally — demo only"></div>
+        <div class="field"><label for="emSenderName">Sender name</label><input type="text" id="emSenderName"></div>
+        <div class="field"><label for="emSenderEmail">Sender email</label><input type="email" id="emSenderEmail"></div>
+        <div class="field"><label for="emBrandColor">Brand colour</label><input type="color" id="emBrandColor" style="height:42px;padding:4px"></div>
+        <div class="field" style="align-self:end"><button class="btn btn-ghost btn-sm" id="emTest">Send test (simulated)</button></div>
+      </div>
+      <p class="meta" id="emTestOut"></p>
+
+      <h4 style="margin:1.2rem 0 .4rem">SMS provider</h4>
+      <div class="grid g2">
+        <div class="field"><label for="smsProvider">Provider (e.g. Twilio, Vonage)</label><input type="text" id="smsProvider"></div>
+        <div class="field"><label for="smsKey">API key</label><input type="password" id="smsKey" autocomplete="off" placeholder="stored locally — demo only"></div>
+        <div class="field"><label for="smsSenderId">Sender ID</label><input type="text" id="smsSenderId"></div>
+      </div>
+
+      <h4 style="margin:1.2rem 0 .4rem">Analytics</h4>
+      <div class="grid g2">
+        <div class="field"><label for="anProvider">Provider (e.g. Google Analytics, Plausible)</label><input type="text" id="anProvider"></div>
+        <div class="field"><label for="anId">Measurement ID</label><input type="text" id="anId"></div>
+      </div>
+
+      <div style="margin-top:1rem"><button class="btn btn-primary" id="intSave">Save integrations</button></div>
+    </div>
+
+    <div class="page-head" style="margin-top:1.6rem"><div><h3>Social media <span class="badge badge-demo">DEMO</span></h3><p class="lead" style="margin:0">Empty links show "Not available yet" on the public site until the owner supplies them.</p></div>
+      <button class="btn btn-primary btn-sm" id="socAdd">+ Add custom</button></div>
+    <div id="socList"></div>
+
+    <div class="card" style="margin-top:1.6rem">
+      <h3>Community links <span class="badge badge-demo">DEMO</span></h3>
+      <p class="meta">Official Telegram / WhatsApp communities. Shown on the public Community page only when active and a URL is set.</p>
+      <div id="commLinks"></div>
+      <div style="margin-top:1rem"><button class="btn btn-primary" id="commSave">Save community links</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/admin.js?v=20261001"></script>
+<script>
+(function () {
+  "use strict";
+  function msg(h, c) { document.getElementById("msg").innerHTML = '<div class="' + c + '">' + h + '</div>'; window.scrollTo(0, 0); }
+  function val(id) { return document.getElementById(id).value.trim(); }
+
+  /* ---------- integrations ---------- */
+  function loadInt() {
+    var i = PFX.db.settings.integrations;
+    document.getElementById("emProvider").value = i.email.provider || "";
+    document.getElementById("emKey").value = i.email.apiKey || "";
+    document.getElementById("emSenderName").value = i.email.senderName || "";
+    document.getElementById("emSenderEmail").value = i.email.senderEmail || "";
+    document.getElementById("emBrandColor").value = i.email.brandColor || "#28c070";
+    document.getElementById("smsProvider").value = i.sms.provider || "";
+    document.getElementById("smsKey").value = i.sms.apiKey || "";
+    document.getElementById("smsSenderId").value = i.sms.senderId || "";
+    document.getElementById("anProvider").value = i.analytics.provider || "";
+    document.getElementById("anId").value = i.analytics.measurementId || "";
+  }
+  document.getElementById("intSave").addEventListener("click", function () {
+    var i = PFX.db.settings.integrations;
+    i.email.provider = val("emProvider"); i.email.apiKey = val("emKey");
+    i.email.senderName = val("emSenderName"); i.email.senderEmail = val("emSenderEmail");
+    i.email.brandColor = document.getElementById("emBrandColor").value; i.email.demo = true;
+    i.sms.provider = val("smsProvider"); i.sms.apiKey = val("smsKey"); i.sms.senderId = val("smsSenderId"); i.sms.demo = true;
+    i.analytics.provider = val("anProvider"); i.analytics.measurementId = val("anId"); i.analytics.demo = true;
+    PFX.save(); PFX.audit("settings.integrations", "integration settings saved (demo, local only)", "admin");
+    msg("Integrations saved — DEMO: stored in this browser only, nothing connected.", "success");
+  });
+  document.getElementById("emTest").addEventListener("click", function () {
+    var to = val("emSenderEmail");
+    if (!to) { document.getElementById("emTestOut").innerHTML = '<span class="badge badge-warn">Set a sender email first.</span>'; return; }
+    PFX.audit("settings.email_test", "simulated test send via " + (val("emProvider") || "no provider"), "admin");
+    document.getElementById("emTestOut").innerHTML = '<span class="badge badge-ok">Simulated send OK</span> <span class="meta">A test email would be sent from <b>' + PFX.esc(val("emSenderName") || "ProFX Club") + "</b> &lt;" + PFX.esc(to) + "&gt; via " + PFX.esc(val("emProvider") || "no provider configured") + ". Nothing was actually sent (demo).</span>";
+  });
+
+  /* ---------- socials ---------- */
+  function renderSocials() {
+    document.getElementById("socList").innerHTML = PFX.db.settings.socials.map(function (s) {
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(s.network) + ' <span class="badge ' + (s.active && s.url ? "badge-ok" : "badge-neutral") + '">' + (s.active && s.url ? "live" : "not available yet") + "</span></h3>" +
+        '<div class="grid g2" style="margin-top:.4rem">' +
+        '<div class="field"><label>Label</label><input type="text" data-sid="' + s.id + '" data-f="label" value="' + PFX.esc(s.label) + '"></div>' +
+        '<div class="field"><label>Network</label><input type="text" data-sid="' + s.id + '" data-f="network" value="' + PFX.esc(s.network) + '"></div></div>' +
+        '<div class="field" style="margin-top:.4rem"><label>URL (empty = "Not available yet")</label><input type="url" data-sid="' + s.id + '" data-f="url" value="' + PFX.esc(s.url) + '" placeholder="https://…"></div></div>' +
+        '<div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end"><label class="check-row"><input type="checkbox" data-sid="' + s.id + '" data-f="active"' + (s.active ? " checked" : "") + '><span>Active</span></label>' +
+        '<button class="btn btn-danger btn-sm" data-socdel="' + s.id + '">Remove</button></div></div>';
+    }).join("") +
+    '<button class="btn btn-primary" id="socSave" style="margin-top:.8rem">Save social links</button>';
+  }
+  document.getElementById("socAdd").addEventListener("click", function () {
+    PFX.db.settings.socials.push({ id: PFX.uid("soc"), network: "Custom", label: "Custom link", url: "", active: false });
+    PFX.save(); PFX.audit("settings.social_add", "custom social entry added", "admin"); renderSocials();
+  });
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("#socSave");
+    if (b) {
+      document.querySelectorAll("#socList [data-sid]").forEach(function (n) {
+        var s = PFX.db.settings.socials.find(function (x) { return x.id === n.dataset.sid; });
+        if (!s) return;
+        var f = n.dataset.f;
+        if (f === "active") s.active = n.checked; else s[f] = n.value.trim();
+      });
+      PFX.save(); PFX.audit("settings.social_update", "social links saved", "admin");
+      msg("Social links saved.", "success"); renderSocials(); return;
+    }
+    var d = ev.target.closest("[data-socdel]");
+    if (d && confirm("Remove this social link?")) {
+      PFX.db.settings.socials = PFX.db.settings.socials.filter(function (x) { return x.id !== d.dataset.socdel; });
+      PFX.save(); PFX.audit("settings.social_remove", d.dataset.socdel, "admin");
+      msg("Social link removed.", "success"); renderSocials();
+    }
+  });
+
+  /* ---------- community links ---------- */
+  var COMM_LABELS = { telegramAnnouncements: "Telegram announcements channel", telegramDiscussion: "Telegram discussion group", whatsapp: "WhatsApp community" };
+  function renderComm() {
+    var c = PFX.db.settings.community;
+    document.getElementById("commLinks").innerHTML = Object.keys(COMM_LABELS).map(function (k) {
+      var e = c[k];
+      return '<div class="card" style="margin-top:.8rem;background:#f8fafc"><h4>' + COMM_LABELS[k] + ' <span class="badge ' + (e.active && e.url ? "badge-ok" : "badge-neutral") + '">' + (e.active && e.url ? "live" : "not available yet") + "</span></h4>" +
+        '<div class="field" style="margin-top:.4rem"><label>URL</label><input type="url" data-ck="' + k + '" data-cf="url" value="' + PFX.esc(e.url) + '" placeholder="https://…"></div>' +
+        '<div class="grid g2"><div class="field"><label>Capacity status</label><select data-ck="' + k + '" data-cf="capacityStatus">' +
+        ["open", "not_staffed", "full", "paused"].map(function (s) { return '<option' + (e.capacityStatus === s ? " selected" : "") + '>' + s + "</option>"; }).join("") + "</select></div>" +
+        '<div class="field"><label>&nbsp;</label><label class="check-row"><input type="checkbox" data-ck="' + k + '" data-cf="active"' + (e.active ? " checked" : "") + '><span>Active (show on public site)</span></label></div></div></div>';
+    }).join("");
+  }
+  document.getElementById("commSave").addEventListener("click", function () {
+    var c = PFX.db.settings.community;
+    document.querySelectorAll("#commLinks [data-ck]").forEach(function (n) {
+      var e = c[n.dataset.ck]; if (!e) return;
+      var f = n.dataset.cf;
+      if (f === "active") e.active = n.checked; else e[f] = n.value.trim();
+    });
+    PFX.save(); PFX.audit("settings.community_links", "community links saved", "admin");
+    msg("Community links saved.", "success"); renderComm();
+  });
+
+  loadInt(); renderSocials(); renderComm();
+})();
+</script>
+</body>
+</html>

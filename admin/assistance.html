@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Assistance — ProFX Club CRM</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="assistance">
 <header class="nav"><div class="container nav-inner">
@@ -16,7 +16,7 @@
   <aside class="side" id="adminSide"></aside>
   <div class="main">
     <div class="demo-banner"><b>DEMO DATA</b> — sample request labelled SAMPLE. Support records are private to authorised staff; access is logged.</div>
-    <div class="page-head"><div><h1>Assistance requests</h1><p class="lead">Workflow: new → reviewing → awaiting member → referral offered → referred → resolved → closed.</p></div></div>
+    <div class="page-head"><div><h1>Assistance requests</h1><p class="lead">Reply thread, staff notes, referral consent, status workflow.</p></div></div>
     <div class="toolbar">
       <select id="fStatus"><option value="">All statuses</option><option>new</option><option>reviewing</option><option>awaiting member</option><option>referral offered</option><option>referred</option><option>resolved</option><option>closed</option></select>
     </div>
@@ -26,75 +26,125 @@
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/admin.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/admin.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
   var FLOW = ["new", "reviewing", "awaiting member", "referral offered", "referred", "resolved", "closed"];
+  var QUICK = ["new", "reviewing", "resolved", "closed"];
   function render() {
     var fs = document.getElementById("fStatus").value;
     var rows = PFX.db.assistance.filter(function (a) { return !fs || a.status === fs; })
       .sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
     document.getElementById("list").innerHTML = rows.length ? rows.map(function (a) {
       var m = PFX.memberById(a.memberId);
+      var vis = (a.replies || []).filter(function (r) { return r.visibleToMember; }).length;
       return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(a.category) + ' — ' + PFX.esc(a.provider) + (a.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
         '<p class="meta">' + PFX.esc(m ? m.name : a.memberId) + ' · ' + PFX.esc(a.country) + ' · opened ' + PFX.fmtDate(a.createdAt) + '</p>' +
-        '<span class="badge badge-info">' + PFX.esc(a.status) + '</span></div>' +
+        '<span class="badge badge-info">' + PFX.esc(a.status) + '</span> <span class="meta">' + vis + ' visible repl' + (vis === 1 ? "y" : "ies") + ' · ' + (a.privateNotes || []).length + ' private notes</span></div>' +
         '<button class="btn btn-ghost btn-sm" data-open="' + a.id + '">Open case</button></div>';
     }).join("") : '<div class="empty">No requests in this state.</div>';
   }
-  function open(id) {
+  function threadItem(r) {
+    var who = r.author === "staff" ? "Support" : "Member";
+    return '<div class="t-item ' + (r.author === "staff" ? "t-staff" : "t-member") + '">' +
+      '<div class="t-head"><b>' + who + '</b> <span class="meta">' + PFX.fmtDate(r.at) + '</span>' +
+      (r.visibleToMember ? ' <span class="badge badge-ok">visible to member</span>' : ' <span class="badge badge-neutral">hidden from member</span>') + "</div>" +
+      "<p>" + PFX.esc(r.text) + "</p></div>";
+  }
+  function open(id, fromSearch) {
     var a = PFX.db.assistance.find(function (x) { return x.id === id; });
     if (!a) return;
     ADM.viewSensitive("assistance", id);
     var m = PFX.memberById(a.memberId);
     document.getElementById("list").style.display = "none";
     var d = document.getElementById("detail"); d.style.display = "block";
+    var thread = (a.replies || []).slice().sort(function (x, y) { return x.at.localeCompare(y.at); });
+    var visN = thread.filter(function (r) { return r.visibleToMember; }).length;
     d.innerHTML = '<button class="btn btn-ghost btn-sm" id="dBack">← All requests</button>' +
-      '<div class="card" style="margin-top:.8rem"><div class="page-head"><div><h3>' + PFX.esc(a.category) + ' — ' + PFX.esc(a.provider) + '</h3>' +
+      '<div class="card' + (fromSearch ? " flash" : "") + '" style="margin-top:.8rem"><div id="dMsg"></div>' +
+      '<div class="page-head"><div><h3>' + PFX.esc(a.category) + ' — ' + PFX.esc(a.provider) + (a.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + "</h3>" +
       '<p class="meta">' + PFX.esc(m ? m.name + " (" + m.email + ")" : a.memberId) + ' · ' + PFX.esc(a.country) + ' · contact pref: ' + PFX.esc(a.contactPref) + '</p></div>' +
-      '<select id="dStatus" style="width:auto">' + FLOW.map(function (s) { return '<option' + (a.status === s ? " selected" : "") + '>' + s + '</option>'; }).join("") + '</select></div>' +
-      '<dl class="kv"><dt>Brief facts</dt><dd>' + PFX.esc(a.facts) + '</dd><dt>Dates</dt><dd>' + PFX.esc(a.dates || "—") + '</dd><dt>Requested help</dt><dd>' + PFX.esc(a.requestedHelp) + '</dd>' +
-      '<dt>Referral consent</dt><dd>' + (a.referralConsent ? "granted " + PFX.fmtDate(a.referralConsent.at) : "not granted") + '</dd></dl>' +
-      '<h4 style="margin:1rem 0 .5rem">Messages</h4><div class="timeline">' +
-      (a.messages || []).map(function (mm) {
-        return '<div><b>' + (mm.from === "staff" ? "Support" : "Member") + '</b> <span class="meta">' + PFX.fmtDate(mm.at) + '</span><br>' + PFX.esc(mm.text) + '</div>';
-      }).join("") + '</div>' +
-      '<div class="field"><label for="dReply">Reply to member (private)</label><textarea id="dReply" style="min-height:80px"></textarea></div>' +
-      '<button class="btn btn-primary btn-sm" id="dSend">Send reply</button>' +
-      '<h4 style="margin:1rem 0 .5rem">Private staff notes</h4>' +
+      '<select id="dStatus" style="width:auto" aria-label="Case status">' + FLOW.map(function (s) { return '<option' + (a.status === s ? " selected" : "") + '>' + s + '</option>'; }).join("") + '</select></div>' +
+      '<dl class="kv" style="margin:.8rem 0"><dt>Brief facts</dt><dd>' + PFX.esc(a.facts) + '</dd><dt>Dates</dt><dd>' + PFX.esc(a.dates || "—") + '</dd><dt>Requested help</dt><dd>' + PFX.esc(a.requestedHelp) + '</dd>' +
+      '<dt>Referral consent</dt><dd id="rcBox">' + rcSummary(a) + '</dd></dl>' +
+      '<h4 style="margin:1rem 0 .4rem">Status workflow</h4>' +
+      '<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">' +
+      QUICK.map(function (s) {
+        return '<button class="btn btn-sm ' + (a.status === s ? "btn-primary" : "btn-ghost") + '" data-wf="' + s + '">' + (a.status === s ? "● " : "") + s[0].toUpperCase() + s.slice(1) + "</button>";
+      }).join("") + '<span class="meta">or use the dropdown above for awaiting-member / referral states.</span></div>' +
+      '<h4 style="margin:1.2rem 0 .4rem">Reply thread <span class="meta">(' + visN + ' visible to member)</span></h4>' +
+      '<div class="thread">' + (thread.length ? thread.map(threadItem).join("") : '<p class="meta">No messages yet.</p>') + "</div>" +
+      '<div class="field" style="margin-top:.8rem"><label for="dReply">Add reply</label><textarea id="dReply" style="min-height:80px" placeholder="Write a reply…"></textarea></div>' +
+      '<label class="check-row" style="margin:.4rem 0"><input type="radio" name="vis" value="member" checked><span>Visible to member <span class="meta">— member can read this in their portal</span></span></label>' +
+      '<label class="check-row" style="margin:.2rem 0 .6rem"><input type="radio" name="vis" value="private"><span>Private staff note <span class="meta">— never shown to the member, stored in private notes</span></span></label>' +
+      '<button class="btn btn-primary btn-sm" id="dSend">Add to thread</button>' +
+      '<h4 style="margin:1.2rem 0 .4rem">Private staff notes (' + (a.privateNotes || []).length + ")</h4>" +
       (a.privateNotes || []).map(function (n) { return '<p class="meta">• ' + PFX.fmtDate(n.at) + ' — ' + PFX.esc(n.text) + '</p>'; }).join("") +
-      '<div style="display:flex;gap:.5rem;margin-top:.5rem"><input type="text" id="dNote" placeholder="Add private note (staff only)"><button class="btn btn-ghost btn-sm" id="dNoteBtn">Add note</button></div>' +
-      '<h4 style="margin:1rem 0 .5rem">Access &amp; status history</h4>' +
+      '<h4 style="margin:1.2rem 0 .4rem">Referral consent record</h4>' +
+      '<div class="grid g2"><div class="field"><label for="rcChoice">Consent</label><select id="rcChoice"><option value="">— record —</option><option value="yes">Yes — granted</option><option value="no">No — declined</option></select></div>' +
+      '<div class="field"><label for="rcNote">Note</label><input type="text" id="rcNote" placeholder="e.g. consent for partner-law-firm intro"></div></div>' +
+      '<button class="btn btn-ghost btn-sm" id="rcSave">Record referral consent</button>' +
+      '<h4 style="margin:1.2rem 0 .4rem">Access &amp; status history</h4>' +
       (a.history || []).map(function (h) { return '<p class="meta">• ' + PFX.fmtDate(h.at) + ' — ' + PFX.esc(h.by) + ': ' + PFX.esc(h.action) + '</p>'; }).join("") +
       '</div>';
-    document.getElementById("dBack").addEventListener("click", function () { d.style.display = "none"; document.getElementById("list").style.display = "block"; render(); });
-    document.getElementById("dStatus").addEventListener("change", function (ev) {
-      var from = a.status; a.status = ev.target.value;
-      a.history.push({ at: PFX.now(), by: "admin", action: "status " + from + " → " + a.status });
-      PFX.save(); PFX.audit("assistance.status", a.id + " " + from + " → " + a.status, "admin");
-      document.getElementById("msg").innerHTML = '<div class="success">Status updated to ' + PFX.esc(a.status) + '.</div>';
-    });
+    function dmsg(h, c) { document.getElementById("dMsg").innerHTML = '<div class="' + c + '">' + h + "</div>"; }
+    document.getElementById("dBack").addEventListener("click", function () { d.style.display = "none"; document.getElementById("list").style.display = "block"; render(); if (history.replaceState) history.replaceState(null, "", "assistance.html"); });
+    function setStatus(s) {
+      var from = a.status; a.status = s;
+      a.history.push({ at: PFX.now(), by: "admin", action: "status " + from + " → " + s });
+      PFX.save(); PFX.audit("assistance.status", a.id + " " + from + " → " + s, "admin");
+      dmsg("Status: " + from + " → " + s + ".", "success"); render(); open(id);
+    }
+    document.getElementById("dStatus").addEventListener("change", function (ev) { setStatus(ev.target.value); });
+    d.querySelectorAll("[data-wf]").forEach(function (b) { b.addEventListener("click", function () { setStatus(b.dataset.wf); }); });
     document.getElementById("dSend").addEventListener("click", function () {
       var t = document.getElementById("dReply").value.trim(); if (!t) return;
-      a.messages.push({ at: PFX.now(), from: "staff", text: t });
-      a.history.push({ at: PFX.now(), by: "admin", action: "replied to member" });
-      PFX.save(); PFX.audit("assistance.staff_reply", a.id, "admin");
-      open(id);
+      var vis = d.querySelector('input[name="vis"]:checked').value;
+      var entry = { id: PFX.uid("rpl"), at: PFX.now(), author: "staff", by: "admin", text: t, visibleToMember: vis === "member" };
+      if (vis === "member") {
+        a.replies = a.replies || []; a.replies.push(entry);
+        PFX.notify(a.memberId, "assistance", "New reply on your assistance request", t.slice(0, 120), "assistance.html");
+        a.history.push({ at: PFX.now(), by: "admin", action: "replied to member (visible)" });
+        PFX.audit("assistance.reply", a.id + " (visible)", "admin");
+      } else {
+        a.privateNotes = a.privateNotes || []; a.privateNotes.push({ at: entry.at, by: "admin", text: t });
+        a.history.push({ at: PFX.now(), by: "admin", action: "private note added" });
+        PFX.audit("assistance.note", a.id, "admin");
+      }
+      PFX.save(); open(id);
     });
-    document.getElementById("dNoteBtn").addEventListener("click", function () {
-      var t = document.getElementById("dNote").value.trim(); if (!t) return;
-      a.privateNotes.push({ at: PFX.now(), by: "admin", text: t });
-      a.history.push({ at: PFX.now(), by: "admin", action: "private note added" });
-      PFX.save(); PFX.audit("assistance.note", a.id, "admin");
-      open(id);
+    document.getElementById("rcSave").addEventListener("click", function () {
+      var v = document.getElementById("rcChoice").value, note = document.getElementById("rcNote").value.trim();
+      if (!v) { dmsg("Choose Yes or No first.", "warn"); return; }
+      a.referralConsent = { value: v, at: PFX.now(), note: note };
+      a.history.push({ at: PFX.now(), by: "admin", action: "referral consent recorded: " + v + (note ? " — " + note : "") });
+      PFX.save(); PFX.audit("assistance.referral_consent", a.id + " → " + v, "admin");
+      dmsg("Referral consent recorded: " + v + ".", "success"); open(id);
     });
+  }
+  function rcSummary(a) {
+    if (!a.referralConsent) return "not granted";
+    return (a.referralConsent.value === "yes" ? '<span class="badge badge-ok">granted</span>' : '<span class="badge badge-warn">declined</span>') +
+      " " + PFX.fmtDate(a.referralConsent.at) + (a.referralConsent.note ? ' <span class="meta">— ' + PFX.esc(a.referralConsent.note) + "</span>" : "");
   }
   document.getElementById("fStatus").addEventListener("change", render);
   document.addEventListener("click", function (ev) { var o = ev.target.closest("[data-open]"); if (o) open(o.dataset.open); });
   render();
+  try {
+    var qid = new URLSearchParams(location.search).get("id");
+    if (qid && PFX.db.assistance.some(function (a) { return a.id === qid; })) open(qid, true);
+  } catch (e) { /* ignore */ }
 })();
 </script>
+<style>
+.thread{display:flex;flex-direction:column;gap:.6rem}
+.t-item{border:1px solid var(--line,#e5e7eb);border-radius:.7rem;padding:.7rem .9rem;background:#fff}
+.t-item.t-member{background:#f8fafc}
+.t-item.t-staff{border-left:3px solid var(--green,#28c070)}
+.t-head{margin-bottom:.3rem;font-size:.85rem}
+.t-item p{margin:0;font-size:.9rem}
+</style>
 </body>
 </html>

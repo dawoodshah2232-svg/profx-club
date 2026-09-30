@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Members — ProFX Club CRM</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="members">
 <header class="nav"><div class="container nav-inner">
@@ -16,7 +16,7 @@
   <aside class="side" id="adminSide"></aside>
   <div class="main">
     <div class="demo-banner"><b>DEMO DATA</b> — sample members are labelled SAMPLE.</div>
-    <div class="page-head"><div><h1>Members</h1><p class="lead">Search, filter, verification state, status, tags, consent, signup source.</p></div></div>
+    <div class="page-head"><div><h1>Members</h1><p class="lead">Search, filter, verification state, bookings, assistance, referrals, consent, deletion requests.</p></div></div>
 
     <div class="toolbar">
       <input type="search" id="q" placeholder="Search name or email…">
@@ -29,33 +29,20 @@
 
     <div id="detail" style="display:none">
       <button class="btn btn-ghost btn-sm" id="dBack">← All members</button>
-      <div class="card" style="margin-top:.8rem">
-        <h3 id="dName"></h3>
-        <dl class="kv" style="margin:.8rem 0" id="dKv"></dl>
-        <h4 style="margin:.8rem 0 .4rem">Consent history</h4>
-        <div id="dConsent"></div>
-        <h4 style="margin:.8rem 0 .4rem">Tags</h4>
-        <div id="dTags" style="display:flex;gap:.4rem;flex-wrap:wrap"></div>
-        <div class="field" style="margin-top:.6rem;max-width:320px"><label for="dTagAdd">Add tag</label>
-          <div style="display:flex;gap:.5rem"><input type="text" id="dTagAdd" placeholder="e.g. beginner"><button class="btn btn-ghost btn-sm" id="dTagBtn">Add</button></div></div>
-        <h4 style="margin:1rem 0 .4rem">Change status</h4>
-        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" data-st="active">Activate</button>
-          <button class="btn btn-ghost btn-sm" data-st="suspended">Suspend</button>
-          <button class="btn btn-ghost btn-sm" data-st="closed">Close</button>
-        </div>
-        <div id="delReq" style="margin-top:.8rem"></div>
-      </div>
+      <div class="card" style="margin-top:.8rem" id="dCard"></div>
     </div>
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/admin.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/admin.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
   var current = null;
+  function msg(h, c) {
+    var d = document.getElementById("dMsg"); if (d) d.innerHTML = '<div class="' + c + '">' + h + "</div>";
+  }
   function render() {
     var q = document.getElementById("q").value.trim().toLowerCase(),
       fs = document.getElementById("fStatus").value,
@@ -84,59 +71,139 @@
           "<td><button class='btn btn-ghost btn-sm' data-view='" + m.id + "'>Open</button></td></tr>";
       }).join("") + "</tbody></table></div>";
   }
-  function open(id) {
+  function stBadge(s) {
+    return '<span class="badge ' + (s === "confirmed" || s === "active" || s === "resolved" || s === "closed" ? "badge-ok" : s === "waitlisted" || s === "pending" || s === "new" || s === "reviewing" ? "badge-warn" : "badge-neutral") + '">' + PFX.esc(s) + "</span>";
+  }
+  function open(id, fromSearch) {
     current = PFX.memberById(id);
     if (!current) return;
     ADM.viewSensitive("member", id);
     document.getElementById("list").style.display = "none";
     document.getElementById("detail").style.display = "block";
-    document.getElementById("dName").innerHTML = PFX.esc(current.name) + (current.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "");
-    document.getElementById("dKv").innerHTML =
-      "<dt>Email</dt><dd>" + PFX.esc(current.email) + "</dd>" +
-      "<dt>Membership ID</dt><dd>" + PFX.esc(current.membershipId) + "</dd>" +
-      "<dt>Status</dt><dd>" + current.status + "</dd>" +
-      "<dt>Verified</dt><dd>" + (current.verified ? "Yes" : "No") + "</dd>" +
-      "<dt>Signed up</dt><dd>" + PFX.fmtDate(current.createdAt) + "</dd>" +
-      "<dt>Source</dt><dd>" + PFX.esc(current.source || "—") + "</dd>" +
-      "<dt>Referral code</dt><dd>" + PFX.esc(current.referralCode || "—") + "</dd>" +
-      "<dt>City / Country</dt><dd>" + PFX.esc((current.city || "—") + " / " + (current.country || "—")) + "</dd>" +
-      "<dt>Experience</dt><dd>" + PFX.esc(current.experience || "—") + "</dd>" +
-      "<dt>Language</dt><dd>" + PFX.esc(current.language || "—") + "</dd>" +
-      "<dt>Interests</dt><dd>" + PFX.esc((current.interests || []).join(", ") || "—") + "</dd>";
-    document.getElementById("dConsent").innerHTML = (current.consentHistory || []).length
+    var m = current;
+    var dr = m.deletionRequest || m.deletionRequested || null;
+    /* bookings */
+    var regs = PFX.regsForMember(m.id);
+    var bookRows = regs.length ? regs.map(function (r) {
+      var e = PFX.db.events.find(function (x) { return x.id === r.eventId; });
+      return "<tr><td>" + PFX.esc(e ? e.title : r.eventId) + "<br><span class='meta'>" + (e ? PFX.fmtDate(e.startsAt) : "") + "</span></td>" +
+        "<td>" + stBadge(r.status) + "</td><td>" + (r.attendance ? stBadge(r.attendance) : '<span class="meta">—</span>') + "</td>" +
+        "<td class='meta'>" + PFX.fmtDate(r.createdAt) + "</td></tr>";
+    }).join("") : '<tr><td colspan="4" class="meta">No bookings.</td></tr>';
+    /* assistance */
+    var asrs = PFX.db.assistance.filter(function (a) { return a.memberId === m.id; });
+    var asrRows = asrs.length ? asrs.map(function (a) {
+      return '<tr><td><a href="assistance.html?id=' + a.id + '">' + PFX.esc(a.category) + " — " + PFX.esc(a.provider) + "</a><br><span class='meta'>opened " + PFX.fmtDate(a.createdAt) + "</span></td><td>" + stBadge(a.status) + "</td></tr>";
+    }).join("") : '<tr><td colspan="2" class="meta">No assistance requests.</td></tr>';
+    /* referrals */
+    var uses = m.referralCode ? PFX.referralUses(m.referralCode) : 0;
+    var referred = m.referralCode ? PFX.db.members.filter(function (x) { return x.referredBy === m.referralCode; }) : [];
+    var refRows = referred.length ? referred.map(function (x) {
+      return "<tr><td><b>" + PFX.esc(x.name) + "</b><br><span class='meta'>" + PFX.esc(x.email) + "</span></td><td>" + stBadge(x.status) + "</td><td class='meta'>" + PFX.fmtDate(x.createdAt) + "</td></tr>";
+    }).join("") : '<tr><td colspan="3" class="meta">No members joined with this code yet.</td></tr>';
+    /* consent history */
+    var consentH = (m.consentHistory || []).length
       ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>When</th><th>Type</th><th>Value</th><th>Note</th></tr></thead><tbody>' +
-        current.consentHistory.map(function (c) {
+        m.consentHistory.map(function (c) {
           return "<tr><td>" + PFX.fmtDate(c.at) + "</td><td>" + PFX.esc(c.type) + "</td><td>" + (c.value ? '<span class="badge badge-ok">Yes</span>' : '<span class="badge badge-neutral">No</span>') + "</td><td class='meta'>" + PFX.esc(c.note || "") + "</td></tr>";
         }).join("") + "</tbody></table></div>"
       : '<p class="meta">No history.</p>';
-    document.getElementById("dTags").innerHTML = (current.tags || []).map(function (t) {
+    var tagsH = (m.tags || []).map(function (t) {
       return '<span class="badge badge-info">' + PFX.esc(t) + ' <a href="#" data-untag="' + PFX.esc(t) + '" style="color:inherit">×</a></span>';
     }).join("") || '<span class="meta">No tags.</span>';
-    document.getElementById("delReq").innerHTML = current.deletionRequested
-      ? '<div class="warn"><b>Deletion requested</b> at ' + PFX.fmtDate(current.deletionRequested.at) + '. Confirm with the member by email, then <button class="btn btn-danger btn-sm" id="delConfirm">Confirm deletion</button></div>'
-      : "";
+
+    document.getElementById("dCard").innerHTML =
+      '<div id="dMsg"></div>' +
+      '<div class="page-head"><div><h3>' + PFX.esc(m.name) + (m.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + "</h3>" +
+      '<p class="meta">' + PFX.esc(m.email) + " · " + PFX.esc(m.membershipId) + "</p></div>" +
+      '<div><button class="btn btn-ghost btn-sm" id="dVerify">' + (m.verified ? "Unverify" : "Verify member") + "</button></div></div>" +
+      '<dl class="kv" style="margin:.8rem 0">' +
+      "<dt>Status</dt><dd>" + stBadge(m.status) + "</dd>" +
+      "<dt>Verification</dt><dd>" + (m.verified ? '<span class="badge badge-ok">Verified</span>' : '<span class="badge badge-neutral">Pending verification</span>') + " " + (m.verifiedAt ? '<span class="meta">since ' + PFX.fmtDate(m.verifiedAt) + "</span>" : "") + "</dd>" +
+      "<dt>Signed up</dt><dd>" + PFX.fmtDate(m.createdAt) + "</dd>" +
+      "<dt>Source</dt><dd>" + PFX.esc(m.source || "—") + "</dd>" +
+      "<dt>Referred by</dt><dd>" + PFX.esc(m.referredBy || "—") + "</dd>" +
+      "<dt>City / Country</dt><dd>" + PFX.esc((m.city || "—") + " / " + (m.country || "—")) + "</dd>" +
+      "<dt>Experience</dt><dd>" + PFX.esc(m.experience || "—") + "</dd>" +
+      "<dt>Language</dt><dd>" + PFX.esc(m.language || "—") + "</dd>" +
+      "<dt>Interests</dt><dd>" + PFX.esc((m.interests || []).join(", ") || "—") + "</dd>" +
+      "<dt>Marketing consent</dt><dd>" + (m.consent.promoEmail ? '<span class="badge badge-ok">Email</span> ' : "") + (m.consent.promoWhatsapp ? '<span class="badge badge-ok">WhatsApp</span> ' : '<span class="meta">none</span>') + "</dd></dl>" +
+
+      '<h4 style="margin:1.2rem 0 .4rem">Bookings (' + regs.length + ")</h4>" +
+      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Event</th><th>Booking</th><th>Attendance</th><th>Booked</th></tr></thead><tbody>' + bookRows + "</tbody></table></div>" +
+
+      '<h4 style="margin:1.2rem 0 .4rem">Assistance requests (' + asrs.length + ")</h4>" +
+      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Case</th><th>Status</th></tr></thead><tbody>' + asrRows + "</tbody></table></div>" +
+
+      '<h4 style="margin:1.2rem 0 .4rem">Referral tracking</h4>' +
+      '<p class="meta">Code: <b>' + PFX.esc(m.referralCode || "—") + "</b> · uses: <b>" + uses + "</b></p>" +
+      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Referred member</th><th>Status</th><th>Joined</th></tr></thead><tbody>' + refRows + "</tbody></table></div>" +
+
+      '<h4 style="margin:1.2rem 0 .4rem">Consent history</h4>' + consentH +
+
+      '<h4 style="margin:1.2rem 0 .4rem">Tags</h4>' +
+      '<div style="display:flex;gap:.4rem;flex-wrap:wrap">' + tagsH + "</div>" +
+      '<div class="field" style="margin-top:.6rem;max-width:320px"><label for="dTagAdd">Add tag</label>' +
+      '<div style="display:flex;gap:.5rem"><input type="text" id="dTagAdd" placeholder="e.g. beginner"><button class="btn btn-ghost btn-sm" id="dTagBtn">Add</button></div></div>' +
+
+      '<h4 style="margin:1.2rem 0 .4rem">Account actions</h4>' +
+      '<div style="display:flex;gap:.5rem;flex-wrap:wrap">' +
+      '<button class="btn btn-ghost btn-sm" data-st="active">Reactivate</button>' +
+      '<button class="btn btn-ghost btn-sm" data-st="suspended">Suspend</button>' +
+      '<button class="btn btn-danger btn-sm" data-st="closed">Close account</button>' +
+      '<button class="btn btn-ghost btn-sm" id="dDelReq">Record deletion request</button></div>' +
+
+      '<h4 style="margin:1.2rem 0 .4rem">Deletion request</h4><div id="delReqBox">' +
+      (dr
+        ? '<div class="warn"><b>Deletion requested</b> at ' + PFX.fmtDate(dr.at) + " · status: <b>" + PFX.esc(dr.status) + "</b>.<br>" +
+          '<span class="meta">Confirm identity by email with the member, then confirm deletion below (demo: removes the record locally).</span><br>' +
+          '<button class="btn btn-danger btn-sm" id="delConfirm" style="margin-top:.4rem">Confirm deletion</button></div>'
+        : '<p class="meta">No deletion request on file.</p>') + "</div>";
+
+    document.getElementById("dVerify").addEventListener("click", function () {
+      m.verified = !m.verified;
+      if (m.verified) m.verifiedAt = PFX.now(); else delete m.verifiedAt;
+      PFX.logConsent(m, "verified", m.verified, "admin action");
+      PFX.audit("member.verify", m.membershipId + " → verified=" + m.verified, "admin");
+      msg(m.verified ? "Member verified." : "Verification revoked.", "success");
+      open(id);
+    });
+    document.getElementById("dTagBtn").addEventListener("click", function () {
+      var t = document.getElementById("dTagAdd").value.trim().toLowerCase();
+      if (t && m.tags.indexOf(t) < 0) { m.tags.push(t); PFX.save(); PFX.audit("member.tag_add", m.membershipId + " " + t, "admin"); open(id); }
+    });
+    document.getElementById("dDelReq").addEventListener("click", function () {
+      if (dr && dr.status === "requested") { msg("A deletion request is already on file.", "warn"); return; }
+      m.deletionRequest = { at: PFX.now(), status: "requested" };
+      PFX.save(); PFX.audit("member.deletion_request", m.membershipId + " (recorded by admin)", "admin");
+      msg("Deletion request recorded.", "success"); open(id);
+    });
     var dc = document.getElementById("delConfirm");
     if (dc) dc.addEventListener("click", function () {
-      if (!confirm("Permanently delete this member's personal data?")) return;
-      PFX.db.members = PFX.db.members.filter(function (m) { return m.id !== current.id; });
-      PFX.save(); PFX.audit("member.delete", current.membershipId, "admin");
+      if (!confirm("Permanently delete this member's personal data from this demo database?")) return;
+      PFX.db.members = PFX.db.members.filter(function (x) { return x.id !== m.id; });
+      PFX.db.registrations = PFX.db.registrations.filter(function (r) { return r.memberId !== m.id; });
+      PFX.save(); PFX.audit("member.delete", m.membershipId + " (deletion request fulfilled)", "admin");
       back();
     });
+    if (fromSearch) document.getElementById("dCard").classList.add("flash");
   }
-  function back() { current = null; document.getElementById("detail").style.display = "none"; document.getElementById("list").style.display = "block"; render(); }
+  function back() {
+    current = null;
+    document.getElementById("detail").style.display = "none";
+    document.getElementById("list").style.display = "block";
+    render();
+    if (history.replaceState) history.replaceState(null, "", "members.html");
+  }
   ["q", "fStatus", "fVerified", "fConsent"].forEach(function (id) {
     document.getElementById(id).addEventListener("input", render);
     document.getElementById(id).addEventListener("change", render);
   });
   document.getElementById("dBack").addEventListener("click", back);
-  document.getElementById("dTagBtn").addEventListener("click", function () {
-    var t = document.getElementById("dTagAdd").value.trim().toLowerCase();
-    if (t && current.tags.indexOf(t) < 0) { current.tags.push(t); PFX.save(); PFX.audit("member.tag_add", current.membershipId + " " + t, "admin"); open(current.id); }
-  });
   document.addEventListener("click", function (ev) {
     var v = ev.target.closest("[data-view]"); if (v) { open(v.dataset.view); return; }
     var u = ev.target.closest("[data-untag]");
-    if (u) { ev.preventDefault(); current.tags = current.tags.filter(function (t) { return t !== u.dataset.untag; }); PFX.save(); PFX.audit("member.tag_remove", current.membershipId + " " + u.dataset.untag, "admin"); open(current.id); return; }
+    if (u && current) { ev.preventDefault(); current.tags = current.tags.filter(function (t) { return t !== u.dataset.untag; }); PFX.save(); PFX.audit("member.tag_remove", current.membershipId + " " + u.dataset.untag, "admin"); open(current.id); return; }
     var s = ev.target.closest("[data-st]");
     if (s && current) {
       var from = current.status; current.status = s.dataset.st;
@@ -145,6 +212,11 @@
     }
   });
   render();
+  /* deep-link from global admin search (?id=) */
+  try {
+    var qid = new URLSearchParams(location.search).get("id");
+    if (qid && PFX.memberById(qid)) open(qid, true);
+  } catch (e) { /* ignore */ }
 })();
 </script>
 </body>

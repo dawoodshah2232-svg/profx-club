@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Profile — ProFX Club</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="profile">
 <header class="nav"><div class="container nav-inner">
@@ -20,7 +20,14 @@
 
     <div class="card">
       <h3>Account</h3>
-      <dl class="kv" style="margin:.8rem 0">
+      <div style="display:flex;gap:1.2rem;align-items:center;margin:.8rem 0;flex-wrap:wrap">
+        <img id="avImg" class="avatar" alt="Your profile photo">
+        <div>
+          <input type="file" id="avFile" accept="image/*" class="field" style="margin:0" aria-label="Upload profile photo">
+          <p class="meta" style="margin-top:.4rem">Stored locally in this demo only. Images are resized to a small thumbnail.</p>
+        </div>
+      </div>
+      <dl class="kv">
         <dt>Name</dt><dd id="pName"></dd>
         <dt>Email</dt><dd id="pEmail"></dd>
         <dt>Membership ID</dt><dd id="pMid"></dd>
@@ -45,40 +52,94 @@
     </div>
 
     <div class="card" style="margin-top:1.2rem">
+      <h3>App preferences</h3>
+      <div class="grid g2" style="margin-top:.8rem">
+        <div class="field"><label for="prefLang">Language</label>
+          <select id="prefLang"><option>English</option><option>Arabic</option><option>Hindi</option><option>Urdu</option><option>Tagalog</option></select></div>
+        <div class="field"><label for="prefTz">Timezone</label>
+          <select id="prefTz"><option>Asia/Dubai</option><option>Asia/Kolkata</option><option>Asia/Manila</option><option>Europe/London</option><option>America/New_York</option><option>UTC</option></select></div>
+      </div>
+      <button class="btn btn-primary" id="prefSave">Save app preferences</button>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
       <h3>Communication preferences</h3>
       <p class="meta" style="margin:.3rem 0 .8rem">Service emails (verification, bookings, reminders) are required for membership. Marketing is optional — changing it never affects your membership.</p>
       <label class="check-row" style="color:var(--ink)"><input type="checkbox" id="cPromoEmail"><span>Promotional emails (classes, events, digests)</span></label>
       <label class="check-row" style="color:var(--ink)"><input type="checkbox" id="cPromoWa"><span>Promotional WhatsApp messages</span></label>
       <div class="field"><label for="cWa">WhatsApp number (optional)</label><input type="tel" id="cWa"></div>
-      <button class="btn btn-primary" id="cSave">Save communication preferences</button>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        <button class="btn btn-primary" id="cSave">Save communication preferences</button>
+        <button class="btn btn-ghost" id="cOptOutAll">Opt out of all marketing</button>
+      </div>
     </div>
 
     <div class="card" style="margin-top:1.2rem">
-      <h3>My referral code</h3>
-      <p class="meta">Share it — when someone joins with your code, we record it as your referral.</p>
-      <p style="font-size:1.4rem;font-weight:800;letter-spacing:.1rem;color:var(--emerald-2)" id="refCode"></p>
+      <h3>My referrals</h3>
+      <p class="meta">Share your code or link — when someone joins with your code, we record it as your referral.</p>
+      <p style="font-size:1.4rem;font-weight:800;letter-spacing:.1rem;color:var(--emerald-2);margin:.6rem 0" id="refCode"></p>
+      <div class="field"><label for="refLink">Shareable link</label>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <input type="text" id="refLink" readonly style="flex:1;min-width:200px">
+          <button class="btn btn-ghost btn-sm" id="refCopy" type="button">Copy link</button>
+        </div>
+      </div>
+      <p class="meta"><b id="refUses">0</b> member(s) joined with your code.</p>
+      <div id="refList" style="margin-top:.6rem"></div>
     </div>
 
     <div class="card" style="margin-top:1.2rem;border-color:#f1c9cc">
       <h3 style="color:#a1232b">Delete my account</h3>
-      <p class="meta">Request full deletion of your account and personal data. We confirm what is removed and what we must keep for legal records. This cannot be undone.</p>
-      <button class="btn btn-danger" id="delReq">Request account deletion</button>
+      <div id="delZone"></div>
     </div>
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/app.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/app.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
   var me = window.PFX_ME;
+  me.preferences = me.preferences || { language: "English", timezone: "Asia/Dubai" };
+  me.consent = me.consent || {};
   var INTERESTS = ["Beginner classes", "Webinars", "Networking", "Assistance", "Travel"];
+  var AV_PLACEHOLDER = "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="#dfe6f0"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" fill="#dfe6f0"/></svg>');
+
+  function msg(html, cls) { document.getElementById("msg").innerHTML = '<div class="' + cls + '">' + html + "</div>"; window.scrollTo(0, 0); }
+
+  /* ---- avatar ---- */
+  function paintAvatar() { document.getElementById("avImg").src = me.avatar || AV_PLACEHOLDER; }
+  paintAvatar();
+  document.getElementById("avFile").addEventListener("change", function (ev) {
+    var f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var size = 160, canvas = document.createElement("canvas");
+        var scale = Math.min(1, size / Math.max(img.width, img.height));
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        me.avatar = canvas.toDataURL("image/jpeg", 0.7);
+        PFX.save(); paintAvatar();
+        msg("Photo updated. In this demo it is stored in your browser's local storage only.", "success");
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(f);
+  });
+
+  /* ---- account ---- */
   document.getElementById("pName").textContent = me.name;
   document.getElementById("pEmail").textContent = me.email;
   document.getElementById("pMid").textContent = me.membershipId;
   document.getElementById("pStatus").textContent = me.status;
   document.getElementById("pSince").textContent = PFX.fmtDate(me.createdAt);
+
+  /* ---- onboarding ---- */
   document.getElementById("oCity").value = me.city || "";
   document.getElementById("oCountry").value = me.country || "";
   document.getElementById("oExp").value = me.experience || "";
@@ -101,8 +162,21 @@
     me.experience = document.getElementById("oExp").value;
     me.language = document.getElementById("oLang").value;
     PFX.save();
-    document.getElementById("msg").innerHTML = '<div class="success">Preferences saved.</div>';
+    msg("Preferences saved.", "success");
   });
+
+  /* ---- app preferences ---- */
+  document.getElementById("prefLang").value = me.preferences.language || "English";
+  document.getElementById("prefTz").value = me.preferences.timezone || "Asia/Dubai";
+  document.getElementById("prefSave").addEventListener("click", function () {
+    me.preferences.language = document.getElementById("prefLang").value;
+    me.preferences.timezone = document.getElementById("prefTz").value;
+    PFX.save();
+    PFX.audit("member.preferences", me.preferences.language + " / " + me.preferences.timezone, me.id);
+    msg("App preferences saved.", "success");
+  });
+
+  /* ---- consents ---- */
   document.getElementById("cPromoEmail").checked = !!me.consent.promoEmail;
   document.getElementById("cPromoWa").checked = !!me.consent.promoWhatsapp;
   document.getElementById("cWa").value = me.whatsapp || "";
@@ -112,22 +186,72 @@
     me.whatsapp = document.getElementById("cWa").value.trim();
     PFX.save();
     PFX.audit("member.consent_update", me.membershipId, me.id);
-    document.getElementById("msg").innerHTML = '<div class="success">Communication preferences saved. Marketing opt-out never affects your membership.</div>';
+    msg("Communication preferences saved. Marketing opt-out never affects your membership.", "success");
   });
+  document.getElementById("cOptOutAll").addEventListener("click", function () {
+    document.getElementById("cPromoEmail").checked = false;
+    document.getElementById("cPromoWa").checked = false;
+    PFX.logConsent(me, "promoEmail", false, "opt-out-all in profile");
+    PFX.logConsent(me, "promoWhatsapp", false, "opt-out-all in profile");
+    PFX.save();
+    msg("You are opted out of all marketing messages.", "success");
+  });
+
+  /* ---- referrals ---- */
   var rc = PFX.db.referralCodes.find(function (c) { return c.memberId === me.id; });
   if (!rc) {
-    rc = { code: ("PX-" + me.membershipId.replace("PX-2026-", "") + "-" + me.name.split(" ")[0].toUpperCase().replace(/[^A-Z]/g, "").slice(0, 6)).slice(0, 18), memberId: me.id, createdAt: PFX.now(), note: "auto" };
+    var code = PFX.newReferralCode(me.name.split(" ")[0]);
+    rc = { code: code, memberId: me.id, createdAt: PFX.now(), note: "auto" };
     PFX.db.referralCodes.push(rc); PFX.save();
   }
   document.getElementById("refCode").textContent = rc.code;
-  document.getElementById("delReq").addEventListener("click", function () {
-    if (!confirm("Request deletion of your account and personal data? This cannot be undone.")) return;
-    me.deletionRequested = { at: PFX.now(), status: "requested" };
-    PFX.save();
-    PFX.audit("member.deletion_request", me.membershipId, me.id);
-    document.getElementById("msg").innerHTML = '<div class="notice">Deletion requested. Our team will confirm by email what is removed and what we must retain for legal records, then close your account.</div>';
+  var refUrl = "../join.html?ref=" + encodeURIComponent(rc.code);
+  if (/^https?:/.test(location.protocol)) {
+    refUrl = location.origin + location.pathname.replace(/app\/profile\.html$/, "join.html?ref=" + encodeURIComponent(rc.code));
+  }
+  document.getElementById("refLink").value = refUrl;
+  document.getElementById("refCopy").addEventListener("click", function () {
+    var inp = document.getElementById("refLink");
+    inp.select();
+    function done() { msg("Referral link copied.", "success"); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(inp.value).then(done, function () { document.execCommand("copy"); done(); });
+    } else { document.execCommand("copy"); done(); }
   });
+  document.getElementById("refUses").textContent = PFX.referralUses(rc.code);
+  var referred = PFX.db.members.filter(function (m) { return m.referredBy === rc.code; })
+    .sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+  document.getElementById("refList").innerHTML = referred.length ? referred.map(function (m) {
+    return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(m.name) + (m.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
+      '<p class="meta">' + PFX.esc(m.membershipId) + (m.city ? ' · ' + PFX.esc(m.city) : "") + ' · joined ' + PFX.fmtDate(m.createdAt) + '</p></div></div>';
+  }).join("") : '<div class="empty">No one has joined with your code yet.</div>';
+
+  /* ---- deletion request ---- */
+  function renderDel() {
+    var dr = me.deletionRequest || me.deletionRequested;
+    document.getElementById("delZone").innerHTML = dr
+      ? '<div class="notice"><b>Deletion requested</b> on ' + PFX.fmtDate(dr.at) + ' (status: ' + PFX.esc(dr.status) + '). <b>Demo only</b> — in production our team would confirm by email what is removed and what we must retain for legal records, then close your account.</div>'
+      : '<p class="meta">Request full deletion of your account and personal data. We confirm what is removed and what we must keep for legal records. This cannot be undone.</p>' +
+        '<button class="btn btn-danger" id="delReq">Request account deletion</button>';
+    var b = document.getElementById("delReq");
+    if (b) b.addEventListener("click", function () {
+      if (!confirm("Request deletion of your account and personal data? This cannot be undone.")) return;
+      me.deletionRequest = { at: PFX.now(), status: "requested" };
+      PFX.save();
+      PFX.audit("member.deletion_request", me.membershipId, me.id);
+      PFX.notify(me.id, "system", "Deletion request recorded", "Your account deletion request was recorded. In production our team would confirm the next steps by email.", "profile.html");
+      renderDel();
+      msg("Deletion requested. This is a demo — no real data was deleted.", "success");
+    });
+  }
+  renderDel();
 })();
 </script>
+<style>
+.avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;border:2px solid var(--line);background:#f4f6fa;flex-shrink:0}
+dl.kv{display:grid;grid-template-columns:130px 1fr;gap:.35rem .8rem;margin:.8rem 0}
+dl.kv dt{color:var(--muted);font-size:.9rem}
+dl.kv dd{margin:0;font-weight:600;word-break:break-word}
+</style>
 </body>
 </html>

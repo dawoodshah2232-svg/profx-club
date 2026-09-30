@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Campaigns — ProFX Club CRM</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="campaigns">
 <header class="nav"><div class="container nav-inner">
@@ -16,32 +16,40 @@
   <aside class="side" id="adminSide"></aside>
   <div class="main">
     <div class="demo-banner"><b>DEMO DATA</b> — sample campaign. In production, campaigns send only to opted-in members; unsubscribed members are excluded automatically.</div>
-    <div class="page-head"><div><h1>Campaigns</h1><p class="lead">Approved email templates, audience segments, delivery results, unsubscribe handling.</p></div>
+    <div class="page-head"><div><h1>Campaigns</h1><p class="lead">Compose, preview the opted-in audience, simulate a send, review per-recipient send logs.</p></div>
     <button class="btn btn-primary" id="newBtn">+ New campaign</button></div>
     <div id="msg"></div>
     <div id="list"></div>
+    <div id="logView" style="display:none"></div>
   </div>
 </div>
 
 <div class="modal-back" id="cModal"><div class="modal">
   <h3 id="cTitle">New campaign</h3>
-  <div class="field"><label for="cName">Campaign name</label><input type="text" id="cName"></div>
-  <div class="field"><label for="cSubj">Subject</label><input type="text" id="cSubj"></div>
+  <div class="form-error" id="cErr" role="alert"></div>
+  <div class="field"><label for="cName">Campaign name *</label><input type="text" id="cName" placeholder="e.g. October class reminder"></div>
   <div class="field"><label for="cAud">Audience</label>
-    <select id="cAud"><option value="promoEmail">Promo email opt-in</option><option value="promoWhatsapp">Promo WhatsApp opt-in</option><option value="all">All active members (service only)</option></select></div>
-  <div class="field"><label for="cBody">Message (template)</label><textarea id="cBody"></textarea></div>
-  <p class="meta">DEMO — sending is simulated. Only members with matching consent are counted as recipients.</p>
+    <select id="cAud">
+      <option value="promoEmail">Promo email opt-in</option>
+      <option value="promoWhatsapp">Promo WhatsApp opt-in</option>
+      <option value="all">All active members (service only)</option>
+    </select></div>
+  <div class="notice" id="audPreview" style="margin:.4rem 0"></div>
+  <div class="field"><label for="cSubj">Subject *</label><input type="text" id="cSubj"></div>
+  <div class="field"><label for="cBody">Message (template) *</label><textarea id="cBody" style="min-height:100px"></textarea></div>
+  <p class="meta">DEMO — sending is simulated. Only members with matching consent are counted as recipients; every recipient gets a send-log entry and an in-portal notification.</p>
   <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.8rem">
     <button class="btn btn-ghost" id="cNo">Back</button>
-    <button class="btn btn-primary" id="cYes">Save &amp; simulate send</button>
+    <button class="btn btn-primary" id="cYes">Send (simulated)</button>
   </div>
 </div></div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/admin.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/admin.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
+  function channelOf(audience) { return audience === "promoWhatsapp" ? "whatsapp" : "email"; }
   function recipients(audience) {
     return PFX.db.members.filter(function (m) {
       if (m.status !== "active") return false;
@@ -52,31 +60,76 @@
   }
   function render() {
     document.getElementById("list").innerHTML = PFX.db.campaigns.map(function (c) {
-      var n = recipients(c.audience === "promoEmail opt-in" ? "promoEmail" : c.audience).length;
+      var rec = recipients(c.audience);
+      var sent = (c.sendLog || []).length;
       return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(c.name) + (c.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
-        '<p class="meta">Subject: ' + PFX.esc(c.subject) + ' · Audience: ' + PFX.esc(c.audience) + '</p>' +
+        '<p class="meta">Subject: ' + PFX.esc(c.subject) + ' · Audience: ' + PFX.esc(c.audience) + ' · created ' + PFX.fmtDate(c.createdAt) + '</p>' +
         '<span class="badge ' + (c.status === "sent" ? "badge-ok" : "badge-neutral") + '">' + c.status + '</span> ' +
-        '<span class="meta">' + n + ' opted-in recipients' + (c.results ? ' · delivered ' + c.results.delivered + '/' + c.results.recipients : "") + '</span></div></div>';
+        '<span class="meta">' + rec.length + ' opted-in recipients' + (sent ? ' · ' + sent + ' simulated sends logged' : "") + '</span></div>' +
+        '<button class="btn btn-ghost btn-sm" data-log="' + c.id + '">Send log</button></div>';
     }).join("") || '<div class="empty">No campaigns yet.</div>';
   }
-  document.getElementById("newBtn").addEventListener("click", function () { document.getElementById("cModal").classList.add("open"); });
+  function openLog(id) {
+    var c = PFX.db.campaigns.find(function (x) { return x.id === id; });
+    if (!c) return;
+    var v = document.getElementById("logView");
+    document.getElementById("list").style.display = "none"; v.style.display = "block";
+    var rows = (c.sendLog || []).map(function (s) {
+      var m = PFX.memberById(s.memberId);
+      return "<tr><td><b>" + PFX.esc(m ? m.name : s.memberId) + "</b><br><span class='meta'>" + PFX.esc(m ? m.email : "") + "</span></td>" +
+        "<td>" + PFX.esc(s.channel) + "</td><td>" + PFX.fmtDate(s.at) + '</td><td><span class="badge badge-ok">' + PFX.esc(s.status) + "</span></td></tr>";
+    }).join("");
+    v.innerHTML = '<button class="btn btn-ghost btn-sm" id="logBack">← All campaigns</button>' +
+      '<div class="card" style="margin-top:.8rem"><h3>' + PFX.esc(c.name) + (c.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + "</h3>" +
+      '<p class="meta">Subject: ' + PFX.esc(c.subject) + ' · Audience: ' + PFX.esc(c.audience) + ' · channel: ' + channelOf(c.audience) + '</p>' +
+      '<h4 style="margin:.8rem 0 .4rem">Send log (' + (c.sendLog || []).length + ')</h4>' +
+      (rows ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Recipient</th><th>Channel</th><th>Sent at</th><th>Status</th></tr></thead><tbody>' + rows + "</tbody></table></div>"
+        : '<p class="meta">Nothing sent yet.</p>') +
+      '<h4 style="margin:.8rem 0 .4rem">Message body</h4><p class="meta" style="white-space:pre-wrap">' + PFX.esc(c.body) + "</p></div>";
+    document.getElementById("logBack").addEventListener("click", function () { v.style.display = "none"; document.getElementById("list").style.display = "block"; render(); });
+  }
+  function audPreview() {
+    var aud = document.getElementById("cAud").value;
+    var rec = recipients(aud);
+    document.getElementById("audPreview").innerHTML =
+      "<b>Audience preview:</b> " + rec.length + " active member(s) opted in for <b>" + PFX.esc(aud) + "</b>. " +
+      (rec.length ? "First: " + rec.slice(0, 3).map(function (m) { return PFX.esc(m.name); }).join(", ") + (rec.length > 3 ? ", …" : "") : "No one matches this audience right now.");
+  }
+  document.getElementById("newBtn").addEventListener("click", function () {
+    document.getElementById("cErr").style.display = "none";
+    document.getElementById("cName").value = ""; document.getElementById("cSubj").value = ""; document.getElementById("cBody").value = "";
+    audPreview();
+    document.getElementById("cModal").classList.add("open");
+  });
   document.getElementById("cNo").addEventListener("click", function () { document.getElementById("cModal").classList.remove("open"); });
+  document.getElementById("cAud").addEventListener("change", audPreview);
   document.getElementById("cYes").addEventListener("click", function () {
-    var name = document.getElementById("cName").value.trim() || "Untitled campaign",
-      aud = document.getElementById("cAud").value,
-      rec = recipients(aud);
-    var c = {
-      id: PFX.uid("cam"), name: name, audience: aud,
-      subject: document.getElementById("cSubj").value.trim(),
-      body: document.getElementById("cBody").value.trim(),
-      status: "sent", createdAt: PFX.now(),
-      results: { recipients: rec.length, delivered: rec.length, bounced: 0, unsubscribed: 0, note: "simulated delivery (demo)" }
-    };
-    PFX.db.campaigns.push(c); PFX.save();
-    PFX.audit("campaign.send", name + " → " + rec.length + " recipients (" + aud + ")", "admin");
+    var err = document.getElementById("cErr"); err.style.display = "none";
+    var name = document.getElementById("cName").value.trim(),
+        subj = document.getElementById("cSubj").value.trim(),
+        body = document.getElementById("cBody").value.trim(),
+        aud = document.getElementById("cAud").value;
+    if (name.length < 3) { err.textContent = "Give the campaign a name."; err.style.display = "block"; return; }
+    if (!subj) { err.textContent = "A subject is required."; err.style.display = "block"; return; }
+    if (!body) { err.textContent = "The message body is required."; err.style.display = "block"; return; }
+    var rec = recipients(aud), ch = channelOf(aud), at = PFX.now();
+    var log = rec.map(function (m) {
+      PFX.notify(m.id, "campaign", subj, "DEMO — " + name + ": " + body.slice(0, 140), "community.html");
+      return { memberId: m.id, at: at, channel: ch, status: "simulated-sent" };
+    });
+    PFX.db.campaigns.push({
+      id: PFX.uid("cam"), name: name, audience: aud, subject: subj, body: body,
+      status: "sent", createdAt: at, sendLog: log,
+      results: { recipients: rec.length, delivered: rec.length, bounced: 0, note: "simulated delivery (demo)" }
+    });
+    PFX.save();
+    PFX.audit("campaign.send", name + " → " + rec.length + " simulated sends (" + aud + ")", "admin");
     document.getElementById("cModal").classList.remove("open");
-    document.getElementById("msg").innerHTML = '<div class="success">Campaign simulated to <b>' + rec.length + '</b> opted-in members. Members who opted out were excluded automatically — marketing opt-out never cancels membership.</div>';
+    document.getElementById("msg").innerHTML = '<div class="success">Simulated send complete: <b>' + rec.length + '</b> send-log entries created and in-portal notifications queued. Opted-out members were excluded — marketing opt-out never cancels membership.</div>';
     render();
+  });
+  document.addEventListener("click", function (ev) {
+    var l = ev.target.closest("[data-log]"); if (l) openLog(l.dataset.log);
   });
   render();
 })();

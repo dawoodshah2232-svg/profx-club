@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CRM Dashboard — ProFX Club</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="dashboard">
 <header class="nav"><div class="container nav-inner">
@@ -16,12 +16,29 @@
   <aside class="side" id="adminSide"></aside>
   <div class="main">
     <div class="demo-banner"><b>DEMO DATA</b> — members, events and requests shown are sample data. The demo PIN session replaces production staff roles.</div>
-    <div class="page-head"><div><h1>CRM Dashboard</h1><p class="lead">At-a-glance club health. Definitions live under Reports.</p></div></div>
+    <div class="page-head"><div><h1>CRM Dashboard</h1><p class="lead">At-a-glance club health. All charts computed live from the demo database. Definitions live under Reports.</p></div></div>
     <div class="stat-row" id="stats"></div>
+
     <div class="grid g2">
+      <div class="card"><h3>Signups over time <span class="badge badge-demo">DEMO</span></h3><p class="meta">New members per month (from localStorage demo data).</p><div id="chSignups" style="margin-top:.6rem"></div></div>
+      <div class="card"><h3>Assistance by status <span class="badge badge-demo">DEMO</span></h3><p class="meta">Open vs resolved cases.</p><div id="chAsr" style="margin-top:.6rem;display:flex;justify-content:center"></div></div>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem"><h3>Bookings vs attendance per event <span class="badge badge-demo">DEMO</span></h3>
+      <p class="meta">Confirmed &amp; waitlisted bookings with present / no-show attendance where recorded.</p>
+      <div id="chEvents" style="margin-top:.6rem"></div>
+    </div>
+
+    <div class="grid g2" style="margin-top:1.2rem">
       <div class="card"><h3>Needs attention</h3><div id="attention"></div></div>
       <div class="card"><h3>Upcoming published events</h3><div id="upcoming"></div></div>
     </div>
+
+    <div class="card" style="margin-top:1.2rem"><h3>Recent audit entries</h3>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Detail</th></tr></thead><tbody id="auditRows"></tbody></table></div>
+      <p class="meta" style="margin-top:.5rem"><a href="audit.html">Open full audit log →</a></p>
+    </div>
+
     <div class="card" style="margin-top:1.2rem"><h3>Owner inputs still pending</h3>
       <ul class="meta" style="padding-left:1.2rem;margin-top:.4rem">
         <li>Logo &amp; approved colours</li><li>Responsible operating entity + contact details</li>
@@ -33,11 +50,59 @@
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/admin.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/admin.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
+  var NAVY = "#004070", GREEN = "#28c070";
+  /* --- tiny vanilla SVG bar chart --- */
+  function barChart(el, labels, series, legend) {
+    // series: [{label,color,values[]}]
+    var W = 520, H = 210, padL = 30, padB = 44, padT = 12, max = 1;
+    series.forEach(function (s) { s.values.forEach(function (v) { if (v > max) max = v; }); });
+    var cw = (W - padL - 14) / labels.length, bw = Math.min(26, (cw / series.length) - 6);
+    var svg = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" style="width:100%;height:auto;font-family:inherit">';
+    for (var g = 0; g <= 4; g++) {
+      var y = padT + (H - padT - padB) * g / 4, val = Math.round(max * (4 - g) / 4);
+      svg += '<line x1="' + padL + '" y1="' + y + '" x2="' + W + '" y2="' + y + '" stroke="#eef2f6"/>' +
+        '<text x="' + (padL - 6) + '" y="' + (y + 4) + '" font-size="10" fill="#94a3b8" text-anchor="end">' + val + "</text>";
+    }
+    labels.forEach(function (lab, i) {
+      var x0 = padL + i * cw + (cw - (bw * series.length + 6 * (series.length - 1))) / 2;
+      series.forEach(function (s, si) {
+        var v = s.values[i], h = (H - padT - padB) * v / max,
+          x = x0 + si * (bw + 6), y = H - padB - h;
+        svg += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw + '" height="' + Math.max(0, h).toFixed(1) + '" rx="3" fill="' + s.color + '">' +
+          "<title>" + PFX.esc(lab) + " — " + PFX.esc(s.label) + ": " + v + "</title></rect>";
+      });
+      var rot = labels.length > 4 ? ' transform="rotate(-22 ' + (padL + i * cw + cw / 2) + " " + (H - padB + 12) + ')"' : "";
+      svg += '<text x="' + (padL + i * cw + cw / 2) + '" y="' + (H - padB + 12) + '"' + rot + ' font-size="10" fill="#64748b" text-anchor="middle">' + PFX.esc(lab) + "</text>";
+    });
+    if (legend) svg += '<g font-size="10" fill="#64748b">' + series.map(function (s, i) {
+      var ly = 8 + i * 16;
+      return '<rect x="' + (W - 130) + '" y="' + (ly - 9) + '" width="10" height="10" rx="2" fill="' + s.color + '"/><text x="' + (W - 116) + '" y="' + (ly - 1) + '">' + PFX.esc(s.label) + "</text>";
+    }).join("") + "</g>";
+    document.getElementById(el).innerHTML = svg + "</svg>";
+  }
+  function donut(el, parts) {
+    // parts: [{label,color,value}]
+    var total = parts.reduce(function (t, p) { return t + p.value; }, 0) || 1;
+    var R = 54, C = 2 * Math.PI * R, off = 25, svg = '<svg viewBox="0 0 140 140" role="img" style="width:180px;max-width:60%;height:auto">';
+    parts.forEach(function (p) {
+      var frac = p.value / total;
+      svg += '<circle cx="70" cy="70" r="' + R + '" fill="none" stroke="' + p.color + '" stroke-width="22" stroke-dasharray="' + (C * frac).toFixed(1) + " " + C.toFixed(1) + '" stroke-dashoffset="' + (-off).toFixed(1) + '"><title>' + PFX.esc(p.label) + ": " + p.value + "</title></circle>";
+      off += C * frac;
+    });
+    svg += '<text x="70" y="66" text-anchor="middle" font-size="20" font-weight="700" fill="' + NAVY + '">' + total + "</text>" +
+      '<text x="70" y="84" text-anchor="middle" font-size="10" fill="#64748b">cases</text></svg>' +
+      '<div style="margin-top:.6rem">' + parts.map(function (p) {
+        return '<p class="meta" style="margin:.15rem 0"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:' + p.color + ';margin-right:.4rem"></span>' + PFX.esc(p.label) + " — <b>" + p.value + "</b></p>";
+      }).join("") + "</div>";
+    document.getElementById(el).innerHTML = svg;
+  }
+
+  /* --- stats row --- */
   var now = new Date();
   var active = PFX.db.members.filter(function (m) { return m.status === "active"; }).length;
   var pending = PFX.db.members.filter(function (m) { return m.status === "pending"; }).length;
@@ -46,6 +111,42 @@
   document.getElementById("stats").innerHTML =
     stat(active, "Active members") + stat(pending, "Pending verification") + stat(bookings, "Confirmed bookings") + stat(openAsr, "Open assistance");
   function stat(v, l) { return '<div class="stat"><b>' + v + '</b><span>' + l + '</span></div>'; }
+
+  /* --- 1) signups by month --- */
+  var byMonth = {};
+  PFX.db.members.forEach(function (m) {
+    var d = new Date(m.createdAt), k = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2);
+    byMonth[k] = (byMonth[k] || 0) + 1;
+  });
+  var months = Object.keys(byMonth).sort();
+  barChart("chSignups", months.map(function (k) { return k.slice(5) + "/" + k.slice(2, 4); }),
+    [{ label: "Signups", color: NAVY, values: months.map(function (k) { return byMonth[k]; }) }], false);
+
+  /* --- 2) bookings vs attendance per event --- */
+  var evs = PFX.db.events.slice().sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
+  var labels = evs.map(function (e) { return e.title.split(":")[0].split(" ").slice(0, 3).join(" "); });
+  function per(e, f) { return PFX.db.registrations.filter(function (r) { return r.eventId === e.id && f(r); }).length; }
+  barChart("chEvents", labels, [
+    { label: "Confirmed", color: NAVY, values: evs.map(function (e) { return per(e, function (r) { return r.status === "confirmed"; }); }) },
+    { label: "Waitlisted", color: "#94a3b8", values: evs.map(function (e) { return per(e, function (r) { return r.status === "waitlisted"; }); }) },
+    { label: "Present", color: GREEN, values: evs.map(function (e) { return per(e, function (r) { return r.attendance === "present"; }); }) },
+    { label: "No-show", color: "#f87171", values: evs.map(function (e) { return per(e, function (r) { return r.attendance === "no-show"; }); }) }
+  ], true);
+
+  /* --- 3) assistance by status donut --- */
+  var palette = { "new": "#f59e0b", "reviewing": NAVY, "awaiting member": "#38bdf8", "referral offered": "#a78bfa", "referred": "#94a3b8", "resolved": GREEN, "closed": "#cbd5e1" };
+  var bySt = {};
+  PFX.db.assistance.forEach(function (a) { bySt[a.status] = (bySt[a.status] || 0) + 1; });
+  donut("chAsr", Object.keys(bySt).map(function (s) {
+    return { label: s, color: palette[s] || "#64748b", value: bySt[s] };
+  }));
+
+  /* --- 4) recent audit --- */
+  document.getElementById("auditRows").innerHTML = PFX.db.audit.slice(0, 10).map(function (a) {
+    return "<tr><td class='meta'>" + PFX.fmtDate(a.at) + "</td><td>" + PFX.esc(a.actor) + "</td><td>" + PFX.esc(a.action) + "</td><td class='meta'>" + PFX.esc(a.detail || "") + "</td></tr>";
+  }).join("") || '<tr><td colspan="4" class="meta">No audit entries yet — admin actions are logged here.</td></tr>';
+
+  /* --- needs attention / upcoming (existing) --- */
   var att = [];
   if (pending) att.push(pending + " member(s) pending email verification");
   PFX.db.assistance.filter(function (a) { return a.status === "new"; }).forEach(function (a) {

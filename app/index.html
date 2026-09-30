@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — ProFX Club</title>
 <link rel="icon" href="../assets/favicon.png">
-<link rel="stylesheet" href="../css/style.css?v=20260930c">
+<link rel="stylesheet" href="../css/style.css?v=20261001">
 </head>
 <body data-page="overview">
 <header class="nav"><div class="container nav-inner">
@@ -21,8 +21,21 @@
     <div class="stat-row">
       <div class="stat"><b id="stStatus">—</b><span>Membership status</span></div>
       <div class="stat"><b id="stBookings">—</b><span>Upcoming bookings</span></div>
-      <div class="stat"><b id="stRequests">—</b><span>Open assistance requests</span></div>
-      <div class="stat"><b id="stLessons">—</b><span>Beginner path weeks</span></div>
+      <div class="stat"><b id="stLessons">—</b><span>Beginner path lessons</span></div>
+      <div class="stat"><b id="stBadges">—</b><span>Badges earned</span></div>
+    </div>
+
+    <div class="card" id="notifications" style="margin-bottom:1.2rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+        <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Notifications <span class="badge badge-info" id="ntfCount"></span></h3>
+        <button class="btn btn-ghost btn-sm" id="ntfAllRead">Mark all read</button>
+      </div>
+      <div id="ntfList" style="margin-top:.8rem"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.2rem">
+      <h3><svg class="h-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> Club announcements</h3>
+      <div id="annList" style="margin-top:.8rem"></div>
     </div>
 
     <div class="grid g2">
@@ -48,15 +61,22 @@
   </div>
 </div>
 
-<script src="../js/db.js?v=20260930c"></script>
-<script src="../js/app.js?v=20260930c"></script>
+<script src="../js/db.js?v=20261001"></script>
+<script src="../js/app.js?v=20261001"></script>
 <script>
 (function () {
   "use strict";
   var me = window.PFX_ME;
+  var KIND_BADGE = { booking: "badge-info", reminder: "badge-warn", assistance: "badge-ok", resource: "badge-neutral", system: "badge-neutral" };
   document.getElementById("hello").textContent = "Welcome, " + me.name.split(" ")[0];
   document.getElementById("midLine").textContent = "Membership ID " + me.membershipId + " · " + me.email;
   document.getElementById("stStatus").textContent = me.status === "active" ? "Active" : me.status;
+
+  /* ---- progress snapshot ---- */
+  var prog = PFX.lessonProgress(me.id);
+  document.getElementById("stLessons").textContent = prog.done + " of " + prog.total;
+  document.getElementById("stBadges").textContent = PFX.myBadges(me.id).length;
+
   var now = new Date();
   var myRegs = PFX.db.registrations.filter(function (r) { return r.memberId === me.id && (r.status === "confirmed" || r.status === "waitlisted"); });
   var upcoming = myRegs.filter(function (r) {
@@ -64,10 +84,45 @@
     return e && new Date(e.startsAt) > now;
   });
   document.getElementById("stBookings").textContent = upcoming.length;
-  document.getElementById("stRequests").textContent = PFX.db.assistance.filter(function (a) {
-    return a.memberId === me.id && ["new", "reviewing", "awaiting member", "referral offered"].indexOf(a.status) > -1;
-  }).length;
-  document.getElementById("stLessons").textContent = "4 weeks";
+
+  /* ---- notifications center ---- */
+  function renderNtf() {
+    var list = PFX.db.notifications.filter(function (n) { return n.memberId === me.id; })
+      .sort(function (a, b) { return b.at.localeCompare(a.at); });
+    var unread = list.filter(function (n) { return !n.read; }).length;
+    document.getElementById("ntfCount").textContent = unread ? unread + " unread" : "all read";
+    document.getElementById("ntfList").innerHTML = list.length ? list.map(function (n) {
+      return '<div class="ntf' + (n.read ? "" : " unread") + '">' +
+        '<div class="grow"><p style="font-weight:700">' + PFX.esc(n.title) + ' ' +
+        '<span class="badge ' + (KIND_BADGE[n.kind] || "badge-neutral") + '">' + PFX.esc(n.kind || "system") + '</span>' +
+        (n.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</p>' +
+        '<p class="meta">' + PFX.esc(n.body) + '</p>' +
+        '<p class="meta">' + PFX.fmtDate(n.at) + '</p></div>' +
+        '<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">' +
+        (n.link ? '<a class="btn btn-ghost btn-sm" href="' + PFX.esc(n.link) + '">View</a>' : "") +
+        (n.read ? '<span class="badge badge-neutral">Read</span>' : '<button class="btn btn-primary btn-sm" data-markread="' + n.id + '">Mark read</button>') +
+        '</div></div>';
+    }).join("") : '<div class="empty">No notifications yet.</div>';
+    if (window.PFX_updateNotifBadge) window.PFX_updateNotifBadge();
+  }
+  document.getElementById("ntfAllRead").addEventListener("click", function () {
+    PFX.markAllRead(me.id);
+    renderNtf();
+  });
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-markread]");
+    if (b) { PFX.markRead(b.dataset.markread, me.id); renderNtf(); }
+  });
+
+  /* ---- announcements feed ---- */
+  var anns = PFX.db.announcements.slice().sort(function (a, b) { return b.at.localeCompare(a.at); });
+  document.getElementById("annList").innerHTML = anns.length ? anns.map(function (a) {
+    return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(a.title) + (a.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
+      '<p class="meta">' + PFX.esc(a.body) + '</p>' +
+      '<p class="meta">' + PFX.fmtDate(a.at) + ' · <span class="badge badge-info">' + PFX.esc(a.audience || "all") + '</span></p></div></div>';
+  }).join("") : '<div class="empty">No announcements yet.</div>';
+
+  /* ---- next booked session ---- */
   if (upcoming.length) {
     var r = upcoming.sort(function (a, b) {
       var ea = PFX.db.events.find(function (x) { return x.id === a.eventId; });
@@ -82,12 +137,24 @@
   } else {
     document.getElementById("nextBooked").innerHTML = '<p class="meta">No bookings yet.</p><a class="btn btn-primary btn-sm" href="events.html" style="margin-top:.6rem">Book a free class</a>';
   }
-  var wk = (me.progress && me.progress.week) || 1;
-  var les = PFX.db.lessons.find(function (l) { return l.week === wk; }) || PFX.db.lessons[0];
-  document.getElementById("recoLesson").innerHTML =
-    '<p style="font-weight:700">Week ' + les.week + ': ' + PFX.esc(les.title) + '</p><p class="meta">' + PFX.esc(les.outcomes) + '</p>' +
-    '<a class="btn btn-ghost btn-sm" href="learning.html" style="margin-top:.6rem">Open learning</a>';
+
+  /* ---- recommended lesson: first incomplete, in week order ---- */
+  var doneIds = {};
+  PFX.db.progress.forEach(function (p) { if (p.memberId === me.id) doneIds[p.lessonId] = true; });
+  var next = PFX.db.lessons.slice().sort(function (a, b) { return a.week - b.week; }).filter(function (l) { return !doneIds[l.id]; })[0];
+  document.getElementById("recoLesson").innerHTML = next
+    ? '<p style="font-weight:700">Week ' + next.week + ': ' + PFX.esc(next.title) + ' <span class="badge badge-demo">SAMPLE</span></p><p class="meta">' + PFX.esc(next.outcomes) + '</p>' +
+      '<a class="btn btn-ghost btn-sm" href="learning.html" style="margin-top:.6rem">Open learning</a>'
+    : '<p style="font-weight:700">Beginner path complete <span class="badge badge-ok">Done</span></p><p class="meta">You finished all ' + prog.total + ' lessons. Attendance recognition — not accreditation.</p>';
+
+  renderNtf();
 })();
 </script>
+<style>
+.ntf{background:#fff;border:1px solid var(--line);border-radius:12px;padding:.9rem 1rem;margin-bottom:.6rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.ntf.unread{border-color:#9fd4bd;background:#f2fbf6;box-shadow:inset 3px 0 0 var(--emerald)}
+.ntf .grow{flex:1;min-width:200px}
+.ntf p{margin:.15rem 0}
+</style>
 </body>
 </html>
