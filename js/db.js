@@ -1,17 +1,17 @@
 /* ProFX Club — demo data layer (localStorage). Replaces Phase 2 PHP+MySQL API.
    All seeded content is SAMPLE/DEMO data, labelled as such everywhere.
-   DB v2: notifications, learning progress, announcements, discussion prompts,
+   DB v3: expanded sample data; notifications, learning progress, announcements, discussion prompts,
    assistance reply threads, integrations/social settings, richer sample data. */
 (function () {
   "use strict";
-  var KEY = "profxclub_db_v2";
+  var KEY = "profxclub_db_v3";
   function uid(p) { return (p || "id") + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 9); }
   function now() { return new Date().toISOString(); }
 
   /* ---------- seed ---------- */
   function seed() {
     return {
-      v: 2,
+      v: 3,
       settings: {
         brand: { name: "ProFX Club", tagline: "Free forex trader community", logo: "" /* owner input pending */ },
         org: { name: "ProFX Media FZ-LLC", entityNote: "Responsible operating entity details to be confirmed by the owner.", supportEmail: "" },
@@ -50,45 +50,872 @@
       },
       /* Events — SAMPLE data. Owner must confirm real sessions before publication. */
       events: [
-        { id: "evt_sample_00", title: "Welcome Orientation: How ProFX Club Works (Online)", sample: true,
-          startsAt: "2026-09-20T18:00:00+04:00", timezone: "Asia/Dubai (GMT+4)", language: "English",
-          host: "ProFX Community Team", kind: "Online class", capacity: 150, cost: "Free",
-          status: "completed", joinUrl: "", description: "SAMPLE past session: orientation for new members." },
-        { id: "evt_sample_01", title: "Beginner Class: Forex Terminology & Market Structure", sample: true,
-          startsAt: "2026-10-10T11:00:00+04:00", timezone: "Asia/Dubai (GMT+4)", language: "English",
-          host: "ProFX Education Team", kind: "Online class", capacity: 200, cost: "Free",
-          status: "published", joinUrl: "", description: "Week 1 of the beginner path: terminology, market structure and platform navigation with hypothetical examples." },
-        { id: "evt_sample_02", title: "Expert Webinar: Risk Concepts — Leverage & Margin", sample: true,
-          startsAt: "2026-10-24T19:00:00+04:00", timezone: "Asia/Dubai (GMT+4)", language: "English",
-          host: "ProFX Education Team", kind: "Online webinar", capacity: 25, cost: "Free",
-          status: "published", joinUrl: "", description: "Week 2 of the beginner path: leverage, margin and risk concepts using hypothetical examples." },
-        { id: "evt_sample_03", title: "Monthly Networking: Traders Meetup (Online)", sample: true,
-          startsAt: "2026-11-07T18:00:00+04:00", timezone: "Asia/Dubai (GMT+4)", language: "English",
-          host: "ProFX Community Team", kind: "Online meetup", capacity: 100, cost: "Free",
-          status: "published", joinUrl: "", description: "Monthly networking session for members: moderated Q&A and peer discussion." }
-      ],
+ {
+  "id": "evt_sample_00",
+  "title": "Welcome Orientation: How ProFX Club Works (Online)",
+  "sample": true,
+  "startsAt": "2026-09-20T18:00:00+04:00",
+  "timezone": "Asia/Dubai (GMT+4)",
+  "language": "English",
+  "host": "ProFX Community Team",
+  "kind": "Online class",
+  "capacity": 150,
+  "cost": "Free",
+  "status": "completed",
+  "joinUrl": "",
+  "description": "SAMPLE past session: orientation for new members."
+ },
+ {
+  "id": "evt_sample_01",
+  "title": "Beginner Class: Forex Terminology & Market Structure",
+  "sample": true,
+  "startsAt": "2026-10-10T11:00:00+04:00",
+  "timezone": "Asia/Dubai (GMT+4)",
+  "language": "English",
+  "host": "ProFX Education Team",
+  "kind": "Online class",
+  "capacity": 200,
+  "cost": "Free",
+  "status": "published",
+  "joinUrl": "",
+  "description": "Week 1 of the beginner path: terminology, market structure and platform navigation with hypothetical examples."
+ },
+ {
+  "id": "evt_sample_02",
+  "title": "Expert Webinar: Risk Concepts — Leverage & Margin",
+  "sample": true,
+  "startsAt": "2026-10-24T19:00:00+04:00",
+  "timezone": "Asia/Dubai (GMT+4)",
+  "language": "English",
+  "host": "ProFX Education Team",
+  "kind": "Online webinar",
+  "capacity": 25,
+  "cost": "Free",
+  "status": "published",
+  "joinUrl": "",
+  "description": "Week 2 of the beginner path: leverage, margin and risk concepts using hypothetical examples."
+ },
+ {
+  "id": "evt_sample_03",
+  "title": "Monthly Networking: Traders Meetup (Online)",
+  "sample": true,
+  "startsAt": "2026-11-07T18:00:00+04:00",
+  "timezone": "Asia/Dubai (GMT+4)",
+  "language": "English",
+  "host": "ProFX Community Team",
+  "kind": "Online meetup",
+  "capacity": 100,
+  "cost": "Free",
+  "status": "published",
+  "joinUrl": "",
+  "description": "Monthly networking session for members: moderated Q&A and peer discussion."
+ },
+ {
+  "id": "evt_sample_04",
+  "title": "Beginner Class: Trading Plans, Journaling & Behaviour",
+  "sample": true,
+  "startsAt": "2026-10-17T11:00:00+04:00",
+  "timezone": "Asia/Dubai (GMT+4)",
+  "language": "English",
+  "host": "ProFX Education Team",
+  "kind": "Online class",
+  "capacity": 200,
+  "cost": "Free",
+  "status": "published",
+  "joinUrl": "",
+  "description": "Week 3 of the beginner path: build a trading plan, start a journal and avoid common behavioural mistakes."
+ },
+ {
+  "id": "evt_sample_05",
+  "title": "Expert Webinar: Broker Due-Diligence Checklist",
+  "sample": true,
+  "startsAt": "2026-10-31T19:00:00+04:00",
+  "timezone": "Asia/Dubai (GMT+4)",
+  "language": "English",
+  "host": "ProFX Education Team",
+  "kind": "Online webinar",
+  "capacity": 30,
+  "cost": "Free",
+  "status": "published",
+  "joinUrl": "",
+  "description": "Week 4 of the beginner path: how to check a broker, keep withdrawal records and spot fraud warning signs."
+ },
+ {
+  "id": "evt_sample_06",
+  "title": "Community AMA: Ask the Mentors (Online)",
+  "sample": true,
+  "startsAt": "2026-11-14T18:00:00+04:00",
+  "timezone": "Asia/Dubai (GMT+4)",
+  "language": "English",
+  "host": "ProFX Community Team",
+  "kind": "Online meetup",
+  "capacity": 150,
+  "cost": "Free",
+  "status": "published",
+  "joinUrl": "",
+  "description": "Open Q&A with the education team — bring your beginner questions."
+ },
+ {
+  "id": "evt_sample_07",
+  "title": "September Networking Evening (Online)",
+  "sample": true,
+  "startsAt": "2026-09-12T18:00:00+04:00",
+  "timezone": "Asia/Dubai (GMT+4)",
+  "language": "English",
+  "host": "ProFX Community Team",
+  "kind": "Online meetup",
+  "capacity": 80,
+  "cost": "Free",
+  "status": "completed",
+  "joinUrl": "",
+  "description": "SAMPLE past session: monthly networking evening."
+ }
+],
       /* registrations: status confirmed|waitlisted|cancelled|attended|no-show(legacy) — attendance tracked separately */
       registrations: [
-        { id: "reg_sample_01", eventId: "evt_sample_00", memberId: "mem_sample_01", status: "confirmed", attendance: "present", createdAt: "2026-09-18T09:00:00+04:00", history: [{ at: "2026-09-18T09:00:00+04:00", action: "confirmed", by: "member" }, { at: "2026-09-20T19:30:00+04:00", action: "attendance:present", by: "admin" }] },
-        { id: "reg_sample_02", eventId: "evt_sample_00", memberId: "mem_sample_03", status: "confirmed", attendance: "present", createdAt: "2026-09-18T10:00:00+04:00", history: [{ at: "2026-09-18T10:00:00+04:00", action: "confirmed", by: "member" }, { at: "2026-09-20T19:30:00+04:00", action: "attendance:present", by: "admin" }] },
-        { id: "reg_sample_03", eventId: "evt_sample_00", memberId: "mem_sample_04", status: "confirmed", attendance: "no-show", createdAt: "2026-09-19T11:00:00+04:00", history: [{ at: "2026-09-19T11:00:00+04:00", action: "confirmed", by: "member" }, { at: "2026-09-20T19:30:00+04:00", action: "attendance:no-show", by: "admin" }] },
-        { id: "reg_sample_04", eventId: "evt_sample_01", memberId: "mem_sample_01", status: "confirmed", attendance: null, createdAt: "2026-09-25T08:00:00+04:00", history: [{ at: "2026-09-25T08:00:00+04:00", action: "confirmed", by: "member" }] },
-        { id: "reg_sample_05", eventId: "evt_sample_01", memberId: "mem_sample_03", status: "confirmed", attendance: null, createdAt: "2026-09-26T09:00:00+04:00", history: [{ at: "2026-09-26T09:00:00+04:00", action: "confirmed", by: "member" }] },
-        { id: "reg_sample_06", eventId: "evt_sample_02", memberId: "mem_sample_01", status: "waitlisted", attendance: null, createdAt: "2026-09-27T10:00:00+04:00", history: [{ at: "2026-09-27T10:00:00+04:00", action: "waitlisted", by: "member" }] },
-        { id: "reg_sample_07", eventId: "evt_sample_01", memberId: "mem_sample_04", status: "waitlisted", attendance: null, createdAt: "2026-09-28T12:00:00+04:00", history: [{ at: "2026-09-28T12:00:00+04:00", action: "waitlisted", by: "member" }] }
-      ],
+ {
+  "id": "reg_sample_01",
+  "eventId": "evt_sample_00",
+  "memberId": "mem_sample_01",
+  "status": "confirmed",
+  "attendance": "present",
+  "createdAt": "2026-09-18T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-18T09:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-20T19:30:00+04:00",
+    "action": "attendance:present",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_02",
+  "eventId": "evt_sample_00",
+  "memberId": "mem_sample_03",
+  "status": "confirmed",
+  "attendance": "present",
+  "createdAt": "2026-09-18T10:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-18T10:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-20T19:30:00+04:00",
+    "action": "attendance:present",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_03",
+  "eventId": "evt_sample_00",
+  "memberId": "mem_sample_04",
+  "status": "confirmed",
+  "attendance": "no-show",
+  "createdAt": "2026-09-19T11:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-19T11:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-20T19:30:00+04:00",
+    "action": "attendance:no-show",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_04",
+  "eventId": "evt_sample_01",
+  "memberId": "mem_sample_01",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-25T08:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-25T08:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_05",
+  "eventId": "evt_sample_01",
+  "memberId": "mem_sample_03",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-26T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-26T09:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_06",
+  "eventId": "evt_sample_02",
+  "memberId": "mem_sample_01",
+  "status": "waitlisted",
+  "attendance": null,
+  "createdAt": "2026-09-27T10:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-27T10:00:00+04:00",
+    "action": "waitlisted",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_07",
+  "eventId": "evt_sample_01",
+  "memberId": "mem_sample_04",
+  "status": "waitlisted",
+  "attendance": null,
+  "createdAt": "2026-09-28T12:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-28T12:00:00+04:00",
+    "action": "waitlisted",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_08",
+  "eventId": "evt_sample_00",
+  "memberId": "mem_sample_06",
+  "status": "confirmed",
+  "attendance": "present",
+  "createdAt": "2026-09-18T11:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-18T11:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-18T19:30:00+04:00",
+    "action": "attendance:present",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_09",
+  "eventId": "evt_sample_00",
+  "memberId": "mem_sample_07",
+  "status": "confirmed",
+  "attendance": "present",
+  "createdAt": "2026-09-19T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-19T09:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-19T19:30:00+04:00",
+    "action": "attendance:present",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_10",
+  "eventId": "evt_sample_00",
+  "memberId": "mem_sample_08",
+  "status": "confirmed",
+  "attendance": "no-show",
+  "createdAt": "2026-09-19T15:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-19T15:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-19T19:30:00+04:00",
+    "action": "attendance:no-show",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_11",
+  "eventId": "evt_sample_07",
+  "memberId": "mem_sample_01",
+  "status": "confirmed",
+  "attendance": "present",
+  "createdAt": "2026-09-10T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-10T09:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-10T19:30:00+04:00",
+    "action": "attendance:present",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_12",
+  "eventId": "evt_sample_07",
+  "memberId": "mem_sample_03",
+  "status": "confirmed",
+  "attendance": "present",
+  "createdAt": "2026-09-10T10:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-10T10:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-10T19:30:00+04:00",
+    "action": "attendance:present",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_13",
+  "eventId": "evt_sample_07",
+  "memberId": "mem_sample_06",
+  "status": "confirmed",
+  "attendance": "present",
+  "createdAt": "2026-09-11T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-11T09:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-11T19:30:00+04:00",
+    "action": "attendance:present",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_14",
+  "eventId": "evt_sample_07",
+  "memberId": "mem_sample_14",
+  "status": "confirmed",
+  "attendance": "no-show",
+  "createdAt": "2026-09-11T14:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-11T14:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-11T19:30:00+04:00",
+    "action": "attendance:no-show",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_15",
+  "eventId": "evt_sample_07",
+  "memberId": "mem_sample_04",
+  "status": "confirmed",
+  "attendance": "present",
+  "createdAt": "2026-09-12T08:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-12T08:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   },
+   {
+    "at": "2026-09-12T19:30:00+04:00",
+    "action": "attendance:present",
+    "by": "admin"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_16",
+  "eventId": "evt_sample_01",
+  "memberId": "mem_sample_06",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-26T10:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-26T10:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_17",
+  "eventId": "evt_sample_01",
+  "memberId": "mem_sample_07",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-27T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-27T09:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_18",
+  "eventId": "evt_sample_01",
+  "memberId": "mem_sample_08",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-28T08:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-28T08:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_19",
+  "eventId": "evt_sample_01",
+  "memberId": "mem_sample_14",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-29T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-29T09:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_20",
+  "eventId": "evt_sample_01",
+  "memberId": "mem_sample_16",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-30T08:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T08:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_21",
+  "eventId": "evt_sample_01",
+  "memberId": "mem_sample_19",
+  "status": "waitlisted",
+  "attendance": null,
+  "createdAt": "2026-09-30T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T09:00:00+04:00",
+    "action": "waitlisted",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_22",
+  "eventId": "evt_sample_02",
+  "memberId": "mem_sample_03",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-28T10:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-28T10:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_23",
+  "eventId": "evt_sample_02",
+  "memberId": "mem_sample_04",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-28T14:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-28T14:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_24",
+  "eventId": "evt_sample_02",
+  "memberId": "mem_sample_06",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-29T08:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-29T08:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_25",
+  "eventId": "evt_sample_02",
+  "memberId": "mem_sample_11",
+  "status": "waitlisted",
+  "attendance": null,
+  "createdAt": "2026-09-29T16:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-29T16:00:00+04:00",
+    "action": "waitlisted",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_26",
+  "eventId": "evt_sample_02",
+  "memberId": "mem_sample_14",
+  "status": "waitlisted",
+  "attendance": null,
+  "createdAt": "2026-09-30T07:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T07:00:00+04:00",
+    "action": "waitlisted",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_27",
+  "eventId": "evt_sample_04",
+  "memberId": "mem_sample_01",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-29T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-29T09:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_28",
+  "eventId": "evt_sample_04",
+  "memberId": "mem_sample_08",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-29T12:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-29T12:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_29",
+  "eventId": "evt_sample_04",
+  "memberId": "mem_sample_13",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-30T08:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T08:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_30",
+  "eventId": "evt_sample_04",
+  "memberId": "mem_sample_20",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-30T10:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T10:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_31",
+  "eventId": "evt_sample_05",
+  "memberId": "mem_sample_04",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-29T10:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-29T10:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_32",
+  "eventId": "evt_sample_05",
+  "memberId": "mem_sample_11",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-29T15:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-29T15:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_33",
+  "eventId": "evt_sample_05",
+  "memberId": "mem_sample_19",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-30T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T09:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_34",
+  "eventId": "evt_sample_05",
+  "memberId": "mem_sample_07",
+  "status": "waitlisted",
+  "attendance": null,
+  "createdAt": "2026-09-30T10:30:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T10:30:00+04:00",
+    "action": "waitlisted",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_35",
+  "eventId": "evt_sample_03",
+  "memberId": "mem_sample_01",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-29T11:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-29T11:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_36",
+  "eventId": "evt_sample_03",
+  "memberId": "mem_sample_14",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-30T08:30:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T08:30:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_37",
+  "eventId": "evt_sample_03",
+  "memberId": "mem_sample_17",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-30T09:30:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T09:30:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_38",
+  "eventId": "evt_sample_06",
+  "memberId": "mem_sample_08",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-30T09:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T09:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ },
+ {
+  "id": "reg_sample_39",
+  "eventId": "evt_sample_06",
+  "memberId": "mem_sample_10",
+  "status": "confirmed",
+  "attendance": null,
+  "createdAt": "2026-09-30T10:00:00+04:00",
+  "history": [
+   {
+    "at": "2026-09-30T10:00:00+04:00",
+    "action": "confirmed",
+    "by": "member"
+   }
+  ]
+ }
+],
       educators: [
-        { id: "edu_sample_01", name: "Sample Educator", sample: true,
-          bio: "SAMPLE profile — the owner will supply real educator biographies.", credentials: "TBC", langs: ["English"], photo: "" }
-      ],
+ {
+  "id": "edu_sample_01",
+  "name": "Sample Educator",
+  "sample": true,
+  "bio": "SAMPLE profile — the owner will supply real educator biographies.",
+  "credentials": "TBC",
+  "langs": [
+   "English"
+  ],
+  "photo": ""
+ },
+ {
+  "id": "edu_sample_02",
+  "name": "Sample Mentor — Risk",
+  "sample": true,
+  "bio": "SAMPLE profile — teaches the leverage, margin and risk sessions.",
+  "credentials": "TBC",
+  "langs": [
+   "English",
+   "Arabic"
+  ],
+  "photo": ""
+ },
+ {
+  "id": "edu_sample_03",
+  "name": "Sample Mentor — Community",
+  "sample": true,
+  "bio": "SAMPLE profile — hosts meetups and the monthly AMA.",
+  "credentials": "TBC",
+  "langs": [
+   "English",
+   "Hindi"
+  ],
+  "photo": ""
+ }
+],
       resources: [
-        { id: "res_sample_01", title: "Beginner Trading Glossary", kind: "PDF", sample: true,
-          summary: "SAMPLE resource — key forex terms explained in plain language.", access: "members", file: "" },
-        { id: "res_sample_02", title: "Risk-Planning Worksheet", kind: "Worksheet", sample: true,
-          summary: "SAMPLE resource — plan position size and risk before any trade.", access: "members", file: "" },
-        { id: "res_sample_03", title: "Trading Journal Template", kind: "Template", sample: true,
-          summary: "SAMPLE resource — track trades, decisions and lessons learned.", access: "members", file: "" }
-      ],
+ {
+  "id": "res_sample_01",
+  "title": "Beginner Trading Glossary",
+  "kind": "PDF",
+  "sample": true,
+  "summary": "SAMPLE resource — key forex terms explained in plain language.",
+  "access": "members",
+  "file": ""
+ },
+ {
+  "id": "res_sample_02",
+  "title": "Risk-Planning Worksheet",
+  "kind": "Worksheet",
+  "sample": true,
+  "summary": "SAMPLE resource — plan position size and risk before any trade.",
+  "access": "members",
+  "file": ""
+ },
+ {
+  "id": "res_sample_03",
+  "title": "Trading Journal Template",
+  "kind": "Template",
+  "sample": true,
+  "summary": "SAMPLE resource — track trades, decisions and lessons learned.",
+  "access": "members",
+  "file": ""
+ },
+ {
+  "id": "res_sample_04",
+  "title": "Leverage & Margin Worked Examples",
+  "kind": "Worksheet",
+  "sample": true,
+  "summary": "SAMPLE resource — hypothetical leverage and margin calculations, step by step.",
+  "access": "members",
+  "file": ""
+ },
+ {
+  "id": "res_sample_05",
+  "title": "Broker Due-Diligence Checklist",
+  "kind": "Checklist",
+  "sample": true,
+  "summary": "SAMPLE resource — what to verify before trusting any broker.",
+  "access": "members",
+  "file": ""
+ },
+ {
+  "id": "res_sample_06",
+  "title": "Withdrawal Record-Keeping Guide",
+  "kind": "Guide",
+  "sample": true,
+  "summary": "SAMPLE resource — how to document deposits and withdrawals properly.",
+  "access": "members",
+  "file": ""
+ },
+ {
+  "id": "res_sample_07",
+  "title": "Fraud Warning Signs One-Pager",
+  "kind": "PDF",
+  "sample": true,
+  "summary": "SAMPLE resource — common scam patterns every beginner should know.",
+  "access": "members",
+  "file": ""
+ }
+],
       lessons: [
         { id: "les_01", week: 1, title: "Forex terminology, market structure, platform navigation", outcomes: "Understand core terms and how markets are structured.", recordingUrl: "", sample: true },
         { id: "les_02", week: 2, title: "Leverage, margin and risk concepts (hypothetical examples)", outcomes: "Explain leverage and margin; calculate simple risk examples.", recordingUrl: "", sample: true },
@@ -104,88 +931,1279 @@
       ],
       /* announcements feed + discussion prompts — SAMPLE until owner publishes */
       announcements: [
-        { id: "ann_sample_01", title: "Welcome to the new ProFX Club site", sample: true,
-          body: "SAMPLE announcement — the owner will publish real club news here.", at: "2026-09-29T10:00:00+04:00", audience: "all" },
-        { id: "ann_sample_02", title: "October class schedule is out", sample: true,
-          body: "SAMPLE announcement — beginner classes and the expert webinar are open for booking.", at: "2026-09-30T09:00:00+04:00", audience: "members" }
-      ],
+ {
+  "id": "ann_sample_01",
+  "title": "Welcome to the new ProFX Club site",
+  "sample": true,
+  "body": "SAMPLE announcement — the owner will publish real club news here.",
+  "at": "2026-09-29T10:00:00+04:00",
+  "audience": "all"
+ },
+ {
+  "id": "ann_sample_02",
+  "title": "October class schedule is out",
+  "sample": true,
+  "body": "SAMPLE announcement — beginner classes and the expert webinar are open for booking.",
+  "at": "2026-09-30T09:00:00+04:00",
+  "audience": "members"
+ },
+ {
+  "id": "ann_sample_03",
+  "title": "New worksheet in the learning library",
+  "sample": true,
+  "body": "SAMPLE announcement — the leverage & margin worked examples are now available to members.",
+  "at": "2026-09-29T14:00:00+04:00",
+  "audience": "members"
+ },
+ {
+  "id": "ann_sample_04",
+  "title": "November AMA — save your seat",
+  "sample": true,
+  "body": "SAMPLE announcement — the community AMA with the mentors is open for booking.",
+  "at": "2026-09-30T10:00:00+04:00",
+  "audience": "all"
+ },
+ {
+  "id": "ann_sample_05",
+  "title": "Community guidelines reminder",
+  "sample": true,
+  "body": "SAMPLE announcement — please keep discussions respectful and educational. No signals, no promotions.",
+  "at": "2026-09-27T10:00:00+04:00",
+  "audience": "all"
+ }
+],
       discussions: [
-        { id: "dis_sample_01", prompt: "What was the hardest forex term to understand when you started?", sample: true,
-          detail: "SAMPLE discussion prompt — share your answer at the next meetup.", at: "2026-09-28T10:00:00+04:00" },
-        { id: "dis_sample_02", prompt: "One risk-management rule you never break", sample: true,
-          detail: "SAMPLE discussion prompt — moderated peer discussion.", at: "2026-09-30T10:00:00+04:00" }
-      ],
+ {
+  "id": "dis_sample_01",
+  "prompt": "What was the hardest forex term to understand when you started?",
+  "sample": true,
+  "detail": "SAMPLE discussion prompt — share your answer at the next meetup.",
+  "at": "2026-09-28T10:00:00+04:00"
+ },
+ {
+  "id": "dis_sample_02",
+  "prompt": "One risk-management rule you never break",
+  "sample": true,
+  "detail": "SAMPLE discussion prompt — moderated peer discussion.",
+  "at": "2026-09-30T10:00:00+04:00"
+ },
+ {
+  "id": "dis_sample_03",
+  "prompt": "How do you size a position? (hypothetical examples only)",
+  "sample": true,
+  "detail": "SAMPLE discussion prompt — education only, not financial advice.",
+  "at": "2026-09-29T11:00:00+04:00"
+ },
+ {
+  "id": "dis_sample_04",
+  "prompt": "Best note-taking habit for your trading journal",
+  "sample": true,
+  "detail": "SAMPLE discussion prompt — share what works for you.",
+  "at": "2026-09-30T08:00:00+04:00"
+ },
+ {
+  "id": "dis_sample_05",
+  "prompt": "What would you ask a mentor in the AMA?",
+  "sample": true,
+  "detail": "SAMPLE discussion prompt — top questions will be covered live.",
+  "at": "2026-09-30T11:00:00+04:00"
+ }
+],
       members: [
-        { id: "mem_sample_01", membershipId: "PX-2026-000001", name: "Aisha Rahman", email: "aisha@example.com", sample: true,
-          status: "active", verified: true, createdAt: "2026-09-28T10:00:00+04:00", source: "seed", referralCode: "EDU-AISHA", referredBy: "",
-          city: "Dubai", country: "UAE", experience: "Beginner", language: "English", interests: ["Beginner classes"],
-          avatar: "", preferences: { language: "English", timezone: "Asia/Dubai" }, directoryOptIn: true,
-          consent: { terms: true, privacy: true, promoEmail: true, promoWhatsapp: false }, consentHistory: [],
-          tags: ["beginner"] },
-        { id: "mem_sample_02", membershipId: "PX-2026-000002", name: "Omar Farouk", email: "omar@example.com", sample: true,
-          status: "pending", verified: false, createdAt: "2026-09-29T14:30:00+04:00", source: "seed", referralCode: "", referredBy: "",
-          city: "Sharjah", country: "UAE", experience: "Intermediate", language: "English", interests: [],
-          avatar: "", preferences: { language: "English", timezone: "Asia/Dubai" }, directoryOptIn: false,
-          consent: { terms: true, privacy: true, promoEmail: false, promoWhatsapp: false }, consentHistory: [],
-          tags: [] },
-        { id: "mem_sample_03", membershipId: "PX-2026-000003", name: "Sara Iqbal", email: "sara@example.com", sample: true,
-          status: "active", verified: true, createdAt: "2026-09-29T09:15:00+04:00", source: "referral", referralCode: "EDU-SARA", referredBy: "EDU-AISHA",
-          city: "Dubai", country: "UAE", experience: "Beginner", language: "English", interests: ["Beginner classes", "Meetups"],
-          avatar: "", preferences: { language: "English", timezone: "Asia/Dubai" }, directoryOptIn: true,
-          consent: { terms: true, privacy: true, promoEmail: true, promoWhatsapp: true }, consentHistory: [],
-          tags: ["beginner"] },
-        { id: "mem_sample_04", membershipId: "PX-2026-000004", name: "David Chen", email: "david@example.com", sample: true,
-          status: "active", verified: true, createdAt: "2026-09-29T16:40:00+04:00", source: "direct", referralCode: "EDU-DAVID", referredBy: "",
-          city: "Abu Dhabi", country: "UAE", experience: "Advanced", language: "English", interests: ["Webinars"],
-          avatar: "", preferences: { language: "English", timezone: "Asia/Dubai" }, directoryOptIn: true,
-          consent: { terms: true, privacy: true, promoEmail: false, promoWhatsapp: false }, consentHistory: [],
-          tags: [] },
-        { id: "mem_sample_05", membershipId: "PX-2026-000005", name: "Layla Haddad", email: "layla@example.com", sample: true,
-          status: "suspended", verified: true, createdAt: "2026-09-27T11:20:00+04:00", source: "direct", referralCode: "", referredBy: "",
-          city: "Dubai", country: "UAE", experience: "Beginner", language: "Arabic", interests: [],
-          avatar: "", preferences: { language: "Arabic", timezone: "Asia/Dubai" }, directoryOptIn: false,
-          consent: { terms: true, privacy: true, promoEmail: false, promoWhatsapp: false }, consentHistory: [],
-          tags: [] }
-      ],
+ {
+  "id": "mem_sample_01",
+  "membershipId": "PX-2026-000001",
+  "name": "Aisha Rahman",
+  "email": "aisha@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-28T10:00:00+04:00",
+  "source": "seed",
+  "referralCode": "EDU-AISHA",
+  "referredBy": "",
+  "city": "Dubai",
+  "country": "UAE",
+  "experience": "Beginner",
+  "language": "English",
+  "interests": [
+   "Beginner classes"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": true,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ },
+ {
+  "id": "mem_sample_02",
+  "membershipId": "PX-2026-000002",
+  "name": "Omar Farouk",
+  "email": "omar@example.com",
+  "sample": true,
+  "status": "pending",
+  "verified": false,
+  "createdAt": "2026-09-29T14:30:00+04:00",
+  "source": "seed",
+  "referralCode": "",
+  "referredBy": "",
+  "city": "Sharjah",
+  "country": "UAE",
+  "experience": "Intermediate",
+  "language": "English",
+  "interests": [],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": false,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": []
+ },
+ {
+  "id": "mem_sample_03",
+  "membershipId": "PX-2026-000003",
+  "name": "Sara Iqbal",
+  "email": "sara@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-29T09:15:00+04:00",
+  "source": "referral",
+  "referralCode": "EDU-SARA",
+  "referredBy": "EDU-AISHA",
+  "city": "Dubai",
+  "country": "UAE",
+  "experience": "Beginner",
+  "language": "English",
+  "interests": [
+   "Beginner classes",
+   "Meetups"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": true,
+   "promoWhatsapp": true
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ },
+ {
+  "id": "mem_sample_04",
+  "membershipId": "PX-2026-000004",
+  "name": "David Chen",
+  "email": "david@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-29T16:40:00+04:00",
+  "source": "direct",
+  "referralCode": "EDU-DAVID",
+  "referredBy": "",
+  "city": "Abu Dhabi",
+  "country": "UAE",
+  "experience": "Advanced",
+  "language": "English",
+  "interests": [
+   "Webinars"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": []
+ },
+ {
+  "id": "mem_sample_05",
+  "membershipId": "PX-2026-000005",
+  "name": "Layla Haddad",
+  "email": "layla@example.com",
+  "sample": true,
+  "status": "suspended",
+  "verified": true,
+  "createdAt": "2026-09-27T11:20:00+04:00",
+  "source": "direct",
+  "referralCode": "",
+  "referredBy": "",
+  "city": "Dubai",
+  "country": "UAE",
+  "experience": "Beginner",
+  "language": "Arabic",
+  "interests": [],
+  "avatar": "",
+  "preferences": {
+   "language": "Arabic",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": false,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": []
+ },
+ {
+  "id": "mem_sample_06",
+  "membershipId": "PX-2026-000006",
+  "name": "Priya Nair",
+  "email": "priya@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-26T09:00:00+04:00",
+  "source": "direct",
+  "referralCode": "EDU-PRIYA",
+  "referredBy": "",
+  "city": "Mumbai",
+  "country": "India",
+  "experience": "Beginner",
+  "language": "English",
+  "interests": [
+   "Beginner classes"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": true,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ },
+ {
+  "id": "mem_sample_07",
+  "membershipId": "PX-2026-000007",
+  "name": "James Okafor",
+  "email": "james@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-26T14:00:00+04:00",
+  "source": "direct",
+  "referralCode": "EDU-JAMES",
+  "referredBy": "",
+  "city": "Lagos",
+  "country": "Nigeria",
+  "experience": "Intermediate",
+  "language": "English",
+  "interests": [
+   "Webinars"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": []
+ },
+ {
+  "id": "mem_sample_08",
+  "membershipId": "PX-2026-000008",
+  "name": "Maria Santos",
+  "email": "maria@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-27T08:30:00+04:00",
+  "source": "referral",
+  "referralCode": "EDU-MARIA",
+  "referredBy": "EDU-AISHA",
+  "city": "Manila",
+  "country": "Philippines",
+  "experience": "Beginner",
+  "language": "English",
+  "interests": [
+   "Beginner classes",
+   "Meetups"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": true,
+   "promoWhatsapp": true
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ },
+ {
+  "id": "mem_sample_09",
+  "membershipId": "PX-2026-000009",
+  "name": "Ahmed Hassan",
+  "email": "ahmed@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-27T16:00:00+04:00",
+  "source": "direct",
+  "referralCode": "EDU-AHMED",
+  "referredBy": "",
+  "city": "Cairo",
+  "country": "Egypt",
+  "experience": "Beginner",
+  "language": "Arabic",
+  "interests": [],
+  "avatar": "",
+  "preferences": {
+   "language": "Arabic",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": false,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ },
+ {
+  "id": "mem_sample_10",
+  "membershipId": "PX-2026-000010",
+  "name": "Fatima Al-Zahra",
+  "email": "fatima@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-28T11:00:00+04:00",
+  "source": "direct",
+  "referralCode": "EDU-FATIMA",
+  "referredBy": "",
+  "city": "Riyadh",
+  "country": "Saudi Arabia",
+  "experience": "Intermediate",
+  "language": "Arabic",
+  "interests": [
+   "Webinars"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "Arabic",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": []
+ },
+ {
+  "id": "mem_sample_11",
+  "membershipId": "PX-2026-000011",
+  "name": "Rajesh Kumar",
+  "email": "rajesh@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-28T15:00:00+04:00",
+  "source": "direct",
+  "referralCode": "EDU-RAJESH",
+  "referredBy": "",
+  "city": "Delhi",
+  "country": "India",
+  "experience": "Advanced",
+  "language": "Hindi",
+  "interests": [
+   "Webinars"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": []
+ },
+ {
+  "id": "mem_sample_12",
+  "membershipId": "PX-2026-000012",
+  "name": "Sofia Reyes",
+  "email": "sofia@example.com",
+  "sample": true,
+  "status": "pending",
+  "verified": false,
+  "createdAt": "2026-09-29T10:00:00+04:00",
+  "source": "direct",
+  "referralCode": "",
+  "referredBy": "",
+  "city": "Cebu",
+  "country": "Philippines",
+  "experience": "Beginner",
+  "language": "English",
+  "interests": [],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": false,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ },
+ {
+  "id": "mem_sample_13",
+  "membershipId": "PX-2026-000013",
+  "name": "Bilal Ahmed",
+  "email": "bilal@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-29T12:00:00+04:00",
+  "source": "referral",
+  "referralCode": "EDU-BILAL",
+  "referredBy": "EDU-SARA",
+  "city": "Karachi",
+  "country": "Pakistan",
+  "experience": "Beginner",
+  "language": "Urdu",
+  "interests": [],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ },
+ {
+  "id": "mem_sample_14",
+  "membershipId": "PX-2026-000014",
+  "name": "Emma Wilson",
+  "email": "emma@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-29T18:00:00+04:00",
+  "source": "direct",
+  "referralCode": "EDU-EMMA",
+  "referredBy": "",
+  "city": "London",
+  "country": "UK",
+  "experience": "Intermediate",
+  "language": "English",
+  "interests": [
+   "Webinars",
+   "Meetups"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": true,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": []
+ },
+ {
+  "id": "mem_sample_15",
+  "membershipId": "PX-2026-000015",
+  "name": "Yusuf Ali",
+  "email": "yusuf@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-30T08:00:00+04:00",
+  "source": "direct",
+  "referralCode": "EDU-YUSUF",
+  "referredBy": "",
+  "city": "Doha",
+  "country": "Qatar",
+  "experience": "Beginner",
+  "language": "English",
+  "interests": [],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": false,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ },
+ {
+  "id": "mem_sample_16",
+  "membershipId": "PX-2026-000016",
+  "name": "Grace Mbeki",
+  "email": "grace@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-30T09:30:00+04:00",
+  "source": "referral",
+  "referralCode": "EDU-GRACE",
+  "referredBy": "EDU-DAVID",
+  "city": "Johannesburg",
+  "country": "South Africa",
+  "experience": "Beginner",
+  "language": "English",
+  "interests": [
+   "Beginner classes"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ },
+ {
+  "id": "mem_sample_17",
+  "membershipId": "PX-2026-000017",
+  "name": "Daniel Tan",
+  "email": "daniel@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-30T10:00:00+04:00",
+  "source": "direct",
+  "referralCode": "EDU-DANIEL",
+  "referredBy": "",
+  "city": "Kuala Lumpur",
+  "country": "Malaysia",
+  "experience": "Intermediate",
+  "language": "English",
+  "interests": [],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": []
+ },
+ {
+  "id": "mem_sample_18",
+  "membershipId": "PX-2026-000018",
+  "name": "Hana Youssef",
+  "email": "hana@example.com",
+  "sample": true,
+  "status": "pending",
+  "verified": false,
+  "createdAt": "2026-09-30T11:00:00+04:00",
+  "source": "direct",
+  "referralCode": "",
+  "referredBy": "",
+  "city": "Amman",
+  "country": "Jordan",
+  "experience": "Beginner",
+  "language": "Arabic",
+  "interests": [],
+  "avatar": "",
+  "preferences": {
+   "language": "Arabic",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": false,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ },
+ {
+  "id": "mem_sample_19",
+  "membershipId": "PX-2026-000019",
+  "name": "Kevin D'Souza",
+  "email": "kevin@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-30T11:30:00+04:00",
+  "source": "direct",
+  "referralCode": "EDU-KEVIN",
+  "referredBy": "",
+  "city": "Toronto",
+  "country": "Canada",
+  "experience": "Advanced",
+  "language": "English",
+  "interests": [
+   "Webinars"
+  ],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": false,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": []
+ },
+ {
+  "id": "mem_sample_20",
+  "membershipId": "PX-2026-000020",
+  "name": "Ayesha Khan",
+  "email": "ayesha@example.com",
+  "sample": true,
+  "status": "active",
+  "verified": true,
+  "createdAt": "2026-09-30T12:00:00+04:00",
+  "source": "referral",
+  "referralCode": "EDU-AYESHA",
+  "referredBy": "EDU-AISHA",
+  "city": "Lahore",
+  "country": "Pakistan",
+  "experience": "Beginner",
+  "language": "Urdu",
+  "interests": [],
+  "avatar": "",
+  "preferences": {
+   "language": "English",
+   "timezone": "Asia/Dubai"
+  },
+  "directoryOptIn": true,
+  "consent": {
+   "terms": true,
+   "privacy": true,
+   "promoEmail": true,
+   "promoWhatsapp": false
+  },
+  "consentHistory": [],
+  "tags": [
+   "beginner"
+  ]
+ }
+],
       assistance: [
-        { id: "asr_sample_01", sample: true, memberId: "mem_sample_01", createdAt: "2026-09-28T12:00:00+04:00",
-          category: "Broker dispute", country: "UAE", provider: "Sample Broker Ltd", facts: "SAMPLE request for demo purposes.",
-          dates: "Aug 2026", requestedHelp: "Information on complaint preparation", contactPref: "Email",
-          status: "reviewing", privateNotes: [{ at: "2026-09-28T13:00:00+04:00", by: "staff", text: "SAMPLE note." }],
-          messages: [],
-          replies: [
-            { id: "rpl_sample_01", at: "2026-09-28T12:05:00+04:00", author: "member", by: "mem_sample_01", text: "SAMPLE member message: please advise on next steps.", visibleToMember: true },
-            { id: "rpl_sample_02", at: "2026-09-29T09:00:00+04:00", author: "staff", by: "admin", text: "SAMPLE staff reply: we are reviewing your case and will update you shortly.", visibleToMember: true }
-          ],
-          referralConsent: null, history: [{ at: "2026-09-28T12:00:00+04:00", by: "member", action: "created" }] }
-      ],
+ {
+  "id": "asr_sample_01",
+  "sample": true,
+  "memberId": "mem_sample_01",
+  "createdAt": "2026-09-28T12:00:00+04:00",
+  "category": "Broker dispute",
+  "country": "UAE",
+  "provider": "Sample Broker Ltd",
+  "facts": "SAMPLE request for demo purposes.",
+  "dates": "Aug 2026",
+  "requestedHelp": "Information on complaint preparation",
+  "contactPref": "Email",
+  "status": "reviewing",
+  "privateNotes": [
+   {
+    "at": "2026-09-28T13:00:00+04:00",
+    "by": "staff",
+    "text": "SAMPLE note."
+   }
+  ],
+  "messages": [],
+  "replies": [
+   {
+    "id": "rpl_sample_01",
+    "at": "2026-09-28T12:05:00+04:00",
+    "author": "member",
+    "by": "mem_sample_01",
+    "text": "SAMPLE member message: please advise on next steps.",
+    "visibleToMember": true
+   },
+   {
+    "id": "rpl_sample_02",
+    "at": "2026-09-29T09:00:00+04:00",
+    "author": "staff",
+    "by": "admin",
+    "text": "SAMPLE staff reply: we are reviewing your case and will update you shortly.",
+    "visibleToMember": true
+   }
+  ],
+  "referralConsent": null,
+  "history": [
+   {
+    "at": "2026-09-28T12:00:00+04:00",
+    "by": "member",
+    "action": "created"
+   }
+  ]
+ },
+ {
+  "id": "asr_sample_02",
+  "sample": true,
+  "memberId": "mem_sample_03",
+  "createdAt": "2026-09-29T15:00:00+04:00",
+  "category": "Withdrawal delay",
+  "country": "UAE",
+  "provider": "Sample Broker Ltd",
+  "facts": "SAMPLE request for demo purposes.",
+  "dates": "Sep 2026",
+  "requestedHelp": "How to document the delay and escalate",
+  "contactPref": "Email",
+  "status": "new",
+  "privateNotes": [],
+  "messages": [],
+  "replies": [
+   {
+    "id": "rpl_sample_03",
+    "at": "2026-09-29T15:05:00+04:00",
+    "author": "member",
+    "by": "mem_sample_03",
+    "text": "SAMPLE member message: my withdrawal has been pending for two weeks.",
+    "visibleToMember": true
+   }
+  ],
+  "referralConsent": null,
+  "history": [
+   {
+    "at": "2026-09-29T15:00:00+04:00",
+    "by": "member",
+    "action": "created"
+   }
+  ]
+ },
+ {
+  "id": "asr_sample_03",
+  "sample": true,
+  "memberId": "mem_sample_04",
+  "createdAt": "2026-09-26T10:00:00+04:00",
+  "category": "Platform issue",
+  "country": "UAE",
+  "provider": "Sample Platform Co",
+  "facts": "SAMPLE request for demo purposes.",
+  "dates": "Sep 2026",
+  "requestedHelp": "Understanding an order execution message",
+  "contactPref": "Email",
+  "status": "resolved",
+  "privateNotes": [
+   {
+    "at": "2026-09-26T11:00:00+04:00",
+    "by": "staff",
+    "text": "SAMPLE note: explained the message meaning."
+   }
+  ],
+  "messages": [],
+  "replies": [
+   {
+    "id": "rpl_sample_04",
+    "at": "2026-09-26T10:05:00+04:00",
+    "author": "member",
+    "by": "mem_sample_04",
+    "text": "SAMPLE member message: what does this execution message mean?",
+    "visibleToMember": true
+   },
+   {
+    "id": "rpl_sample_05",
+    "at": "2026-09-26T13:00:00+04:00",
+    "author": "staff",
+    "by": "admin",
+    "text": "SAMPLE staff reply: here is what the message means and where to read more.",
+    "visibleToMember": true
+   },
+   {
+    "id": "rpl_sample_06",
+    "at": "2026-09-27T09:00:00+04:00",
+    "author": "member",
+    "by": "mem_sample_04",
+    "text": "SAMPLE member message: understood, thank you!",
+    "visibleToMember": true
+   }
+  ],
+  "referralConsent": null,
+  "history": [
+   {
+    "at": "2026-09-26T10:00:00+04:00",
+    "by": "member",
+    "action": "created"
+   },
+   {
+    "at": "2026-09-27T10:00:00+04:00",
+    "by": "admin",
+    "action": "resolved"
+   }
+  ]
+ },
+ {
+  "id": "asr_sample_04",
+  "sample": true,
+  "memberId": "mem_sample_08",
+  "createdAt": "2026-09-30T09:00:00+04:00",
+  "category": "Suspected scam",
+  "country": "Philippines",
+  "provider": "Unknown promoter",
+  "facts": "SAMPLE request for demo purposes.",
+  "dates": "Sep 2026",
+  "requestedHelp": "Is this offer legitimate?",
+  "contactPref": "WhatsApp",
+  "status": "reviewing",
+  "privateNotes": [
+   {
+    "at": "2026-09-30T09:30:00+04:00",
+    "by": "staff",
+    "text": "SAMPLE note: classic guaranteed-returns pattern — prepare warning reply."
+   }
+  ],
+  "messages": [],
+  "replies": [
+   {
+    "id": "rpl_sample_07",
+    "at": "2026-09-30T09:05:00+04:00",
+    "author": "member",
+    "by": "mem_sample_08",
+    "text": "SAMPLE member message: someone promised me doubled money in a week.",
+    "visibleToMember": true
+   }
+  ],
+  "referralConsent": null,
+  "history": [
+   {
+    "at": "2026-09-30T09:00:00+04:00",
+    "by": "member",
+    "action": "created"
+   }
+  ]
+ }
+],
       campaigns: [
-        { id: "cam_sample_01", name: "Welcome digest — sample", sample: true, audience: "promoEmail",
-          subject: "Your first free class at ProFX Club", body: "SAMPLE campaign body.", status: "draft",
-          createdAt: "2026-09-29T09:00:00+04:00", results: null, sendLog: [] }
-      ],
+ {
+  "id": "cam_sample_01",
+  "name": "Welcome digest — sample",
+  "sample": true,
+  "audience": "promoEmail",
+  "subject": "Your first free class at ProFX Club",
+  "body": "SAMPLE campaign body.",
+  "status": "draft",
+  "createdAt": "2026-09-29T09:00:00+04:00",
+  "results": null,
+  "sendLog": []
+ },
+ {
+  "id": "cam_sample_02",
+  "name": "October classes reminder — sample",
+  "sample": true,
+  "audience": "promoEmail",
+  "subject": "October classes are open for booking",
+  "body": "SAMPLE campaign body.",
+  "status": "sent",
+  "createdAt": "2026-09-30T08:00:00+04:00",
+  "results": {
+   "recipients": 4,
+   "delivered": 4
+  },
+  "sendLog": [
+   {
+    "at": "2026-09-30T08:00:10+04:00",
+    "to": "aisha@example.com",
+    "status": "delivered"
+   },
+   {
+    "at": "2026-09-30T08:00:12+04:00",
+    "to": "sara@example.com",
+    "status": "delivered"
+   },
+   {
+    "at": "2026-09-30T08:00:14+04:00",
+    "to": "emma@example.com",
+    "status": "delivered"
+   },
+   {
+    "at": "2026-09-30T08:00:16+04:00",
+    "to": "ayesha@example.com",
+    "status": "delivered"
+   }
+  ]
+ }
+],
       referralCodes: [
-        { code: "EDU-AISHA", memberId: "mem_sample_01", createdAt: "2026-09-28T10:00:00+04:00", note: "SAMPLE" },
-        { code: "EDU-SARA", memberId: "mem_sample_03", createdAt: "2026-09-29T09:15:00+04:00", note: "SAMPLE" },
-        { code: "EDU-DAVID", memberId: "mem_sample_04", createdAt: "2026-09-29T16:40:00+04:00", note: "SAMPLE" }
-      ],
+ {
+  "code": "EDU-AISHA",
+  "memberId": "mem_sample_01",
+  "createdAt": "2026-09-28T10:00:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-SARA",
+  "memberId": "mem_sample_03",
+  "createdAt": "2026-09-29T09:15:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-DAVID",
+  "memberId": "mem_sample_04",
+  "createdAt": "2026-09-29T16:40:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-PRIYA",
+  "memberId": "mem_sample_06",
+  "createdAt": "2026-09-26T09:00:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-JAMES",
+  "memberId": "mem_sample_07",
+  "createdAt": "2026-09-26T14:00:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-MARIA",
+  "memberId": "mem_sample_08",
+  "createdAt": "2026-09-27T08:30:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-AHMED",
+  "memberId": "mem_sample_09",
+  "createdAt": "2026-09-27T16:00:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-FATIMA",
+  "memberId": "mem_sample_10",
+  "createdAt": "2026-09-28T11:00:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-RAJESH",
+  "memberId": "mem_sample_11",
+  "createdAt": "2026-09-28T15:00:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-BILAL",
+  "memberId": "mem_sample_13",
+  "createdAt": "2026-09-29T12:00:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-EMMA",
+  "memberId": "mem_sample_14",
+  "createdAt": "2026-09-29T18:00:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-YUSUF",
+  "memberId": "mem_sample_15",
+  "createdAt": "2026-09-30T08:00:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-GRACE",
+  "memberId": "mem_sample_16",
+  "createdAt": "2026-09-30T09:30:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-DANIEL",
+  "memberId": "mem_sample_17",
+  "createdAt": "2026-09-30T10:00:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-KEVIN",
+  "memberId": "mem_sample_19",
+  "createdAt": "2026-09-30T11:30:00+04:00",
+  "note": "SAMPLE"
+ },
+ {
+  "code": "EDU-AYESHA",
+  "memberId": "mem_sample_20",
+  "createdAt": "2026-09-30T12:00:00+04:00",
+  "note": "SAMPLE"
+ }
+],
       /* learning progress: {memberId, lessonId, at} */
       progress: [
-        { memberId: "mem_sample_01", lessonId: "les_01", at: "2026-09-29T18:00:00+04:00" }
-      ],
+ {
+  "memberId": "mem_sample_01",
+  "lessonId": "les_01",
+  "at": "2026-09-29T18:00:00+04:00"
+ },
+ {
+  "memberId": "mem_sample_01",
+  "lessonId": "les_02",
+  "at": "2026-09-30T08:00:00+04:00"
+ },
+ {
+  "memberId": "mem_sample_03",
+  "lessonId": "les_01",
+  "at": "2026-09-29T19:00:00+04:00"
+ },
+ {
+  "memberId": "mem_sample_04",
+  "lessonId": "les_01",
+  "at": "2026-09-27T10:00:00+04:00"
+ },
+ {
+  "memberId": "mem_sample_04",
+  "lessonId": "les_02",
+  "at": "2026-09-28T10:00:00+04:00"
+ },
+ {
+  "memberId": "mem_sample_04",
+  "lessonId": "les_03",
+  "at": "2026-09-29T10:00:00+04:00"
+ },
+ {
+  "memberId": "mem_sample_06",
+  "lessonId": "les_01",
+  "at": "2026-09-30T09:00:00+04:00"
+ }
+],
       notifications: [
-        { id: "ntf_sample_01", memberId: "mem_sample_01", kind: "booking", title: "Booking confirmed", sample: true,
-          body: "SAMPLE — your place at the Welcome Orientation was confirmed.", at: "2026-09-18T09:00:00+04:00", read: true, link: "events.html" },
-        { id: "ntf_sample_02", memberId: "mem_sample_01", kind: "reminder", title: "Class reminder", sample: true,
-          body: "SAMPLE — the Beginner Class starts on Sat, 10 Oct 2026 at 11:00 (GMT+4).", at: "2026-09-30T08:00:00+04:00", read: false, link: "events.html" },
-        { id: "ntf_sample_03", memberId: "mem_sample_01", kind: "assistance", title: "New reply on your assistance request", sample: true,
-          body: "SAMPLE — support replied to your broker dispute case.", at: "2026-09-29T09:00:00+04:00", read: false, link: "assistance.html" },
-        { id: "ntf_sample_04", memberId: "mem_sample_01", kind: "resource", title: "New learning resource", sample: true,
-          body: "SAMPLE — the Risk-Planning Worksheet was added to the library.", at: "2026-09-29T12:00:00+04:00", read: false, link: "learning.html" }
-      ],
+ {
+  "id": "ntf_sample_01",
+  "memberId": "mem_sample_01",
+  "kind": "booking",
+  "title": "Booking confirmed",
+  "sample": true,
+  "body": "SAMPLE — your place at the Welcome Orientation was confirmed.",
+  "at": "2026-09-18T09:00:00+04:00",
+  "read": true,
+  "link": "events.html"
+ },
+ {
+  "id": "ntf_sample_02",
+  "memberId": "mem_sample_01",
+  "kind": "reminder",
+  "title": "Class reminder",
+  "sample": true,
+  "body": "SAMPLE — the Beginner Class starts on Sat, 10 Oct 2026 at 11:00 (GMT+4).",
+  "at": "2026-09-30T08:00:00+04:00",
+  "read": false,
+  "link": "events.html"
+ },
+ {
+  "id": "ntf_sample_03",
+  "memberId": "mem_sample_01",
+  "kind": "assistance",
+  "title": "New reply on your assistance request",
+  "sample": true,
+  "body": "SAMPLE — support replied to your broker dispute case.",
+  "at": "2026-09-29T09:00:00+04:00",
+  "read": false,
+  "link": "assistance.html"
+ },
+ {
+  "id": "ntf_sample_04",
+  "memberId": "mem_sample_01",
+  "kind": "resource",
+  "title": "New learning resource",
+  "sample": true,
+  "body": "SAMPLE — the Risk-Planning Worksheet was added to the library.",
+  "at": "2026-09-29T12:00:00+04:00",
+  "read": false,
+  "link": "learning.html"
+ },
+ {
+  "id": "ntf_sample_05",
+  "memberId": "mem_sample_01",
+  "kind": "announcement",
+  "title": "November AMA announced",
+  "sample": true,
+  "body": "SAMPLE — the community AMA with the mentors is open for booking.",
+  "at": "2026-09-30T10:00:00+04:00",
+  "read": false,
+  "link": "community.html"
+ },
+ {
+  "id": "ntf_sample_06",
+  "memberId": "mem_sample_03",
+  "kind": "booking",
+  "title": "Booking confirmed",
+  "sample": true,
+  "body": "SAMPLE — your place at the Beginner Class was confirmed.",
+  "at": "2026-09-26T09:00:00+04:00",
+  "read": true,
+  "link": "events.html"
+ },
+ {
+  "id": "ntf_sample_07",
+  "memberId": "mem_sample_03",
+  "kind": "booking",
+  "title": "Booking confirmed",
+  "sample": true,
+  "body": "SAMPLE — your place at the Risk Concepts webinar was confirmed.",
+  "at": "2026-09-28T10:00:00+04:00",
+  "read": false,
+  "link": "events.html"
+ },
+ {
+  "id": "ntf_sample_08",
+  "memberId": "mem_sample_03",
+  "kind": "assistance",
+  "title": "Assistance request received",
+  "sample": true,
+  "body": "SAMPLE — we received your withdrawal delay case and will review it.",
+  "at": "2026-09-29T15:00:00+04:00",
+  "read": false,
+  "link": "assistance.html"
+ },
+ {
+  "id": "ntf_sample_09",
+  "memberId": "mem_sample_04",
+  "kind": "booking",
+  "title": "Booking confirmed",
+  "sample": true,
+  "body": "SAMPLE — your place at the Broker Due-Diligence webinar was confirmed.",
+  "at": "2026-09-29T10:00:00+04:00",
+  "read": false,
+  "link": "events.html"
+ }
+],
       audit: [],
-      nextMemberSeq: 6,
-      travelInterest: []
+      nextMemberSeq: 21,
+      travelInterest: [
+ {
+  "id": "trv_sample_01",
+  "sample": true,
+  "name": "Aisha Rahman",
+  "email": "aisha@example.com",
+  "topic": "Trading retreats",
+  "note": "SAMPLE interest entry.",
+  "at": "2026-09-29T12:00:00+04:00",
+  "kind": "interest-only"
+ },
+ {
+  "id": "trv_sample_02",
+  "sample": true,
+  "name": "Maria Santos",
+  "email": "maria@example.com",
+  "topic": "City meetups abroad",
+  "note": "SAMPLE interest entry.",
+  "at": "2026-09-30T09:00:00+04:00",
+  "kind": "interest-only"
+ },
+ {
+  "id": "trv_sample_03",
+  "sample": true,
+  "name": "Emma Wilson",
+  "email": "emma@example.com",
+  "topic": "Trading retreats",
+  "note": "SAMPLE interest entry.",
+  "at": "2026-09-30T10:00:00+04:00",
+  "kind": "interest-only"
+ }
+]
     };
   }
 
