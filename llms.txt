@@ -91,6 +91,6 @@ Beginner-friendly, honest trading education. No guaranteed outcomes, no hype.
 - ProFX League (trading competition, divisions, entry discounts, leaderboard): https://dawoodshah2232-svg.github.io/profx-club/league.html
 - ProFX Expo (agenda, speakers, exhibitors, expo passes): https://dawoodshah2232-svg.github.io/profx-club/expo.html
 - ProFX Summit (B2B leadership edition): https://dawoodshah2232-svg.github.io/profx-club/summit.html
-- ProFX Awards (categories, nominations, gala night): https://dawoodshah2232-svg.github.io/profx-club/awards.html
+- ProFX Awards (event by ProFX Media): https://dawoodshah2232-svg.github.io/profx-club/awards.html
 - Demo checkout (passes & league entry with discount codes): https://dawoodshah2232-svg.github.io/profx-club/checkout.html
 Sample discount codes (demo): EARLYBIRD20 (20% off passes & league), LEAGUE50 (50% off league), EXPO25 (25% off passes), MEMBER15, SUMMIT20, AWARDS15, STUDENT10, GROUP20.
