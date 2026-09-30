@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community — ProFX Club</title>
+<meta name="description" content="ProFX Club community: Telegram announcements, moderated discussion spaces, rules and how to join. Joining is always voluntary.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css?v=20260930a">
+</head>
+<body data-page="community" data-joinbar="1">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="chrome-nav"></header>
+<div class="mobile-drawer" id="chrome-drawer"></div>
+
+<main id="main">
+<section class="hero" style="padding:2.8rem 0">
+  <div class="container">
+    <span class="eyebrow reveal">Community</span>
+    <h1 class="reveal d1">Trade alongside traders.</h1>
+    <p class="lead reveal d2">Announcements, educational content and moderated discussion. Joining any group is voluntary — registration never adds you automatically.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:900px">
+    <span class="eyebrow reveal">Official destinations</span>
+    <h2 class="reveal d1">Where we gather</h2>
+    <div id="destinations" class="grid g2 reveal d1" style="margin-top:1.2rem"></div>
+    <div class="notice reveal" style="margin-top:1.2rem">⚠️ Only join through the links shown to you inside your member dashboard after sign-in. We never ask for passwords or funds in any chat. Impersonators will be reported and removed.</div>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="container" style="max-width:900px">
+    <span class="eyebrow reveal">How it works</span>
+    <h2 class="reveal d1">Community operating model</h2>
+    <div class="grid g2" style="margin-top:1.2rem">
+      <div class="card reveal"><h3>📢 Telegram announcements</h3><p class="meta">One-way channel for class announcements, webinar reminders and educational content. No noise, no selling.</p></div>
+      <div class="card reveal d1"><h3>💬 Discussion space</h3><p class="meta">A separately moderated discussion space for peer questions and networking, staffed when moderators are available.</p></div>
+      <div class="card reveal"><h3>🟢 WhatsApp groups</h3><p class="meta">Offered by language or city only when there are enough members and moderators. Your phone number's visibility depends on the platform's settings — check before joining.</p></div>
+      <div class="card reveal d1"><h3>🚫 Zero tolerance</h3><p class="meta">Banned: impersonation, unsolicited DM selling, guaranteed-return claims, abusive conduct, and any request for passwords or funds.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:900px">
+    <span class="eyebrow reveal">Moderation rules</span>
+    <h2 class="reveal d1">House rules (summary)</h2>
+    <div id="rulesList" style="margin-top:1.2rem"></div>
+    <p class="reveal" style="margin-top:1rem"><a href="community-rules.html">Read the full community rules →</a></p>
+  </div>
+</section>
+</main>
+
+<footer id="chrome-footer"></footer>
+<script src="js/db.js?v=20260930a"></script>
+<script src="js/site.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var c = PFX.db.settings.community;
+  var me = PFX.currentMember();
+  function destCard(label, d, icon) {
+    var available = d.active && d.url;
+    return '<div class="card"><div class="icon-chip">' + icon + '</div><h3>' + label + '</h3>' +
+      '<p class="meta">' + PFX.esc(d.language) + ' · ' + PFX.esc(d.region) + '</p>' +
+      (available
+        ? (me ? '<a class="btn btn-primary btn-sm" href="' + PFX.esc(d.url) + '" rel="noopener" target="_blank">Join group</a><p class="meta" style="margin-top:.4rem">Members only — visible after sign-in.</p>'
+                : '<p class="warn" style="margin:.6rem 0">Links are shown to signed-in members. <a href="join.html">Join free</a> or <a href="signin.html">sign in</a>.</p>')
+        : '<p class="warn" style="margin:.6rem 0"><b>Not available yet.</b> The official link for this space has not been published by the club — check back soon. We never invent or guess group links.</p>') +
+      '</div>';
+  }
+  document.getElementById("destinations").innerHTML =
+    destCard("Telegram announcements", c.telegramAnnouncements, "📢") +
+    destCard("Telegram discussion", c.telegramDiscussion, "💬") +
+    destCard("WhatsApp community", c.whatsapp, "🟢");
+  var rules = [
+    ["No impersonation", "Never pose as ProFX Club staff, educators or other members."],
+    ["No selling in DMs", "Unsolicited direct-message selling or pitching is an instant removal."],
+    ["No guaranteed returns", "Nobody may promise profits, 'risk-free' trades or guaranteed signals."],
+    ["No abuse", "Respectful conduct always. Harassment or hate speech = removal."],
+    ["No password or fund requests", "Staff will never ask for your passwords, seed phrases or money. Report anyone who does."],
+    ["Report & block", "Use your platform's report/block tools, then escalate to a moderator. Removals are documented."]
+  ];
+  document.getElementById("rulesList").innerHTML = rules.map(function (r) {
+    return '<div class="acc reveal"><button class="acc-q" type="button">' + r[0] + '<span class="chev">▾</span></button><div class="acc-a"><p>' + r[1] + '</p></div></div>';
+  }).join("");
+  document.querySelectorAll("#rulesList .acc-q").forEach(function (q) {
+    q.addEventListener("click", function () {
+      var acc = q.parentElement, body = acc.querySelector(".acc-a"), open = acc.classList.toggle("open");
+      body.style.maxHeight = open ? body.scrollHeight + "px" : 0;
+    });
+  });
+})();
+</script>
+</body>
+</html>

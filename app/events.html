@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Events — ProFX Club</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="events">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Member dashboard</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="appSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO</b> — all events shown are sample data. Capacity, waitlists and cancellations behave like the real system.</div>
+    <div class="page-head"><div><h1>My Events</h1><p class="lead">Book one place per event. Full events offer a waitlist — cancelling releases your place.</p></div></div>
+
+    <div id="msg"></div>
+
+    <h3 style="margin:1rem 0 .7rem">Upcoming events</h3>
+    <div id="upcoming"></div>
+
+    <h3 style="margin:1.6rem 0 .7rem">My bookings</h3>
+    <div id="mine"></div>
+
+    <h3 style="margin:1.6rem 0 .7rem">Past events</h3>
+    <div id="past"></div>
+  </div>
+</div>
+
+<div class="modal-back" id="bookModal"><div class="modal">
+  <h3 id="bmTitle">Confirm booking</h3>
+  <p class="meta" id="bmBody" style="margin:.6rem 0 1.2rem"></p>
+  <div style="display:flex;gap:.6rem;justify-content:flex-end">
+    <button class="btn btn-ghost" id="bmNo">Back</button>
+    <button class="btn btn-primary" id="bmYes">Confirm</button>
+  </div>
+</div></div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/app.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var me = window.PFX_ME;
+  var now = new Date();
+  var pendingEv = null;
+
+  function msg(html, cls) { document.getElementById("msg").innerHTML = '<div class="' + cls + '">' + html + "</div>"; window.scrollTo(0, 0); }
+
+  function evCard(e) {
+    var left = PFX.eventSeatsLeft(e.id);
+    var my = PFX.db.registrations.find(function (r) { return r.eventId === e.id && r.memberId === me.id && (r.status === "confirmed" || r.status === "waitlisted"); });
+    var action;
+    if (my) action = '<span class="badge ' + (my.status === "confirmed" ? "badge-ok" : "badge-warn") + '">' + (my.status === "confirmed" ? "Booked" : "Waitlisted #" + (waitPos(e.id, my.id)) ) + '</span>';
+    else if (left > 0) action = '<button class="btn btn-primary btn-sm" data-book="' + e.id + '">Book free place</button>';
+    else action = '<button class="btn btn-ghost btn-sm" data-book="' + e.id + '">Join waitlist</button>';
+    return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+      '<p class="meta"><b>' + PFX.fmtDate(e.startsAt) + '</b> · ' + PFX.esc(e.timezone) + ' · ' + PFX.esc(e.language) + '</p>' +
+      '<p class="meta">Host: ' + PFX.esc(e.host) + ' · ' + PFX.esc(e.kind) + ' · ' + PFX.esc(e.cost) + '</p>' +
+      '<div style="margin-top:.5rem">' + (left > 0 ? '<span class="badge badge-ok">' + left + ' of ' + e.capacity + ' left</span>' : '<span class="badge badge-full">Full</span>') + '</div></div>' +
+      '<div>' + action + '</div></div>';
+  }
+  function waitPos(eventId, memberId) {
+    var wl = PFX.db.registrations.filter(function (r) { return r.eventId === eventId && r.status === "waitlisted"; })
+      .sort(function (a, b) { return a.createdAt.localeCompare(b.createdAt); });
+    for (var i = 0; i < wl.length; i++) if (wl[i].memberId === memberId) return i + 1;
+    return 1;
+  }
+
+  function render() {
+    var up = PFX.db.events.filter(function (e) { return e.status === "published" && new Date(e.startsAt) > now; })
+      .sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
+    document.getElementById("upcoming").innerHTML = up.length ? up.map(evCard).join("") : '<div class="empty">No upcoming events.</div>';
+    var mine = PFX.db.registrations.filter(function (r) { return r.memberId === me.id && r.status !== "cancelled"; })
+      .sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+    document.getElementById("mine").innerHTML = mine.length ? mine.map(function (r) {
+      var e = PFX.db.events.find(function (x) { return x.id === r.eventId; });
+      if (!e) return "";
+      var ics = 'data:text/calendar;charset=utf-8,' + encodeURIComponent([
+        "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT",
+        "UID:" + r.id + "@profxclub",
+        "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z",
+        "DTSTART:" + new Date(e.startsAt).toISOString().replace(/[-:]/g, "").split(".")[0] + "Z",
+        "SUMMARY:ProFX Club — " + e.title,
+        "DESCRIPTION:Free member event. Status: " + r.status,
+        "END:VEVENT", "END:VCALENDAR"].join("\r\n"));
+      var cancelBtn = (r.status === "confirmed" || r.status === "waitlisted")
+        ? ' <button class="btn btn-danger btn-sm" data-cancel="' + r.id + '">Cancel</button>' : "";
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + '</h3>' +
+        '<p class="meta">' + PFX.fmtDate(e.startsAt) + ' · ' + PFX.esc(e.timezone) + '</p>' +
+        '<span class="badge ' + (r.status === "confirmed" ? "badge-ok" : r.status === "waitlisted" ? "badge-warn" : "badge-neutral") + '">' + r.status + '</span></div>' +
+        '<div style="display:flex;gap:.5rem;flex-wrap:wrap"><a class="btn btn-ghost btn-sm" href="' + ics + '" download="profx-event.ics">📅 Calendar</a>' + cancelBtn + '</div></div>';
+    }).join("") : '<div class="empty">You have no bookings yet — book your first free class above.</div>';
+    var past = PFX.db.events.filter(function (e) { return new Date(e.startsAt) <= now; });
+    document.getElementById("past").innerHTML = past.length ? past.map(function (e) {
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + ' <span class="badge badge-demo">SAMPLE</span></h3><p class="meta">' + PFX.fmtDate(e.startsAt) + '</p></div><span class="badge badge-neutral">Completed</span></div>';
+    }).join("") : '<div class="empty">No past events.</div>';
+  }
+
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-book]");
+    if (b) {
+      var e = PFX.db.events.find(function (x) { return x.id === b.dataset.book; });
+      pendingEv = e.id;
+      var left = PFX.eventSeatsLeft(e.id);
+      document.getElementById("bmTitle").textContent = left > 0 ? "Confirm your free place" : "Join the waitlist";
+      document.getElementById("bmBody").textContent = e.title + " — " + PFX.fmtDate(e.startsAt) + " (" + e.timezone + "). " +
+        (left > 0 ? "One place per member. Free for members." : "This event is full. We'll notify you if a place opens up.");
+      document.getElementById("bookModal").classList.add("open");
+      return;
+    }
+    var c = ev.target.closest("[data-cancel]");
+    if (c) {
+      if (!confirm("Cancel this booking? Your place will be released.")) return;
+      var res = PFX.cancelBooking(c.dataset.cancel, me.id);
+      if (res.ok) {
+        msg("Booking cancelled. " + (res.promoted ? "The next waitlisted member was promoted into your place." : "Your place has been released."), "success");
+        render();
+      }
+    }
+  });
+  document.getElementById("bmNo").addEventListener("click", function () { document.getElementById("bookModal").classList.remove("open"); });
+  document.getElementById("bmYes").addEventListener("click", function () {
+    document.getElementById("bookModal").classList.remove("open");
+    var res = PFX.bookEvent(me.id, pendingEv);
+    if (res.ok) {
+      msg(res.reg.status === "confirmed" ? "✅ You're booked! See you there." : "You're on the waitlist — we'll notify you if a place opens.", "success");
+      render();
+    } else msg(PFX.esc(res.error), "warn");
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

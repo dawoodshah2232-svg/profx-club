@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community — ProFX Club</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="community">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Member dashboard</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="appSide"></aside>
+  <div class="main">
+    <div class="page-head"><div><h1>Community</h1><p class="lead">Official club spaces. Joining is always voluntary — we never add you automatically.</p></div></div>
+    <div class="demo-banner"><b>NO LINKS PUBLISHED YET</b> — the owner has not supplied official Telegram/WhatsApp links. When they do, the join buttons will appear here automatically. We never invent destinations.</div>
+    <div id="dest" class="grid g2"></div>
+    <div class="card" style="margin-top:1.2rem">
+      <h3>House rules</h3>
+      <ul style="color:var(--muted);font-size:.95rem;padding-left:1.2rem;margin-top:.4rem">
+        <li>No impersonation of staff or members.</li>
+        <li>No unsolicited DM selling — instant removal.</li>
+        <li>No guaranteed-return claims, ever.</li>
+        <li>No abuse or harassment.</li>
+        <li>Staff never ask for passwords or funds — report anyone who does.</li>
+      </ul>
+      <p style="margin-top:.6rem"><a href="../community-rules.html">Full community rules →</a></p>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/app.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var c = PFX.db.settings.community;
+  function card(label, d, icon) {
+    var ok = d.active && d.url;
+    return '<div class="card"><div class="icon-chip">' + icon + '</div><h3>' + label + '</h3>' +
+      '<p class="meta">' + PFX.esc(d.language) + ' · ' + PFX.esc(d.region) + '</p>' +
+      (ok ? '<a class="btn btn-primary btn-sm" data-join href="' + PFX.esc(d.url) + '" target="_blank" rel="noopener">Join now</a>'
+          : '<p class="warn" style="margin:.6rem 0"><b>Not available yet.</b> The official link hasn\'t been published — please check back. We won\'t guess or fabricate it.</p>') +
+      '</div>';
+  }
+  document.getElementById("dest").innerHTML =
+    card("Telegram announcements", c.telegramAnnouncements, "📢") +
+    card("Telegram discussion", c.telegramDiscussion, "💬") +
+    card("WhatsApp community", c.whatsapp, "🟢");
+  document.querySelectorAll("[data-join]").forEach(function (a) {
+    a.addEventListener("click", function () { PFX.audit("community.join_click", a.href, window.PFX_ME.id); });
+  });
+})();
+</script>
+</body>
+</html>

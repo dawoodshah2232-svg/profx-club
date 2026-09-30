@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn — Free forex education | ProFX Club</title>
+<meta name="description" content="Free beginner forex learning path (Week 1–4), classes, educator profiles and resources at ProFX Club.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css?v=20260930a">
+</head>
+<body data-page="learn" data-joinbar="1">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="chrome-nav"></header>
+<div class="mobile-drawer" id="chrome-drawer"></div>
+
+<main id="main">
+<section class="hero" style="padding:2.8rem 0">
+  <div class="container">
+    <span class="eyebrow reveal">Free education</span>
+    <h1 class="reveal d1">Learn forex, step by step.</h1>
+    <p class="lead reveal d2">A beginner path, live classes and resources — free for members. Education only: we teach concepts, never give signals or guarantee outcomes.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="demo-banner reveal"><b>SAMPLE CONTENT</b> — lessons, educators and resources below are sample data for this demo. The owner will confirm the real programme before publication.</div>
+    <span class="eyebrow reveal">Beginner path</span>
+    <h2 class="reveal d1">Your first four weeks</h2>
+    <div class="steps" id="weekPath"></div>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="container">
+    <div class="page-head">
+      <div><span class="eyebrow reveal">Upcoming</span><h2 class="reveal d1">Classes &amp; webinars</h2></div>
+      <a class="btn btn-ghost reveal d1" href="events.html">All events</a>
+    </div>
+    <div id="learnEvents" class="grid g3 reveal d2"></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <span class="eyebrow reveal">Educators</span>
+    <h2 class="reveal d1">Meet the educators</h2>
+    <p class="lead reveal d2">Real educator biographies and credentials will be published here once confirmed by the owner.</p>
+    <div id="educators" class="grid g3 reveal" style="margin-top:1.2rem"></div>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="container">
+    <span class="eyebrow reveal">Resource library</span>
+    <h2 class="reveal d1">Downloads &amp; worksheets</h2>
+    <p class="lead reveal d2">Members get the full library. Here's a preview.</p>
+    <div id="resources" class="grid g3 reveal" style="margin-top:1.2rem"></div>
+  </div>
+</section>
+</main>
+
+<footer id="chrome-footer"></footer>
+<script src="js/db.js?v=20260930a"></script>
+<script src="js/site.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  document.getElementById("weekPath").innerHTML = PFX.db.lessons.map(function (l) {
+    return '<div class="step reveal"><h3>Week ' + l.week + '</h3><p style="font-weight:700">' + PFX.esc(l.title) + '</p>' +
+      '<p class="meta">Outcome: ' + PFX.esc(l.outcomes) + '</p><span class="badge badge-demo">SAMPLE</span></div>';
+  }).join("");
+  var now = new Date();
+  var evs = PFX.db.events.filter(function (e) { return e.status === "published" && new Date(e.startsAt) > now; })
+    .sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); }).slice(0, 3);
+  document.getElementById("learnEvents").innerHTML = evs.length ? evs.map(function (e) {
+    var left = PFX.eventSeatsLeft(e.id);
+    return '<div class="card"><h3>' + PFX.esc(e.title) + '</h3><p class="meta">' + PFX.fmtDate(e.startsAt) + ' · ' + PFX.esc(e.timezone) + '</p>' +
+      '<p class="meta">' + PFX.esc(e.language) + ' · Host: ' + PFX.esc(e.host) + '</p>' +
+      '<div style="margin:.6rem 0"><span class="badge badge-free">Free</span> <span class="badge badge-demo">SAMPLE</span> ' +
+      (left > 0 ? '<span class="badge badge-ok">' + left + ' places left</span>' : '<span class="badge badge-full">Full</span>') + '</div>' +
+      '<a class="btn btn-primary btn-sm" href="join.html">Join &amp; book</a></div>';
+  }).join("") : '<div class="empty">No classes confirmed yet.</div>';
+  document.getElementById("educators").innerHTML = PFX.db.educators.map(function (ed) {
+    return '<div class="card"><div class="icon-chip">👤</div><h3>' + PFX.esc(ed.name) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+      '<p class="meta">' + PFX.esc(ed.bio) + '</p><p class="meta">Credentials: ' + PFX.esc(ed.credentials) + ' · ' + PFX.esc(ed.langs.join(", ")) + '</p></div>';
+  }).join("");
+  document.getElementById("resources").innerHTML = PFX.db.resources.map(function (r) {
+    return '<div class="card"><div class="icon-chip">📄</div><h3>' + PFX.esc(r.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+      '<p class="meta">' + PFX.esc(r.summary) + '</p><p class="meta">' + PFX.esc(r.kind) + ' · members only</p></div>';
+  }).join("");
+})();
+</script>
+</body>
+</html>

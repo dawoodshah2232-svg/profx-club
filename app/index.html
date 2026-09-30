@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ProFX Club</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="overview">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Member dashboard</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="appSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO</b> — events, educators and resources shown here are sample data.</div>
+    <div class="page-head"><div><h1 id="hello">Welcome</h1><p class="lead" id="midLine"></p></div></div>
+
+    <div class="stat-row">
+      <div class="stat"><b id="stStatus">—</b><span>Membership status</span></div>
+      <div class="stat"><b id="stBookings">—</b><span>Upcoming bookings</span></div>
+      <div class="stat"><b id="stRequests">—</b><span>Open assistance requests</span></div>
+      <div class="stat"><b id="stLessons">—</b><span>Beginner path weeks</span></div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>📅 Next booked session</h3>
+        <div id="nextBooked" style="margin-top:.6rem"></div>
+      </div>
+      <div class="card">
+        <h3>🎓 Recommended lesson</h3>
+        <div id="recoLesson" style="margin-top:.6rem"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
+      <h3>Quick actions</h3>
+      <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.8rem">
+        <a class="btn btn-primary" href="events.html">Book a free class</a>
+        <a class="btn btn-ghost" href="learning.html">Continue learning</a>
+        <a class="btn btn-ghost" href="community.html">Join the community</a>
+        <a class="btn btn-ghost" href="assistance.html">Request assistance</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/app.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var me = window.PFX_ME;
+  document.getElementById("hello").textContent = "Welcome, " + me.name.split(" ")[0];
+  document.getElementById("midLine").textContent = "Membership ID " + me.membershipId + " · " + me.email;
+  document.getElementById("stStatus").textContent = me.status === "active" ? "Active" : me.status;
+  var now = new Date();
+  var myRegs = PFX.db.registrations.filter(function (r) { return r.memberId === me.id && (r.status === "confirmed" || r.status === "waitlisted"); });
+  var upcoming = myRegs.filter(function (r) {
+    var e = PFX.db.events.find(function (x) { return x.id === r.eventId; });
+    return e && new Date(e.startsAt) > now;
+  });
+  document.getElementById("stBookings").textContent = upcoming.length;
+  document.getElementById("stRequests").textContent = PFX.db.assistance.filter(function (a) {
+    return a.memberId === me.id && ["new", "reviewing", "awaiting member", "referral offered"].indexOf(a.status) > -1;
+  }).length;
+  document.getElementById("stLessons").textContent = "4 weeks";
+  if (upcoming.length) {
+    var r = upcoming.sort(function (a, b) {
+      var ea = PFX.db.events.find(function (x) { return x.id === a.eventId; });
+      var eb = PFX.db.events.find(function (x) { return x.id === b.eventId; });
+      return new Date(ea.startsAt) - new Date(eb.startsAt);
+    })[0];
+    var e = PFX.db.events.find(function (x) { return x.id === r.eventId; });
+    document.getElementById("nextBooked").innerHTML =
+      '<p style="font-weight:700">' + PFX.esc(e.title) + '</p><p class="meta">' + PFX.fmtDate(e.startsAt) + ' · ' + PFX.esc(e.timezone) + '</p>' +
+      '<span class="badge ' + (r.status === "confirmed" ? "badge-ok" : "badge-warn") + '">' + r.status + '</span> ' +
+      '<a class="btn btn-ghost btn-sm" href="events.html" style="margin-top:.6rem">Manage</a>';
+  } else {
+    document.getElementById("nextBooked").innerHTML = '<p class="meta">No bookings yet.</p><a class="btn btn-primary btn-sm" href="events.html" style="margin-top:.6rem">Book a free class</a>';
+  }
+  var wk = (me.progress && me.progress.week) || 1;
+  var les = PFX.db.lessons.find(function (l) { return l.week === wk; }) || PFX.db.lessons[0];
+  document.getElementById("recoLesson").innerHTML =
+    '<p style="font-weight:700">Week ' + les.week + ': ' + PFX.esc(les.title) + '</p><p class="meta">' + PFX.esc(les.outcomes) + '</p>' +
+    '<a class="btn btn-ghost btn-sm" href="learning.html" style="margin-top:.6rem">Open learning</a>';
+})();
+</script>
+</body>
+</html>

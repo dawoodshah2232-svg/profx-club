@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Dashboard — ProFX Club</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="dashboard">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Admin CRM</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO DATA</b> — members, events and requests shown are sample data. The demo PIN session replaces production staff roles.</div>
+    <div class="page-head"><div><h1>CRM Dashboard</h1><p class="lead">At-a-glance club health. Definitions live under Reports.</p></div></div>
+    <div class="stat-row" id="stats"></div>
+    <div class="grid g2">
+      <div class="card"><h3>Needs attention</h3><div id="attention"></div></div>
+      <div class="card"><h3>Upcoming published events</h3><div id="upcoming"></div></div>
+    </div>
+    <div class="card" style="margin-top:1.2rem"><h3>Owner inputs still pending</h3>
+      <ul class="meta" style="padding-left:1.2rem;margin-top:.4rem">
+        <li>Logo &amp; approved colours</li><li>Responsible operating entity + contact details</li>
+        <li>Official Telegram/WhatsApp links</li><li>2 confirmed sessions + educator bios + first resources</li>
+        <li>Assistance scope, support person, referral partners</li><li>Approved terms / privacy / retention / communication texts</li>
+      </ul>
+      <p class="meta" style="margin-top:.5rem">Until supplied, the site shows clear placeholder / "not available yet" states — never invented content.</p>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/admin.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var now = new Date();
+  var active = PFX.db.members.filter(function (m) { return m.status === "active"; }).length;
+  var pending = PFX.db.members.filter(function (m) { return m.status === "pending"; }).length;
+  var bookings = PFX.db.registrations.filter(function (r) { return r.status === "confirmed"; }).length;
+  var openAsr = PFX.db.assistance.filter(function (a) { ["new", "reviewing", "awaiting member", "referral offered"].indexOf(a.status) > -1; }).length;
+  document.getElementById("stats").innerHTML =
+    stat(active, "Active members") + stat(pending, "Pending verification") + stat(bookings, "Confirmed bookings") + stat(openAsr, "Open assistance");
+  function stat(v, l) { return '<div class="stat"><b>' + v + '</b><span>' + l + '</span></div>'; }
+  var att = [];
+  if (pending) att.push(pending + " member(s) pending email verification");
+  PFX.db.assistance.filter(function (a) { return a.status === "new"; }).forEach(function (a) {
+    att.push('New assistance request: ' + a.category + " — " + a.provider);
+  });
+  var pubs = PFX.db.events.filter(function (e) { return e.status === "published" && new Date(e.startsAt) > now; }).length;
+  if (!pubs) att.push("No upcoming published events — confirm sessions with the owner");
+  var comm = PFX.db.settings.community;
+  if (!comm.telegramAnnouncements.active || !comm.telegramAnnouncements.url) att.push("Official community links not yet supplied by owner");
+  document.getElementById("attention").innerHTML = att.length
+    ? "<ul class='meta' style='padding-left:1.2rem'>" + att.map(function (a) { return "<li>" + PFX.esc(a) + "</li>"; }).join("") + "</ul>"
+    : '<p class="meta">All clear.</p>';
+  var up = PFX.db.events.filter(function (e) { return e.status === "published" && new Date(e.startsAt) > now; })
+    .sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
+  document.getElementById("upcoming").innerHTML = up.length ? up.map(function (e) {
+    return '<p class="meta"><b>' + PFX.esc(e.title) + '</b><br>' + PFX.fmtDate(e.startsAt) + ' · ' + PFX.eventSeatsLeft(e.id) + ' seats left</p>';
+  }).join("") : '<p class="meta">None.</p>';
+})();
+</script>
+</body>
+</html>

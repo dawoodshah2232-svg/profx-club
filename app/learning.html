@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Learning — ProFX Club</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="learning">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Member dashboard</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="appSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO</b> — lessons and resources shown are sample data.</div>
+    <div class="page-head"><div><h1>My Learning</h1><p class="lead">Your beginner path, recordings and resources.</p></div></div>
+    <div id="msg"></div>
+
+    <h3 style="margin:.6rem 0 .7rem">Beginner path</h3>
+    <div id="path" class="grid g2"></div>
+
+    <h3 style="margin:1.6rem 0 .7rem">Resource library</h3>
+    <div id="res" class="grid g3"></div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/app.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var me = window.PFX_ME;
+  me.progress = me.progress || {};
+  function render() {
+    document.getElementById("path").innerHTML = PFX.db.lessons.map(function (l) {
+      var done = !!me.progress[l.id];
+      return '<div class="card"><h3>Week ' + l.week + ' ' + (done ? '<span class="badge badge-ok">Completed</span>' : "") + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+        '<p style="font-weight:700">' + PFX.esc(l.title) + '</p><p class="meta">Outcome: ' + PFX.esc(l.outcomes) + '</p>' +
+        (l.recordingUrl ? '<p class="meta"><a href="' + PFX.esc(l.recordingUrl) + '">Watch recording</a></p>' : '<p class="meta">Recording: not published yet</p>') +
+        '<button class="btn ' + (done ? "btn-ghost" : "btn-primary") + ' btn-sm" data-done="' + l.id + '" style="margin-top:.6rem">' + (done ? "Mark as not done" : "Mark complete") + '</button></div>';
+    }).join("");
+    document.getElementById("res").innerHTML = PFX.db.resources.map(function (r) {
+      return '<div class="card"><div class="icon-chip">📄</div><h3>' + PFX.esc(r.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+        '<p class="meta">' + PFX.esc(r.summary) + '</p><p class="meta">' + PFX.esc(r.kind) + '</p>' +
+        '<button class="btn btn-ghost btn-sm" data-access="' + r.id + '">Open</button></div>';
+    }).join("");
+  }
+  document.addEventListener("click", function (ev) {
+    var d = ev.target.closest("[data-done]");
+    if (d) {
+      var id = d.dataset.done;
+      me.progress[id] = !me.progress[id];
+      /* recommended lesson pointer */
+      var doneWeeks = PFX.db.lessons.filter(function (l) { return me.progress[l.id]; }).map(function (l) { return l.week; });
+      me.progress.week = Math.min(4, (doneWeeks.length ? Math.max.apply(null, doneWeeks) : 0) + 1);
+      PFX.save(); render();
+      document.getElementById("msg").innerHTML = '<div class="success">Progress saved.</div>';
+      return;
+    }
+    var a = ev.target.closest("[data-access]");
+    if (a) {
+      me.progress["res_" + a.dataset.access] = true; PFX.save();
+      PFX.audit("resource.access", a.dataset.access, me.id);
+      document.getElementById("msg").innerHTML = '<div class="notice">📄 DEMO — in production this opens the file. Access logged.</div>';
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

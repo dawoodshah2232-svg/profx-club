@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — ProFX Club</title>
+<meta name="description" content="Sign in to ProFX Club with a secure email link.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css?v=20260930a">
+</head>
+<body data-page="signin">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="chrome-nav"></header>
+<div class="mobile-drawer" id="chrome-drawer"></div>
+
+<main id="main">
+<section class="section">
+  <div class="container" style="max-width:560px">
+    <span class="eyebrow">Member sign in</span>
+    <h1>Sign in with email</h1>
+    <p class="lead">Enter your email and we'll send you a secure sign-in link. No password to remember.</p>
+    <div class="card" style="margin-top:1.2rem">
+      <div id="s1">
+        <div class="form-error" id="sErr" role="alert"></div>
+        <div class="field"><label for="sEmail">Email address</label><input type="email" id="sEmail" autocomplete="email"></div>
+        <button class="btn btn-primary" id="sGo" style="width:100%">Send sign-in link</button>
+        <p class="form-note" style="text-align:center">New here? <a href="join.html">Join free</a> instead.</p>
+      </div>
+      <div id="s2" style="display:none">
+        <div class="demo-banner"><b>DEMO MODE</b> — no real email is sent in this prototype. The demo magic-link code is shown below.</div>
+        <p style="font-size:.9rem;color:var(--muted)">Demo sign-in code for <b id="sEmail2"></b>:</p>
+        <p style="font-size:2rem;font-weight:800;letter-spacing:.3rem;color:var(--emerald-2)" id="sCode">------</p>
+        <div class="field"><label for="sInput">Enter the code</label><input type="text" id="sInput" inputmode="numeric" maxlength="6"></div>
+        <div class="form-error" id="sErr2" role="alert"></div>
+        <button class="btn btn-primary" id="sVerify" style="width:100%">Sign in</button>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer id="chrome-footer"></footer>
+<script src="js/db.js?v=20260930a"></script>
+<script src="js/site.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var pending = null;
+  function err(id, msg) { var el = document.getElementById(id); el.textContent = msg; el.style.display = "block"; }
+  document.getElementById("sGo").addEventListener("click", function () {
+    var e = document.getElementById("sErr"); e.style.display = "none";
+    var email = document.getElementById("sEmail").value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err("sErr", "Please enter a valid email address.");
+    var m = PFX.memberByEmail(email);
+    if (!m) { err("sErr", "No account found for this email. Join free first, or check the spelling."); return; }
+    if (!m.verified) {
+      e.innerHTML = 'This account is pending email verification. <a href="join.html">Continue registration</a>.';
+      e.style.display = "block"; return;
+    }
+    if (m.status !== "active") { err("sErr", "This account is " + m.status + ". Please contact support."); return; }
+    pending = { memberId: m.id, code: String(Math.floor(100000 + Math.random() * 900000)) };
+    document.getElementById("s1").style.display = "none";
+    document.getElementById("s2").style.display = "block";
+    document.getElementById("sEmail2").textContent = email;
+    document.getElementById("sCode").textContent = pending.code;
+  });
+  document.getElementById("sVerify").addEventListener("click", function () {
+    var e = document.getElementById("sErr2"); e.style.display = "none";
+    if (!pending) return err("sErr2", "Session expired — request a new link.");
+    if (document.getElementById("sInput").value.trim() !== pending.code) return err("sErr2", "That code doesn't match.");
+    PFX.setSession({ memberId: pending.memberId, at: PFX.now() });
+    PFX.audit("member.signin", pending.memberId, pending.memberId);
+    location.href = "app/index.html";
+  });
+})();
+</script>
+</body>
+</html>

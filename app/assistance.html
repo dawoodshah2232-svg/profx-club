@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assistance — ProFX Club</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="assistance">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Member dashboard</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="appSide"></aside>
+  <div class="main">
+    <div class="page-head"><div><h1>Trader assistance</h1><p class="lead">Your requests and private replies. Only you and authorised support staff can see these.</p></div>
+    <button class="btn btn-primary" id="newBtn">+ New request</button></div>
+    <div id="msg"></div>
+
+    <div id="list"></div>
+
+    <div id="form" style="display:none">
+      <div class="card">
+        <h3>New assistance request</h3>
+        <p class="meta" style="margin:.4rem 0 1rem">We never promise fund recovery or a legal outcome. Never share passwords, seed phrases or card details.</p>
+        <div class="form-error" id="aErr" role="alert"></div>
+        <div class="grid g2">
+          <div class="field"><label for="aCat">Issue category *</label>
+            <select id="aCat"><option>Broker dispute</option><option>Withdrawal problem</option><option>Suspected scam</option><option>Complaint preparation</option><option>General question</option></select></div>
+          <div class="field"><label for="aCountry">Country *</label><input type="text" id="aCountry"></div>
+        </div>
+        <div class="field"><label for="aProvider">Provider / broker name *</label><input type="text" id="aProvider"></div>
+        <div class="field"><label for="aFacts">Brief facts *</label><textarea id="aFacts" placeholder="What happened, in your own words."></textarea></div>
+        <div class="grid g2">
+          <div class="field"><label for="aDates">Relevant dates</label><input type="text" id="aDates" placeholder="e.g. Aug–Sep 2026"></div>
+          <div class="field"><label for="aPref">Contact preference</label>
+            <select id="aPref"><option>Email</option><option>WhatsApp</option></select></div>
+        </div>
+        <div class="field"><label for="aHelp">What help do you need? *</label><textarea id="aHelp" style="min-height:70px"></textarea></div>
+        <div style="display:flex;gap:.6rem;justify-content:flex-end">
+          <button class="btn btn-ghost" id="aBack">Back</button>
+          <button class="btn btn-primary" id="aSubmit">Submit privately</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="thread" style="display:none">
+      <button class="btn btn-ghost btn-sm" id="tBack">← All requests</button>
+      <div class="card" style="margin-top:.8rem">
+        <h3 id="tTitle"></h3>
+        <p class="meta" id="tMeta"></p>
+        <div id="tBody" style="margin-top:1rem"></div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:1rem 0">
+        <div class="field"><label for="tReply">Reply to support</label><textarea id="tReply" style="min-height:80px"></textarea></div>
+        <button class="btn btn-primary btn-sm" id="tSend">Send reply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/app.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var me = window.PFX_ME;
+  var FLOW = ["new", "reviewing", "awaiting member", "referral offered", "referred", "resolved", "closed"];
+
+  function listView() {
+    document.getElementById("form").style.display = "none";
+    document.getElementById("thread").style.display = "none";
+    var mine = PFX.db.assistance.filter(function (a) { return a.memberId === me.id; })
+      .sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+    document.getElementById("list").innerHTML = mine.length ? mine.map(function (a) {
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(a.category) + ' — ' + PFX.esc(a.provider) + (a.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
+        '<p class="meta">Opened ' + PFX.fmtDate(a.createdAt) + '</p>' +
+        '<span class="badge badge-info">' + PFX.esc(a.status) + '</span></div>' +
+        '<button class="btn btn-ghost btn-sm" data-open="' + a.id + '">Open</button></div>';
+    }).join("") : '<div class="empty">No requests yet. If you have a problem with a broker, start one — it\'s private.</div>';
+  }
+
+  function openThread(id) {
+    var a = PFX.db.assistance.find(function (x) { return x.id === id && x.memberId === me.id; });
+    if (!a) return;
+    document.getElementById("list").innerHTML = "";
+    document.getElementById("form").style.display = "none";
+    document.getElementById("thread").style.display = "block";
+    document.getElementById("tTitle").textContent = a.category + " — " + a.provider;
+    document.getElementById("tMeta").textContent = "Status: " + a.status + " · Opened " + PFX.fmtDate(a.createdAt) + " · " + a.country;
+    var html = '<div class="timeline">';
+    html += '<div><b>You submitted the request</b><br><span class="meta">' + PFX.esc(a.facts) + '<br>Requested help: ' + PFX.esc(a.requestedHelp) + '</span></div>';
+    (a.messages || []).forEach(function (m) {
+      html += '<div><b>' + (m.from === "staff" ? "Support" : "You") + '</b> <span class="meta">' + PFX.fmtDate(m.at) + '</span><br><span class="meta">' + PFX.esc(m.text) + '</span></div>';
+    });
+    if (a.status === "referral offered") {
+      html += '<div class="notice"><b>Referral offered.</b> Support proposed a professional referral. Nothing is shared until you approve in writing below.</div>' +
+        '<button class="btn btn-primary btn-sm" id="consentYes">I approve sharing my case with the proposed professional</button>';
+    }
+    html += "</div>";
+    document.getElementById("tBody").innerHTML = html;
+    var cy = document.getElementById("consentYes");
+    if (cy) cy.addEventListener("click", function () {
+      if (!confirm("Approve sharing your case details with the proposed professional?")) return;
+      a.referralConsent = { at: PFX.now(), value: true, note: "member approved via dashboard" };
+      a.status = "referred";
+      a.history.push({ at: PFX.now(), by: "member", action: "referral consent granted" });
+      PFX.save(); PFX.audit("assistance.referral_consent", a.id, me.id);
+      openThread(id);
+    });
+    document.getElementById("tSend").onclick = function () {
+      var t = document.getElementById("tReply").value.trim();
+      if (!t) return;
+      a.messages.push({ at: PFX.now(), from: "member", text: t });
+      if (a.status === "awaiting member") { a.status = "reviewing"; a.history.push({ at: PFX.now(), by: "member", action: "replied → reviewing" }); }
+      PFX.save(); PFX.audit("assistance.reply", a.id, me.id);
+      openThread(id);
+    };
+  }
+
+  document.getElementById("newBtn").addEventListener("click", function () {
+    document.getElementById("list").innerHTML = "";
+    document.getElementById("thread").style.display = "none";
+    document.getElementById("form").style.display = "block";
+  });
+  document.getElementById("aBack").addEventListener("click", listView);
+  document.getElementById("tBack").addEventListener("click", listView);
+  document.getElementById("aSubmit").addEventListener("click", function () {
+    var err = document.getElementById("aErr"); err.style.display = "none";
+    var cat = document.getElementById("aCat").value,
+      country = document.getElementById("aCountry").value.trim(),
+      provider = document.getElementById("aProvider").value.trim(),
+      facts = document.getElementById("aFacts").value.trim(),
+      help = document.getElementById("aHelp").value.trim();
+    if (!country || !provider || !facts || !help) { err.textContent = "Please complete all required fields."; err.style.display = "block"; return; }
+    var a = {
+      id: PFX.uid("asr"), memberId: me.id, createdAt: PFX.now(),
+      category: cat, country: country, provider: provider, facts: facts,
+      dates: document.getElementById("aDates").value.trim(), requestedHelp: help,
+      contactPref: document.getElementById("aPref").value,
+      status: "new", privateNotes: [], messages: [], referralConsent: null,
+      history: [{ at: PFX.now(), by: "member", action: "created" }]
+    };
+    PFX.db.assistance.push(a); PFX.save();
+    PFX.audit("assistance.create", a.id + " " + cat, me.id);
+    document.getElementById("msg").innerHTML = '<div class="success">Request submitted privately. Support will review it and reply here.</div>';
+    listView();
+  });
+  document.addEventListener("click", function (ev) {
+    var o = ev.target.closest("[data-open]");
+    if (o) openThread(o.dataset.open);
+  });
+  listView();
+})();
+</script>
+</body>
+</html>

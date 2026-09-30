@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Free — ProFX Club</title>
+<meta name="description" content="Join ProFX Club free: name, email, accept terms, verify email. No payment, no broker account required.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css?v=20260930a">
+</head>
+<body data-page="join">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="chrome-nav"></header>
+<div class="mobile-drawer" id="chrome-drawer"></div>
+
+<main id="main">
+<section class="section">
+  <div class="container" style="max-width:640px">
+
+    <div id="step1">
+      <span class="eyebrow">Free registration</span>
+      <h1>Join ProFX Club free</h1>
+      <p class="lead">Step 1 of 2 — your details. No payment, no broker account, no identity documents.</p>
+      <div class="card" style="margin-top:1.2rem">
+        <div class="form-error" id="jErr" role="alert"></div>
+        <form id="joinForm" novalidate>
+          <div class="field"><label for="jName">Full name *</label><input type="text" id="jName" autocomplete="name" required></div>
+          <div class="field"><label for="jEmail">Email address *</label><input type="email" id="jEmail" autocomplete="email" required></div>
+          <div class="field"><label for="jRef">Referral code (optional)</label><input type="text" id="jRef" placeholder="e.g. EDU-AISHA"></div>
+          <div class="honeypot"><label>Leave blank<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+          <hr style="border:0;border-top:1px solid var(--line);margin:1rem 0">
+          <label class="check-row" style="color:var(--ink)"><input type="checkbox" id="jTerms" required><span>I accept the <a href="terms.html">membership terms</a> *</span></label>
+          <label class="check-row" style="color:var(--ink)"><input type="checkbox" id="jPrivacy" required><span>I have read the <a href="privacy.html">privacy notice</a> *</span></label>
+          <hr style="border:0;border-top:1px solid var(--line);margin:1rem 0">
+          <p style="font-size:.9rem;font-weight:700;margin-bottom:.3rem">Optional marketing consent <span class="badge badge-neutral">not required to join</span></p>
+          <label class="check-row" style="color:var(--ink)"><input type="checkbox" id="jPromoEmail"><span>Yes, send me promotional emails about classes and events.</span></label>
+          <label class="check-row" style="color:var(--ink)"><input type="checkbox" id="jPromoWa"><span>Yes, send me promotional WhatsApp messages.</span></label>
+          <div class="field" style="margin-top:.6rem"><label for="jWa">WhatsApp number (optional — only if you chose WhatsApp updates)</label><input type="tel" id="jWa" autocomplete="tel" placeholder="+971 …"></div>
+          <button class="btn btn-primary btn-lg" type="submit" style="width:100%;margin-top:.6rem">Continue → verify email</button>
+          <p class="form-note" style="text-align:center">Already a member? <a href="signin.html">Sign in instead</a>.</p>
+        </form>
+      </div>
+    </div>
+
+    <div id="step2" style="display:none">
+      <span class="eyebrow">Step 2 of 2 — verify</span>
+      <h1>Check your email</h1>
+      <p class="lead">We sent a verification link to <b id="vEmail"></b>. Click it to activate your membership.</p>
+      <div class="card" style="margin-top:1.2rem">
+        <div class="demo-banner"><b>DEMO MODE</b> — no real email is sent in this prototype. Your demo verification code is shown below; in production this arrives by email link.</div>
+        <p style="font-size:.9rem;color:var(--muted)">Demo verification code for <b id="vEmail2"></b>:</p>
+        <p style="font-size:2rem;font-weight:800;letter-spacing:.3rem;color:var(--emerald-2)" id="vCode">------</p>
+        <div class="field"><label for="vInput">Enter the code</label><input type="text" id="vInput" inputmode="numeric" maxlength="6" placeholder="6-digit code"></div>
+        <div class="form-error" id="vErr" role="alert"></div>
+        <button class="btn btn-primary" id="vSubmit" style="width:100%">Verify &amp; activate membership</button>
+        <p class="form-note" style="text-align:center">Code expires after 30 minutes in production. <a href="#" id="resend">Resend code</a></p>
+      </div>
+    </div>
+
+    <div id="step3" style="display:none;text-align:center">
+      <div class="icon-chip" style="margin:1.4rem auto">✅</div>
+      <h1>Welcome to ProFX Club!</h1>
+      <p class="lead" style="margin:0 auto">Your membership is active. Your membership ID:</p>
+      <p style="font-size:1.8rem;font-weight:800;color:var(--emerald-2);letter-spacing:.08rem" id="midOut"></p>
+      <div style="display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-top:1.2rem">
+        <a class="btn btn-primary" href="app/index.html">Open my dashboard</a>
+        <a class="btn btn-ghost" href="events.html">Book a free class</a>
+      </div>
+      <p class="form-note" style="margin-top:1rem">Optional: complete your <a href="app/profile.html">onboarding profile</a> (city, experience, language, interests) in your dashboard.</p>
+    </div>
+
+  </div>
+</section>
+</main>
+
+<footer id="chrome-footer"></footer>
+<script src="js/db.js?v=20260930a"></script>
+<script src="js/site.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var PENDING = "profx_pending_verification";
+  /* prefill from homepage quick form */
+  try {
+    var q = JSON.parse(sessionStorage.getItem("profx_pending_join") || "null");
+    if (q) { document.getElementById("jName").value = q.name || ""; document.getElementById("jEmail").value = q.email || ""; }
+  } catch (e) {}
+  function showErr(id, msg) { var el = document.getElementById(id); el.textContent = msg; el.style.display = "block"; }
+
+  document.getElementById("joinForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var err = document.getElementById("jErr"); err.style.display = "none";
+    var name = document.getElementById("jName").value.trim();
+    var email = document.getElementById("jEmail").value.trim();
+    if (this.website.value) return; /* honeypot */
+    if (name.length < 2) return showErr("jErr", "Please enter your full name.");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showErr("jErr", "Please enter a valid email address.");
+    if (!document.getElementById("jTerms").checked || !document.getElementById("jPrivacy").checked)
+      return showErr("jErr", "Please accept the membership terms and privacy notice to continue.");
+    /* duplicate signup → direct to sign-in, no duplicate record */
+    var existing = PFX.memberByEmail(email);
+    if (existing) {
+      err.innerHTML = 'An account with this email already exists. <a href="signin.html">Sign in instead</a> — we\'ll send you a secure link.';
+      err.style.display = "block"; return;
+    }
+    /* validate referral code if given */
+    var ref = document.getElementById("jRef").value.trim().toUpperCase();
+    if (ref && !PFX.db.referralCodes.some(function (c) { return c.code === ref; })) {
+      return showErr("jErr", "That referral code wasn't recognised. You can leave it blank and join anyway.");
+    }
+    var code = String(Math.floor(100000 + Math.random() * 900000));
+    var pending = {
+      name: name, email: email, ref: ref,
+      promoEmail: document.getElementById("jPromoEmail").checked,
+      promoWhatsapp: document.getElementById("jPromoWa").checked,
+      whatsapp: document.getElementById("jWa").value.trim(),
+      code: code, createdAt: Date.now()
+    };
+    localStorage.setItem(PENDING, JSON.stringify(pending));
+    document.getElementById("step1").style.display = "none";
+    var s2 = document.getElementById("step2"); s2.style.display = "block";
+    document.getElementById("vEmail").textContent = email;
+    document.getElementById("vEmail2").textContent = email;
+    document.getElementById("vCode").textContent = code;
+    window.scrollTo(0, 0);
+  });
+
+  function verify() {
+    var pending; try { pending = JSON.parse(localStorage.getItem(PENDING)); } catch (e) {}
+    var err = document.getElementById("vErr"); err.style.display = "none";
+    if (!pending) return showErr("vErr", "This verification session expired. Please start again.");
+    if (document.getElementById("vInput").value.trim() !== pending.code)
+      return showErr("vErr", "That code doesn't match. Check the code shown above and try again.");
+    /* create the member record */
+    var m = {
+      id: PFX.uid("mem"), membershipId: PFX.nextMembershipId(),
+      name: pending.name, email: pending.email,
+      status: "active", verified: true, createdAt: PFX.now(),
+      source: document.referrer ? new URL(document.referrer).pathname : "direct",
+      referralCode: pending.ref || "",
+      city: "", country: "", experience: "", language: "", interests: [],
+      whatsapp: pending.whatsapp || "",
+      consent: { terms: true, privacy: true, promoEmail: pending.promoEmail, promoWhatsapp: pending.promoWhatsapp },
+      consentHistory: [
+        { at: PFX.now(), type: "terms", value: true, note: "accepted at registration" },
+        { at: PFX.now(), type: "privacy", value: true, note: "accepted at registration" },
+        { at: PFX.now(), type: "promoEmail", value: pending.promoEmail, note: "chosen at registration" },
+        { at: PFX.now(), type: "promoWhatsapp", value: pending.promoWhatsapp, note: "chosen at registration" }
+      ],
+      tags: []
+    };
+    PFX.db.members.push(m); PFX.save();
+    PFX.audit("member.register", m.membershipId + " " + m.email, m.id);
+    localStorage.removeItem(PENDING);
+    PFX.setSession({ memberId: m.id, at: PFX.now() });
+    document.getElementById("step2").style.display = "none";
+    var s3 = document.getElementById("step3"); s3.style.display = "block";
+    document.getElementById("midOut").textContent = m.membershipId;
+    window.scrollTo(0, 0);
+  }
+  document.getElementById("vSubmit").addEventListener("click", verify);
+  document.getElementById("resend").addEventListener("click", function (e) {
+    e.preventDefault();
+    var pending; try { pending = JSON.parse(localStorage.getItem(PENDING)); } catch (e2) {}
+    if (pending) { document.getElementById("vCode").textContent = pending.code; alert("DEMO: your code is shown on this page."); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Members — ProFX Club CRM</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="members">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Admin CRM</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO DATA</b> — sample members are labelled SAMPLE.</div>
+    <div class="page-head"><div><h1>Members</h1><p class="lead">Search, filter, verification state, status, tags, consent, signup source.</p></div></div>
+
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Search name or email…">
+      <select id="fStatus"><option value="">All statuses</option><option>pending</option><option>active</option><option>suspended</option><option>closed</option></select>
+      <select id="fVerified"><option value="">Verified + unverified</option><option value="1">Verified only</option><option value="0">Unverified only</option></select>
+      <select id="fConsent"><option value="">Any marketing consent</option><option value="promoEmail">Promo email opt-in</option><option value="promoWhatsapp">Promo WhatsApp opt-in</option><option value="none">No marketing consent</option></select>
+    </div>
+
+    <div id="list"></div>
+
+    <div id="detail" style="display:none">
+      <button class="btn btn-ghost btn-sm" id="dBack">← All members</button>
+      <div class="card" style="margin-top:.8rem">
+        <h3 id="dName"></h3>
+        <dl class="kv" style="margin:.8rem 0" id="dKv"></dl>
+        <h4 style="margin:.8rem 0 .4rem">Consent history</h4>
+        <div id="dConsent"></div>
+        <h4 style="margin:.8rem 0 .4rem">Tags</h4>
+        <div id="dTags" style="display:flex;gap:.4rem;flex-wrap:wrap"></div>
+        <div class="field" style="margin-top:.6rem;max-width:320px"><label for="dTagAdd">Add tag</label>
+          <div style="display:flex;gap:.5rem"><input type="text" id="dTagAdd" placeholder="e.g. beginner"><button class="btn btn-ghost btn-sm" id="dTagBtn">Add</button></div></div>
+        <h4 style="margin:1rem 0 .4rem">Change status</h4>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" data-st="active">Activate</button>
+          <button class="btn btn-ghost btn-sm" data-st="suspended">Suspend</button>
+          <button class="btn btn-ghost btn-sm" data-st="closed">Close</button>
+        </div>
+        <div id="delReq" style="margin-top:.8rem"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/admin.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var current = null;
+  function render() {
+    var q = document.getElementById("q").value.trim().toLowerCase(),
+      fs = document.getElementById("fStatus").value,
+      fv = document.getElementById("fVerified").value,
+      fc = document.getElementById("fConsent").value;
+    var rows = PFX.db.members.filter(function (m) {
+      if (q && (m.name.toLowerCase().indexOf(q) < 0 && m.email.toLowerCase().indexOf(q) < 0)) return false;
+      if (fs && m.status !== fs) return false;
+      if (fv === "1" && !m.verified) return false;
+      if (fv === "0" && m.verified) return false;
+      if (fc === "promoEmail" && !m.consent.promoEmail) return false;
+      if (fc === "promoWhatsapp" && !m.consent.promoWhatsapp) return false;
+      if (fc === "none" && (m.consent.promoEmail || m.consent.promoWhatsapp)) return false;
+      return true;
+    }).sort(function (a, b) { return b.createdAt.localeCompare(a.createdAt); });
+    document.getElementById("list").innerHTML =
+      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Member</th><th>ID</th><th>Status</th><th>Verified</th><th>Source</th><th>Consents</th><th></th></tr></thead><tbody>' +
+      rows.map(function (m) {
+        var cons = [m.consent.promoEmail ? "📧" : "", m.consent.promoWhatsapp ? "🟢" : ""].join(" ") || "—";
+        return "<tr><td><b>" + PFX.esc(m.name) + "</b><br><span class='meta'>" + PFX.esc(m.email) + "</span>" + (m.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + "</td>" +
+          "<td>" + PFX.esc(m.membershipId) + "</td>" +
+          "<td><span class='badge " + (m.status === "active" ? "badge-ok" : m.status === "pending" ? "badge-warn" : "badge-neutral") + "'>" + m.status + "</span></td>" +
+          "<td>" + (m.verified ? "✅" : "⏳") + "</td>" +
+          "<td class='meta'>" + PFX.esc(m.source || "—") + (m.referralCode ? "<br>ref: " + PFX.esc(m.referralCode) : "") + "</td>" +
+          "<td>" + cons + "</td>" +
+          "<td><button class='btn btn-ghost btn-sm' data-view='" + m.id + "'>Open</button></td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function open(id) {
+    current = PFX.memberById(id);
+    if (!current) return;
+    ADM.viewSensitive("member", id);
+    document.getElementById("list").style.display = "none";
+    document.getElementById("detail").style.display = "block";
+    document.getElementById("dName").innerHTML = PFX.esc(current.name) + (current.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "");
+    document.getElementById("dKv").innerHTML =
+      "<dt>Email</dt><dd>" + PFX.esc(current.email) + "</dd>" +
+      "<dt>Membership ID</dt><dd>" + PFX.esc(current.membershipId) + "</dd>" +
+      "<dt>Status</dt><dd>" + current.status + "</dd>" +
+      "<dt>Verified</dt><dd>" + (current.verified ? "Yes" : "No") + "</dd>" +
+      "<dt>Signed up</dt><dd>" + PFX.fmtDate(current.createdAt) + "</dd>" +
+      "<dt>Source</dt><dd>" + PFX.esc(current.source || "—") + "</dd>" +
+      "<dt>Referral code</dt><dd>" + PFX.esc(current.referralCode || "—") + "</dd>" +
+      "<dt>City / Country</dt><dd>" + PFX.esc((current.city || "—") + " / " + (current.country || "—")) + "</dd>" +
+      "<dt>Experience</dt><dd>" + PFX.esc(current.experience || "—") + "</dd>" +
+      "<dt>Language</dt><dd>" + PFX.esc(current.language || "—") + "</dd>" +
+      "<dt>Interests</dt><dd>" + PFX.esc((current.interests || []).join(", ") || "—") + "</dd>";
+    document.getElementById("dConsent").innerHTML = (current.consentHistory || []).length
+      ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>When</th><th>Type</th><th>Value</th><th>Note</th></tr></thead><tbody>' +
+        current.consentHistory.map(function (c) {
+          return "<tr><td>" + PFX.fmtDate(c.at) + "</td><td>" + PFX.esc(c.type) + "</td><td>" + (c.value ? "✅ yes" : "❌ no") + "</td><td class='meta'>" + PFX.esc(c.note || "") + "</td></tr>";
+        }).join("") + "</tbody></table></div>"
+      : '<p class="meta">No history.</p>';
+    document.getElementById("dTags").innerHTML = (current.tags || []).map(function (t) {
+      return '<span class="badge badge-info">' + PFX.esc(t) + ' <a href="#" data-untag="' + PFX.esc(t) + '" style="color:inherit">×</a></span>';
+    }).join("") || '<span class="meta">No tags.</span>';
+    document.getElementById("delReq").innerHTML = current.deletionRequested
+      ? '<div class="warn"><b>Deletion requested</b> at ' + PFX.fmtDate(current.deletionRequested.at) + '. Confirm with the member by email, then <button class="btn btn-danger btn-sm" id="delConfirm">Confirm deletion</button></div>'
+      : "";
+    var dc = document.getElementById("delConfirm");
+    if (dc) dc.addEventListener("click", function () {
+      if (!confirm("Permanently delete this member's personal data?")) return;
+      PFX.db.members = PFX.db.members.filter(function (m) { return m.id !== current.id; });
+      PFX.save(); PFX.audit("member.delete", current.membershipId, "admin");
+      back();
+    });
+  }
+  function back() { current = null; document.getElementById("detail").style.display = "none"; document.getElementById("list").style.display = "block"; render(); }
+  ["q", "fStatus", "fVerified", "fConsent"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", render);
+    document.getElementById(id).addEventListener("change", render);
+  });
+  document.getElementById("dBack").addEventListener("click", back);
+  document.getElementById("dTagBtn").addEventListener("click", function () {
+    var t = document.getElementById("dTagAdd").value.trim().toLowerCase();
+    if (t && current.tags.indexOf(t) < 0) { current.tags.push(t); PFX.save(); PFX.audit("member.tag_add", current.membershipId + " " + t, "admin"); open(current.id); }
+  });
+  document.addEventListener("click", function (ev) {
+    var v = ev.target.closest("[data-view]"); if (v) { open(v.dataset.view); return; }
+    var u = ev.target.closest("[data-untag]");
+    if (u) { ev.preventDefault(); current.tags = current.tags.filter(function (t) { return t !== u.dataset.untag; }); PFX.save(); PFX.audit("member.tag_remove", current.membershipId + " " + u.dataset.untag, "admin"); open(current.id); return; }
+    var s = ev.target.closest("[data-st]");
+    if (s && current) {
+      var from = current.status; current.status = s.dataset.st;
+      PFX.save(); PFX.audit("member.status", current.membershipId + " " + from + " → " + current.status, "admin");
+      open(current.id);
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

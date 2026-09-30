@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports — ProFX Club CRM</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="reports">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Admin CRM</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO DATA</b> — metrics are computed from the demo database. Definitions follow the spec.</div>
+    <div class="page-head"><div><h1>Reports</h1><p class="lead">Signup conversion, verification, activation, attendance, retention, acquisition cost.</p></div></div>
+
+    <div class="stat-row" id="stats"></div>
+
+    <div class="card">
+      <h3>Metric definitions (from the spec)</h3>
+      <dl class="kv" style="margin-top:.8rem">
+        <dt>Registration conversion</dt><dd>Completed new registrations ÷ unique signup-page visitors (same period). Visitor tracking is a production integration.</dd>
+        <dt>Verification rate</dt><dd>Email-verified members ÷ completed registrations.</dd>
+        <dt>Activation</dt><dd>Verified members who book a class or access a resource within 7 days.</dd>
+        <dt>Attendance</dt><dd>Attendees ÷ confirmed bookings.</dd>
+        <dt>Retention</dt><dd>Activated members returning for a meaningful activity within 30 days.</dd>
+        <dt>Acquisition cost</dt><dd>Attributable campaign spend ÷ new verified members from that campaign.</dd>
+      </dl>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
+      <h3>Registrations by source</h3>
+      <div id="sources"></div>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
+      <h3>Planning funnel (spec example — not a forecast)</h3>
+      <p class="meta">1,000 landing-page visitors × 15% registration × 80% verification = 120 verified members. At AED 1,500 spend, cost per verified member ≈ AED 12.50. Replace with measured results before increasing spend.</p>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/admin.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var members = PFX.db.members;
+  var completed = members.length;
+  var verified = members.filter(function (m) { return m.verified; }).length;
+  var verRate = completed ? Math.round(verified / completed * 100) : 0;
+  var seven = 7 * 24 * 3600 * 1000;
+  var activated = members.filter(function (m) {
+    if (!m.verified) return false;
+    var t0 = new Date(m.createdAt).getTime();
+    var booked = PFX.db.registrations.some(function (r) { return r.memberId === m.id && new Date(r.createdAt).getTime() - t0 < seven; });
+    var accessed = Object.keys(m.progress || {}).some(function (k) { return k.indexOf("res_") === 0; });
+    return booked || accessed;
+  }).length;
+  var actRate = verified ? Math.round(activated / verified * 100) : 0;
+  var conf = PFX.db.registrations.filter(function (r) { return r.status === "confirmed" || r.status === "attended" || r.status === "no-show"; }).length;
+  var att = PFX.db.registrations.filter(function (r) { return r.status === "attended"; }).length;
+  var attRate = conf ? Math.round(att / conf * 100) : 0;
+  var thirty = 30 * 24 * 3600 * 1000;
+  var retained = members.filter(function (m) {
+    var acts = PFX.db.registrations.filter(function (r) { return r.memberId === m.id; }).map(function (r) { return new Date(r.createdAt).getTime(); });
+    if (acts.length < 2) return false;
+    var first = Math.min.apply(null, acts);
+    return acts.some(function (t) { return t - first > 0 && t - first < thirty; });
+  }).length;
+  var retRate = activated ? Math.round(retained / activated * 100) : 0;
+  document.getElementById("stats").innerHTML =
+    stat(completed, "Completed registrations") + stat(verRate + "%", "Verification rate") +
+    stat(actRate + "%", "Activation (7d)") + stat(attRate + "%", "Attendance") ;
+  function stat(v, l) { return '<div class="stat"><b>' + v + '</b><span>' + l + '</span></div>'; }
+  var bySrc = {};
+  members.forEach(function (m) { var s = m.source || "direct"; bySrc[s] = (bySrc[s] || 0) + 1; });
+  document.getElementById("sources").innerHTML = '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Source</th><th>Registrations</th><th>Verified</th></tr></thead><tbody>' +
+    Object.keys(bySrc).map(function (s) {
+      var v = members.filter(function (m) { return (m.source || "direct") === s && m.verified; }).length;
+      return "<tr><td>" + PFX.esc(s) + "</td><td>" + bySrc[s] + "</td><td>" + v + "</td></tr>";
+    }).join("") + "</tbody></table></div>";
+})();
+</script>
+</body>
+</html>

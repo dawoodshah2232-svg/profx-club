@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events — ProFX Club CRM</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="events">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Admin CRM</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO DATA</b> — sample events labelled SAMPLE. Publish only owner-confirmed sessions.</div>
+    <div class="page-head"><div><h1>Events</h1><p class="lead">Schedules, hosts, capacity, registrations, waitlists, attendance.</p></div>
+    <button class="btn btn-primary" id="newBtn">+ New event</button></div>
+    <div id="msg"></div>
+    <div id="list"></div>
+    <div id="detail" style="display:none"></div>
+  </div>
+</div>
+
+<div class="modal-back" id="evModal"><div class="modal">
+  <h3 id="emTitle">New event</h3>
+  <div class="form-error" id="emErr" role="alert"></div>
+  <div class="field"><label>Title *</label><input type="text" id="emName"></div>
+  <div class="grid g2">
+    <div class="field"><label>Starts at (local, Asia/Dubai) *</label><input type="datetime-local" id="emStart"></div>
+    <div class="field"><label>Capacity *</label><input type="number" id="emCap" value="100" min="1"></div>
+  </div>
+  <div class="grid g2">
+    <div class="field"><label>Language</label><input type="text" id="emLang" value="English"></div>
+    <div class="field"><label>Kind</label><select id="emKind"><option>Online class</option><option>Online webinar</option><option>Online meetup</option><option>Physical seminar</option></select></div>
+  </div>
+  <div class="grid g2">
+    <div class="field"><label>Host</label><input type="text" id="emHost"></div>
+    <div class="field"><label>Cost</label><input type="text" id="emCost" value="Free"></div>
+  </div>
+  <div class="field"><label>Status</label><select id="emStatus"><option>draft</option><option>published</option><option>cancelled</option><option>completed</option></select></div>
+  <div class="field"><label>Description</label><textarea id="emDesc" style="min-height:80px"></textarea></div>
+  <label class="check-row" style="color:var(--ink)"><input type="checkbox" id="emConfirmed"><span>Session confirmed by owner (only publish confirmed sessions)</span></label>
+  <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.8rem">
+    <button class="btn btn-ghost" id="emNo">Back</button>
+    <button class="btn btn-primary" id="emYes">Save event</button>
+  </div>
+</div></div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/admin.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var editing = null;
+  function msg(h, c) { document.getElementById("msg").innerHTML = '<div class="' + c + '">' + h + '</div>'; }
+  function render() {
+    var evs = PFX.db.events.slice().sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
+    document.getElementById("list").innerHTML = evs.map(function (e) {
+      var conf = PFX.regsForEvent(e.id, "confirmed").length, wl = PFX.regsForEvent(e.id, "waitlisted").length;
+      var full = PFX.eventSeatsLeft(e.id) === 0;
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + (e.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
+        '<p class="meta">' + PFX.fmtDate(e.startsAt) + ' · ' + PFX.esc(e.timezone) + ' · ' + PFX.esc(e.language) + '</p>' +
+        '<span class="badge ' + (e.status === "published" ? "badge-ok" : e.status === "draft" ? "badge-neutral" : "badge-warn") + '">' + e.status + '</span> ' +
+        (full ? '<span class="badge badge-full">Full</span> ' : "") +
+        '<span class="meta"> ' + conf + '/' + e.capacity + ' booked · ' + wl + ' waitlisted</span></div>' +
+        '<button class="btn btn-ghost btn-sm" data-open="' + e.id + '">Manage</button></div>';
+    }).join("");
+  }
+  function open(id) {
+    var e = PFX.db.events.find(function (x) { return x.id === id; });
+    if (!e) return;
+    document.getElementById("list").style.display = "none";
+    var d = document.getElementById("detail"); d.style.display = "block";
+    var regs = PFX.db.registrations.filter(function (r) { return r.eventId === id; })
+      .sort(function (a, b) { return a.createdAt.localeCompare(b.createdAt); });
+    d.innerHTML = '<button class="btn btn-ghost btn-sm" id="dBack">← All events</button>' +
+      '<div class="card" style="margin-top:.8rem"><div class="page-head"><div><h3>' + PFX.esc(e.title) + '</h3>' +
+      '<p class="meta">' + PFX.fmtDate(e.startsAt) + ' · ' + PFX.esc(e.timezone) + ' · ' + PFX.esc(e.language) + ' · Host: ' + PFX.esc(e.host) + ' · ' + PFX.esc(e.cost) + '</p></div>' +
+      '<div style="display:flex;gap:.5rem"><button class="btn btn-ghost btn-sm" id="dEdit">Edit</button>' +
+      '<select id="dStatus" style="width:auto">' + ["draft", "published", "full", "cancelled", "completed"].map(function (s) {
+        return '<option' + (e.status === s ? " selected" : "") + '>' + s + '</option>';
+      }).join("") + '</select></div></div>' +
+      '<h4>Registrations (' + regs.length + ')</h4>' +
+      (regs.length ? '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Member</th><th>Status</th><th>Booked</th><th></th></tr></thead><tbody>' +
+        regs.map(function (r) {
+          var m = PFX.memberById(r.memberId);
+          return '<tr><td>' + PFX.esc(m ? m.name : r.memberId) + '<br><span class="meta">' + PFX.esc(m ? m.email : "") + '</span></td>' +
+            '<td><span class="badge ' + (r.status === "confirmed" ? "badge-ok" : r.status === "waitlisted" ? "badge-warn" : "badge-neutral") + '">' + r.status + '</span></td>' +
+            '<td class="meta">' + PFX.fmtDate(r.createdAt) + '</td>' +
+            '<td>' + ((r.status === "confirmed" || r.status === "waitlisted") ? '<button class="btn btn-ghost btn-sm" data-attend="' + r.id + '" title="Mark attended">✓ Attended</button> <button class="btn btn-ghost btn-sm" data-noshow="' + r.id + '">No-show</button> <button class="btn btn-danger btn-sm" data-adcancel="' + r.id + '">Cancel</button>' : "") + '</td></tr>';
+        }).join("") + '</tbody></table></div>' : '<p class="meta">No registrations yet.</p>') +
+      '</div>';
+    document.getElementById("dBack").addEventListener("click", function () { d.style.display = "none"; document.getElementById("list").style.display = "block"; render(); });
+    document.getElementById("dEdit").addEventListener("click", function () { openModal(e); });
+    document.getElementById("dStatus").addEventListener("change", function (ev) {
+      var from = e.status; e.status = ev.target.value; PFX.save();
+      PFX.audit("event.status", e.title + " " + from + " → " + e.status, "admin");
+      msg("Event status updated to " + e.status + ".", "success"); render();
+    });
+    d.querySelectorAll("[data-attend],[data-noshow],[data-adcancel]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var r = PFX.db.registrations.find(function (x) { return x.id === (b.dataset.attend || b.dataset.noshow || b.dataset.adcancel); });
+        if (!r) return;
+        if (b.dataset.adcancel) { PFX.cancelBooking(r.id, "admin"); msg("Registration cancelled; place released.", "success"); }
+        else { r.status = b.dataset.attend ? "attended" : "no-show"; r.history.push({ at: PFX.now(), action: r.status, by: "admin" }); PFX.save(); PFX.audit("event.attendance", r.id + " → " + r.status, "admin"); msg("Marked " + r.status + ".", "success"); }
+        open(id);
+      });
+    });
+  }
+  function openModal(e) {
+    editing = e || null;
+    document.getElementById("emTitle").textContent = e ? "Edit event" : "New event";
+    document.getElementById("emName").value = e ? e.title : "";
+    document.getElementById("emStart").value = e ? e.startsAt.slice(0, 16) : "";
+    document.getElementById("emCap").value = e ? e.capacity : 100;
+    document.getElementById("emLang").value = e ? e.language : "English";
+    document.getElementById("emKind").value = e ? e.kind : "Online class";
+    document.getElementById("emHost").value = e ? e.host : "";
+    document.getElementById("emCost").value = e ? e.cost : "Free";
+    document.getElementById("emStatus").value = e ? e.status : "draft";
+    document.getElementById("emDesc").value = e ? (e.description || "") : "";
+    document.getElementById("emConfirmed").checked = !!(e && !e.sample);
+    document.getElementById("evModal").classList.add("open");
+  }
+  document.getElementById("newBtn").addEventListener("click", function () { openModal(null); });
+  document.getElementById("emNo").addEventListener("click", function () { document.getElementById("evModal").classList.remove("open"); });
+  document.getElementById("emYes").addEventListener("click", function () {
+    var err = document.getElementById("emErr"); err.style.display = "none";
+    var title = document.getElementById("emName").value.trim(),
+      start = document.getElementById("emStart").value,
+      cap = parseInt(document.getElementById("emCap").value, 10);
+    if (title.length < 4) { err.textContent = "Give the event a title."; err.style.display = "block"; return; }
+    if (!start) { err.textContent = "Set the start date/time."; err.style.display = "block"; return; }
+    if (!(cap > 0)) { err.textContent = "Capacity must be at least 1."; err.style.display = "block"; return; }
+    var status = document.getElementById("emStatus").value;
+    if (status === "published" && !document.getElementById("emConfirmed").checked) {
+      err.textContent = "Only publish sessions confirmed by the owner. Save as draft instead."; err.style.display = "block"; return;
+    }
+    var iso = new Date(start).toISOString();
+    if (editing) {
+      editing.title = title; editing.startsAt = iso; editing.capacity = cap;
+      editing.language = document.getElementById("emLang").value.trim();
+      editing.kind = document.getElementById("emKind").value; editing.host = document.getElementById("emHost").value.trim();
+      editing.cost = document.getElementById("emCost").value.trim(); editing.status = status;
+      editing.description = document.getElementById("emDesc").value.trim();
+      PFX.audit("event.update", title, "admin");
+    } else {
+      PFX.db.events.push({
+        id: PFX.uid("evt"), title: title, startsAt: iso, timezone: "Asia/Dubai (GMT+4)",
+        language: document.getElementById("emLang").value.trim(), kind: document.getElementById("emKind").value,
+        host: document.getElementById("emHost").value.trim(), capacity: cap, cost: document.getElementById("emCost").value.trim(),
+        status: status, joinUrl: "", description: document.getElementById("emDesc").value.trim(), sample: false, ownerConfirmed: document.getElementById("emConfirmed").checked
+      });
+      PFX.audit("event.create", title, "admin");
+    }
+    PFX.save();
+    document.getElementById("evModal").classList.remove("open");
+    document.getElementById("detail").style.display = "none";
+    document.getElementById("list").style.display = "block";
+    msg("Event saved.", "success"); render();
+  });
+  document.addEventListener("click", function (ev) {
+    var o = ev.target.closest("[data-open]"); if (o) open(o.dataset.open);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

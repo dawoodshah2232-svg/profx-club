@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaigns — ProFX Club CRM</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="campaigns">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Admin CRM</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO DATA</b> — sample campaign. In production, campaigns send only to opted-in members; unsubscribed members are excluded automatically.</div>
+    <div class="page-head"><div><h1>Campaigns</h1><p class="lead">Approved email templates, audience segments, delivery results, unsubscribe handling.</p></div>
+    <button class="btn btn-primary" id="newBtn">+ New campaign</button></div>
+    <div id="msg"></div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<div class="modal-back" id="cModal"><div class="modal">
+  <h3 id="cTitle">New campaign</h3>
+  <div class="field"><label for="cName">Campaign name</label><input type="text" id="cName"></div>
+  <div class="field"><label for="cSubj">Subject</label><input type="text" id="cSubj"></div>
+  <div class="field"><label for="cAud">Audience</label>
+    <select id="cAud"><option value="promoEmail">Promo email opt-in</option><option value="promoWhatsapp">Promo WhatsApp opt-in</option><option value="all">All active members (service only)</option></select></div>
+  <div class="field"><label for="cBody">Message (template)</label><textarea id="cBody"></textarea></div>
+  <p class="meta">DEMO — sending is simulated. Only members with matching consent are counted as recipients.</p>
+  <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.8rem">
+    <button class="btn btn-ghost" id="cNo">Back</button>
+    <button class="btn btn-primary" id="cYes">Save &amp; simulate send</button>
+  </div>
+</div></div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/admin.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  function recipients(audience) {
+    return PFX.db.members.filter(function (m) {
+      if (m.status !== "active") return false;
+      if (audience === "promoEmail") return m.consent.promoEmail;
+      if (audience === "promoWhatsapp") return m.consent.promoWhatsapp;
+      return true;
+    });
+  }
+  function render() {
+    document.getElementById("list").innerHTML = PFX.db.campaigns.map(function (c) {
+      var n = recipients(c.audience === "promoEmail opt-in" ? "promoEmail" : c.audience).length;
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(c.name) + (c.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
+        '<p class="meta">Subject: ' + PFX.esc(c.subject) + ' · Audience: ' + PFX.esc(c.audience) + '</p>' +
+        '<span class="badge ' + (c.status === "sent" ? "badge-ok" : "badge-neutral") + '">' + c.status + '</span> ' +
+        '<span class="meta">' + n + ' opted-in recipients' + (c.results ? ' · delivered ' + c.results.delivered + '/' + c.results.recipients : "") + '</span></div></div>';
+    }).join("") || '<div class="empty">No campaigns yet.</div>';
+  }
+  document.getElementById("newBtn").addEventListener("click", function () { document.getElementById("cModal").classList.add("open"); });
+  document.getElementById("cNo").addEventListener("click", function () { document.getElementById("cModal").classList.remove("open"); });
+  document.getElementById("cYes").addEventListener("click", function () {
+    var name = document.getElementById("cName").value.trim() || "Untitled campaign",
+      aud = document.getElementById("cAud").value,
+      rec = recipients(aud);
+    var c = {
+      id: PFX.uid("cam"), name: name, audience: aud,
+      subject: document.getElementById("cSubj").value.trim(),
+      body: document.getElementById("cBody").value.trim(),
+      status: "sent", createdAt: PFX.now(),
+      results: { recipients: rec.length, delivered: rec.length, bounced: 0, unsubscribed: 0, note: "simulated delivery (demo)" }
+    };
+    PFX.db.campaigns.push(c); PFX.save();
+    PFX.audit("campaign.send", name + " → " + rec.length + " recipients (" + aud + ")", "admin");
+    document.getElementById("cModal").classList.remove("open");
+    document.getElementById("msg").innerHTML = '<div class="success">✅ Campaign simulated to <b>' + rec.length + '</b> opted-in members. Members who opted out were excluded automatically — marketing opt-out never cancels membership.</div>';
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

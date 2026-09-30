@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — ProFX Club</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="profile">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Member dashboard</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="appSide"></aside>
+  <div class="main">
+    <div class="page-head"><div><h1>Profile</h1><p class="lead">Your details, preferences and communication choices.</p></div></div>
+    <div id="msg"></div>
+
+    <div class="card">
+      <h3>Account</h3>
+      <dl class="kv" style="margin:.8rem 0">
+        <dt>Name</dt><dd id="pName"></dd>
+        <dt>Email</dt><dd id="pEmail"></dd>
+        <dt>Membership ID</dt><dd id="pMid"></dd>
+        <dt>Status</dt><dd><span class="badge badge-ok" id="pStatus"></span></dd>
+        <dt>Member since</dt><dd id="pSince"></dd>
+      </dl>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
+      <h3>Onboarding (optional)</h3>
+      <div class="grid g2" style="margin-top:.8rem">
+        <div class="field"><label for="oCity">City</label><input type="text" id="oCity"></div>
+        <div class="field"><label for="oCountry">Country</label><input type="text" id="oCountry"></div>
+        <div class="field"><label for="oExp">Trading experience</label>
+          <select id="oExp"><option value="">—</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Professional</option></select></div>
+        <div class="field"><label for="oLang">Preferred language</label>
+          <select id="oLang"><option value="">—</option><option>English</option><option>Arabic</option><option>Hindi</option><option>Urdu</option><option>Tagalog</option><option>Other</option></select></div>
+      </div>
+      <div class="field"><label>Interests</label>
+        <div id="oInterests" style="display:flex;gap:.5rem;flex-wrap:wrap"></div></div>
+      <button class="btn btn-primary" id="oSave">Save preferences</button>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
+      <h3>Communication preferences</h3>
+      <p class="meta" style="margin:.3rem 0 .8rem">Service emails (verification, bookings, reminders) are required for membership. Marketing is optional — changing it never affects your membership.</p>
+      <label class="check-row" style="color:var(--ink)"><input type="checkbox" id="cPromoEmail"><span>Promotional emails (classes, events, digests)</span></label>
+      <label class="check-row" style="color:var(--ink)"><input type="checkbox" id="cPromoWa"><span>Promotional WhatsApp messages</span></label>
+      <div class="field"><label for="cWa">WhatsApp number (optional)</label><input type="tel" id="cWa"></div>
+      <button class="btn btn-primary" id="cSave">Save communication preferences</button>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem">
+      <h3>My referral code</h3>
+      <p class="meta">Share it — when someone joins with your code, we record it as your referral.</p>
+      <p style="font-size:1.4rem;font-weight:800;letter-spacing:.1rem;color:var(--emerald-2)" id="refCode"></p>
+    </div>
+
+    <div class="card" style="margin-top:1.2rem;border-color:#f1c9cc">
+      <h3 style="color:#a1232b">Delete my account</h3>
+      <p class="meta">Request full deletion of your account and personal data. We confirm what is removed and what we must keep for legal records. This cannot be undone.</p>
+      <button class="btn btn-danger" id="delReq">Request account deletion</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/app.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var me = window.PFX_ME;
+  var INTERESTS = ["Beginner classes", "Webinars", "Networking", "Assistance", "Travel"];
+  document.getElementById("pName").textContent = me.name;
+  document.getElementById("pEmail").textContent = me.email;
+  document.getElementById("pMid").textContent = me.membershipId;
+  document.getElementById("pStatus").textContent = me.status;
+  document.getElementById("pSince").textContent = PFX.fmtDate(me.createdAt);
+  document.getElementById("oCity").value = me.city || "";
+  document.getElementById("oCountry").value = me.country || "";
+  document.getElementById("oExp").value = me.experience || "";
+  document.getElementById("oLang").value = me.language || "";
+  document.getElementById("oInterests").innerHTML = INTERESTS.map(function (i) {
+    var on = (me.interests || []).indexOf(i) > -1;
+    return '<button type="button" class="btn btn-sm ' + (on ? "btn-primary" : "btn-ghost") + '" data-int="' + i + '">' + i + '</button>';
+  }).join("");
+  document.querySelectorAll("[data-int]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      me.interests = me.interests || [];
+      var i = me.interests.indexOf(b.dataset.int);
+      if (i > -1) me.interests.splice(i, 1); else me.interests.push(b.dataset.int);
+      b.className = "btn btn-sm " + (i > -1 ? "btn-ghost" : "btn-primary");
+    });
+  });
+  document.getElementById("oSave").addEventListener("click", function () {
+    me.city = document.getElementById("oCity").value.trim();
+    me.country = document.getElementById("oCountry").value.trim();
+    me.experience = document.getElementById("oExp").value;
+    me.language = document.getElementById("oLang").value;
+    PFX.save();
+    document.getElementById("msg").innerHTML = '<div class="success">Preferences saved.</div>';
+  });
+  document.getElementById("cPromoEmail").checked = !!me.consent.promoEmail;
+  document.getElementById("cPromoWa").checked = !!me.consent.promoWhatsapp;
+  document.getElementById("cWa").value = me.whatsapp || "";
+  document.getElementById("cSave").addEventListener("click", function () {
+    PFX.logConsent(me, "promoEmail", document.getElementById("cPromoEmail").checked, "changed in profile");
+    PFX.logConsent(me, "promoWhatsapp", document.getElementById("cPromoWa").checked, "changed in profile");
+    me.whatsapp = document.getElementById("cWa").value.trim();
+    PFX.save();
+    PFX.audit("member.consent_update", me.membershipId, me.id);
+    document.getElementById("msg").innerHTML = '<div class="success">Communication preferences saved. Marketing opt-out never affects your membership.</div>';
+  });
+  var rc = PFX.db.referralCodes.find(function (c) { return c.memberId === me.id; });
+  if (!rc) {
+    rc = { code: ("PX-" + me.membershipId.replace("PX-2026-", "") + "-" + me.name.split(" ")[0].toUpperCase().replace(/[^A-Z]/g, "").slice(0, 6)).slice(0, 18), memberId: me.id, createdAt: PFX.now(), note: "auto" };
+    PFX.db.referralCodes.push(rc); PFX.save();
+  }
+  document.getElementById("refCode").textContent = rc.code;
+  document.getElementById("delReq").addEventListener("click", function () {
+    if (!confirm("Request deletion of your account and personal data? This cannot be undone.")) return;
+    me.deletionRequested = { at: PFX.now(), status: "requested" };
+    PFX.save();
+    PFX.audit("member.deletion_request", me.membershipId, me.id);
+    document.getElementById("msg").innerHTML = '<div class="notice">Deletion requested. Our team will confirm by email what is removed and what we must retain for legal records, then close your account.</div>';
+  });
+})();
+</script>
+</body>
+</html>

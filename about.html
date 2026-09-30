@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About &amp; Contact — ProFX Club</title>
+<meta name="description" content="About ProFX Club: the responsible organization, contact details and support channel.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css?v=20260930a">
+</head>
+<body data-page="about" data-joinbar="1">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="chrome-nav"></header>
+<div class="mobile-drawer" id="chrome-drawer"></div>
+
+<main id="main">
+<section class="hero" style="padding:2.8rem 0">
+  <div class="container">
+    <span class="eyebrow reveal">About</span>
+    <h1 class="reveal d1">About ProFX Club</h1>
+    <p class="lead reveal d2">A free forex trader membership and community: education, networking, assistance and member experiences.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:900px">
+    <div class="grid g2">
+      <div class="card reveal">
+        <h3>Responsible organization</h3>
+        <p class="meta" id="orgBlock"></p>
+        <div class="demo-banner" style="margin-top:1rem"><b>OWNER ACTION NEEDED</b> — the responsible operating entity, contact details and support channel must be confirmed by the owner before publication. Nothing here is invented.</div>
+      </div>
+      <div class="card reveal d1">
+        <h3>Our mission</h3>
+        <p class="meta">Help beginner and experienced traders learn properly — free classes, honest education, a moderated community and real assistance when things go wrong. No deposits, no signals, no guaranteed outcomes.</p>
+      </div>
+    </div>
+
+    <span class="eyebrow reveal" style="margin-top:2rem">Team</span>
+    <h2 class="reveal d1">Who runs the club</h2>
+    <div class="card reveal d1">
+      <div class="demo-banner"><b>OWNER ACTION NEEDED</b> — real team details will be published here once confirmed by the owner. We never invent team names or credentials.</div>
+      <p class="meta">Team profiles are being prepared and will appear here.</p>
+    </div>
+
+    <span class="eyebrow reveal" style="margin-top:2rem">Contact</span>
+    <h2 class="reveal d1">Get in touch</h2>
+    <div class="card reveal d1">
+      <p class="meta" id="contactBlock"></p>
+      <div class="demo-banner" style="margin-top:1rem"><b>OWNER ACTION NEEDED</b> — support email / contact details to be confirmed by the owner.</div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer id="chrome-footer"></footer>
+<script src="js/db.js?v=20260930a"></script>
+<script src="js/site.js?v=20260930a"></script>
+<script>
+(function () {
+  var o = PFX.db.settings.org;
+  document.getElementById("orgBlock").textContent = o.name + " — " + o.entityNote;
+  document.getElementById("contactBlock").textContent = o.supportEmail
+    ? "Support: " + o.supportEmail
+    : "Support contact details will be published here once confirmed by the owner.";
+})();
+</script>
+</body>
+</html>

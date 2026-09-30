@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community settings — ProFX Club CRM</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="community">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Admin CRM</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="page-head"><div><h1>Community settings</h1><p class="lead">Official Telegram/WhatsApp links: editable, with language, region, capacity status and active/inactive.</p></div></div>
+    <div class="notice"><b>Rule:</b> never fabricate destinations. Leave a link empty/inactive until the owner supplies the real one — members see a clear "not available yet" message.</div>
+    <div id="msg"></div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/admin.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var LABELS = { telegramAnnouncements: "Telegram announcements", telegramDiscussion: "Telegram discussion", whatsapp: "WhatsApp community" };
+  function render() {
+    var c = PFX.db.settings.community;
+    document.getElementById("list").innerHTML = Object.keys(LABELS).map(function (k) {
+      var d = c[k];
+      return '<div class="card" style="margin-bottom:1rem"><h3>' + LABELS[k] + '</h3>' +
+        '<div class="grid g2" style="margin-top:.8rem">' +
+        '<div class="field"><label>Invite URL</label><input type="text" data-f="url" data-k="' + k + '" value="' + PFX.esc(d.url) + '" placeholder="https://t.me/… or https://chat.whatsapp.com/…"></div>' +
+        '<div class="field"><label>Language</label><input type="text" data-f="language" data-k="' + k + '" value="' + PFX.esc(d.language) + '"></div>' +
+        '<div class="field"><label>Region</label><input type="text" data-f="region" data-k="' + k + '" value="' + PFX.esc(d.region) + '"></div>' +
+        '<div class="field"><label>Capacity status</label><select data-f="capacityStatus" data-k="' + k + '">' +
+          ["open", "limited", "full", "not_staffed"].map(function (s) { return '<option' + (d.capacityStatus === s ? " selected" : "") + '>' + s + '</option>'; }).join("") + '</select></div>' +
+        '</div>' +
+        '<label class="check-row" style="color:var(--ink)"><input type="checkbox" data-f="active" data-k="' + k + '"' + (d.active ? " checked" : "") + '><span>Active — show to members (requires a real URL)</span></label>' +
+        '<p class="meta">Status: ' + (d.active && d.url ? '<span class="badge badge-ok">Live</span>' : '<span class="badge badge-warn">Not available yet</span>') + '</p></div>';
+    }).join("") + '<button class="btn btn-primary" id="saveBtn">Save community settings</button>';
+    document.getElementById("saveBtn").addEventListener("click", function () {
+      var ok = true;
+      document.querySelectorAll("[data-f]").forEach(function (el) {
+        var d = PFX.db.settings.community[el.dataset.k], f = el.dataset.f;
+        d[f] = el.type === "checkbox" ? el.checked : el.value.trim();
+      });
+      Object.keys(LABELS).forEach(function (k) {
+        var d = PFX.db.settings.community[k];
+        if (d.active && !/^https?:\/\/.+\..+/.test(d.url)) { ok = false; }
+      });
+      if (!ok) {
+        document.getElementById("msg").innerHTML = '<div class="warn">An "active" destination needs a real invite URL. Deactivate it or paste the official link.</div>';
+        return;
+      }
+      PFX.save(); PFX.audit("community.settings_update", "community links edited", "admin");
+      document.getElementById("msg").innerHTML = '<div class="success">Community settings saved. Members see the links immediately.</div>';
+      render();
+    });
+  }
+  render();
+})();
+</script>
+</body>
+</html>

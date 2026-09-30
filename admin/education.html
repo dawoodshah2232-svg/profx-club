@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Education — ProFX Club CRM</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="education">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Admin CRM</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="demo-banner"><b>DEMO DATA</b> — lessons/educators/resources are sample data.</div>
+    <div class="page-head"><div><h1>Education</h1><p class="lead">Lessons (beginner path), educator details, resources and publish controls.</p></div></div>
+    <div id="msg"></div>
+
+    <h3 style="margin:.6rem 0 .7rem">Beginner path lessons</h3>
+    <div id="lessons"></div>
+
+    <div class="page-head" style="margin-top:1.6rem"><div><h3>Educators</h3></div><button class="btn btn-primary btn-sm" id="eduNew">+ Educator</button></div>
+    <div id="educators"></div>
+
+    <div class="page-head" style="margin-top:1.6rem"><div><h3>Resources</h3></div><button class="btn btn-primary btn-sm" id="resNew">+ Resource</button></div>
+    <div id="resources"></div>
+  </div>
+</div>
+
+<div class="modal-back" id="edModal"><div class="modal">
+  <h3 id="edTitle">Add</h3>
+  <div id="edBody"></div>
+  <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:.8rem">
+    <button class="btn btn-ghost" id="edNo">Back</button>
+    <button class="btn btn-primary" id="edYes">Save</button>
+  </div>
+</div></div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/admin.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var mode = null, editing = null;
+  function msg(h, c) { document.getElementById("msg").innerHTML = '<div class="' + c + '">' + h + '</div>'; }
+  function render() {
+    document.getElementById("lessons").innerHTML = PFX.db.lessons.map(function (l) {
+      return '<div class="list-row"><div class="grow"><h3>Week ' + l.week + ': ' + PFX.esc(l.title) + (l.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
+        '<p class="meta">Outcome: ' + PFX.esc(l.outcomes) + '</p>' +
+        '<p class="meta">Recording: ' + (l.recordingUrl ? '<a href="' + PFX.esc(l.recordingUrl) + '">published</a>' : 'not published') + '</p></div>' +
+        '<button class="btn btn-ghost btn-sm" data-lesson="' + l.id + '">Edit</button></div>';
+    }).join("");
+    document.getElementById("educators").innerHTML = PFX.db.educators.map(function (e) {
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.name) + (e.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
+        '<p class="meta">' + PFX.esc(e.bio) + ' · Credentials: ' + PFX.esc(e.credentials) + ' · ' + PFX.esc((e.langs || []).join(", ")) + '</p></div>' +
+        '<button class="btn btn-ghost btn-sm" data-edu="' + e.id + '">Edit</button> <button class="btn btn-danger btn-sm" data-edudel="' + e.id + '">Remove</button></div>';
+    }).join("");
+    document.getElementById("resources").innerHTML = PFX.db.resources.map(function (r) {
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(r.title) + (r.sample ? ' <span class="badge badge-demo">SAMPLE</span>' : "") + '</h3>' +
+        '<p class="meta">' + PFX.esc(r.summary) + ' · ' + PFX.esc(r.kind) + ' · access: ' + PFX.esc(r.access) + '</p></div>' +
+        '<button class="btn btn-ghost btn-sm" data-res="' + r.id + '">Edit</button> <button class="btn btn-danger btn-sm" data-resdel="' + r.id + '">Remove</button></div>';
+    }).join("");
+  }
+  function field(id, label, val, type) {
+    return '<div class="field"><label for="' + id + '">' + label + '</label><input type="' + (type || "text") + '" id="' + id + '" value="' + PFX.esc(val || "") + '"></div>';
+  }
+  function openModal(m, item) {
+    mode = m; editing = item || null;
+    document.getElementById("edTitle").textContent = (item ? "Edit " : "Add ") + (m === "lesson" ? "lesson" : m === "edu" ? "educator" : "resource");
+    var b = document.getElementById("edBody");
+    if (m === "lesson") {
+      b.innerHTML = '<div class="grid g2">' + field("fWeek", "Week", item ? item.week : "", "number") + field("fTitle", "Title", item ? item.title : "") + '</div>' +
+        '<div class="field"><label for="fOut">Learning outcomes</label><input type="text" id="fOut" value="' + PFX.esc(item ? item.outcomes : "") + '"></div>' +
+        field("fRec", "Recording URL (only with permission)", item ? item.recordingUrl : "");
+    } else if (m === "edu") {
+      b.innerHTML = field("fName", "Name", item ? item.name : "") +
+        '<div class="field"><label for="fBio">Biography (confirmed by owner only)</label><textarea id="fBio" style="min-height:80px">' + PFX.esc(item ? item.bio : "") + '</textarea></div>' +
+        field("fCred", "Credentials", item ? item.credentials : "") + field("fLangs", "Languages (comma separated)", item ? (item.langs || []).join(", ") : "");
+    } else {
+      b.innerHTML = field("fTitle", "Title", item ? item.title : "") +
+        '<div class="grid g2">' + field("fKind", "Kind (PDF, Worksheet, Template…)", item ? item.kind : "") + field("fAccess", "Access (members/public)", item ? item.access : "members") + '</div>' +
+        '<div class="field"><label for="fSum">Summary</label><textarea id="fSum" style="min-height:70px">' + PFX.esc(item ? item.summary : "") + '</textarea></div>';
+    }
+    document.getElementById("edModal").classList.add("open");
+  }
+  document.getElementById("eduNew").addEventListener("click", function () { openModal("edu", null); });
+  document.getElementById("resNew").addEventListener("click", function () { openModal("res", null); });
+  document.getElementById("edNo").addEventListener("click", function () { document.getElementById("edModal").classList.remove("open"); });
+  document.getElementById("edYes").addEventListener("click", function () {
+    var v = function (id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; };
+    if (mode === "lesson" && editing) {
+      editing.week = parseInt(v("fWeek"), 10) || editing.week; editing.title = v("fTitle") || editing.title;
+      editing.outcomes = v("fOut"); editing.recordingUrl = v("fRec");
+      PFX.audit("education.lesson_update", editing.id, "admin");
+    } else if (mode === "edu") {
+      var langs = v("fLangs").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+      if (editing) { editing.name = v("fName") || editing.name; editing.bio = v("fBio"); editing.credentials = v("fCred"); editing.langs = langs; PFX.audit("education.edu_update", editing.id, "admin"); }
+      else { PFX.db.educators.push({ id: PFX.uid("edu"), name: v("fName") || "Unnamed educator", bio: v("fBio"), credentials: v("fCred"), langs: langs, photo: "", sample: false }); PFX.audit("education.edu_create", v("fName"), "admin"); }
+    } else if (mode === "res") {
+      if (editing) { editing.title = v("fTitle") || editing.title; editing.kind = v("fKind"); editing.access = v("fAccess"); editing.summary = v("fSum"); PFX.audit("education.res_update", editing.id, "admin"); }
+      else { PFX.db.resources.push({ id: PFX.uid("res"), title: v("fTitle") || "Untitled", kind: v("fKind") || "File", summary: v("fSum"), access: v("fAccess") || "members", sample: false }); PFX.audit("education.res_create", v("fTitle"), "admin"); }
+    }
+    PFX.save(); document.getElementById("edModal").classList.remove("open");
+    msg("Saved.", "success"); render();
+  });
+  document.addEventListener("click", function (ev) {
+    var l = ev.target.closest("[data-lesson]"); if (l) { openModal("lesson", PFX.db.lessons.find(function (x) { return x.id === l.dataset.lesson; })); return; }
+    var e = ev.target.closest("[data-edu]"); if (e) { openModal("edu", PFX.db.educators.find(function (x) { return x.id === e.dataset.edu; })); return; }
+    var r = ev.target.closest("[data-res]"); if (r) { openModal("res", PFX.db.resources.find(function (x) { return x.id === r.dataset.res; })); return; }
+    var ed = ev.target.closest("[data-edudel]");
+    if (ed && confirm("Remove this educator?")) { PFX.db.educators = PFX.db.educators.filter(function (x) { return x.id !== ed.dataset.edudel; }); PFX.save(); PFX.audit("education.edu_remove", ed.dataset.edudel, "admin"); render(); return; }
+    var rd = ev.target.closest("[data-resdel]");
+    if (rd && confirm("Remove this resource?")) { PFX.db.resources = PFX.db.resources.filter(function (x) { return x.id !== rd.dataset.resdel; }); PFX.save(); PFX.audit("education.res_remove", rd.dataset.resdel, "admin"); render(); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

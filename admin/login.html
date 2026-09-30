@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — ProFX Club CRM</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="admin-login">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="../index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Admin CRM</small></span></a>
+</div></header>
+
+<main>
+<section class="section"><div class="container" style="max-width:480px">
+  <h1>Admin sign in</h1>
+  <p class="lead">Enter the admin PIN. Demo PIN is in <b>README.md</b>.</p>
+  <div class="card" style="margin-top:1.2rem">
+    <div class="demo-banner"><b>DEMO AUTH</b> — PIN login only. Production will use proper staff accounts with roles.</div>
+    <div class="form-error" id="lErr" role="alert"></div>
+    <div class="field"><label for="lPin">Admin PIN</label><input type="password" id="lPin" inputmode="numeric" autocomplete="off"></div>
+    <button class="btn btn-navy" id="lGo" style="width:100%">Sign in to CRM</button>
+  </div>
+</div></section>
+</main>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var PIN = "246810"; /* demo PIN — see README.md */
+  function err(m) { var e = document.getElementById("lErr"); e.textContent = m; e.style.display = "block"; }
+  document.getElementById("lGo").addEventListener("click", function () {
+    if (document.getElementById("lPin").value.trim() === PIN) {
+      sessionStorage.setItem("profx_admin", JSON.stringify({ at: PFX.now() }));
+      PFX.audit("admin.login", "PIN login", "admin");
+      location.href = "index.html";
+    } else err("Incorrect PIN. See README.md for the demo PIN.");
+  });
+  document.getElementById("lPin").addEventListener("keydown", function (e) { if (e.key === "Enter") document.getElementById("lGo").click(); });
+})();
+</script>
+</body>
+</html>

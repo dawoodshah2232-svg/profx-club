@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events — Free classes & webinars | ProFX Club</title>
+<meta name="description" content="ProFX Club events: free webinars, seminars and meetups with date, timezone, language, host, capacity and cost.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css?v=20260930a">
+</head>
+<body data-page="events" data-joinbar="1">
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="chrome-nav"></header>
+<div class="mobile-drawer" id="chrome-drawer"></div>
+
+<main id="main">
+<section class="hero" style="padding:2.8rem 0">
+  <div class="container">
+    <span class="eyebrow reveal">Events</span>
+    <h1 class="reveal d1">Free classes &amp; meetups.</h1>
+    <p class="lead reveal d2">Every event shows its date, timezone, language, host, capacity, cost and registration status. We only publish confirmed sessions — nothing speculative.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:900px">
+    <div class="demo-banner reveal"><b>SAMPLE EVENTS</b> — the events below are sample data for this demo. Real confirmed sessions will be published here by the owner.</div>
+    <div id="eventList" class="reveal d1"></div>
+  </div>
+</section>
+</main>
+
+<footer id="chrome-footer"></footer>
+<script src="js/db.js?v=20260930a"></script>
+<script src="js/site.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var now = new Date();
+  var evs = PFX.db.events.filter(function (e) { return e.status === "published"; })
+    .sort(function (a, b) { return new Date(a.startsAt) - new Date(b.startsAt); });
+  var me = PFX.currentMember();
+  document.getElementById("eventList").innerHTML = evs.length ? evs.map(function (e) {
+    var left = PFX.eventSeatsLeft(e.id);
+    var past = new Date(e.startsAt) < now;
+    var my = me && PFX.db.registrations.find(function (r) { return r.eventId === e.id && r.memberId === me.id && (r.status === "confirmed" || r.status === "waitlisted"); });
+    return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(e.title) + ' <span class="badge badge-demo">SAMPLE</span></h3>' +
+      '<p class="meta"><b>' + PFX.fmtDate(e.startsAt) + '</b> · ' + PFX.esc(e.timezone) + ' · ' + PFX.esc(e.language) + '</p>' +
+      '<p class="meta">Host: ' + PFX.esc(e.host) + ' · ' + PFX.esc(e.kind) + ' · Cost: ' + PFX.esc(e.cost) + '</p>' +
+      '<p class="meta">' + PFX.esc(e.description) + '</p>' +
+      '<div style="margin-top:.5rem">' +
+      (past ? '<span class="badge badge-neutral">Completed</span>' :
+        my ? '<span class="badge badge-ok">' + (my.status === "confirmed" ? "You're booked" : "You're on the waitlist") + '</span>' :
+        left > 0 ? '<span class="badge badge-ok">' + left + ' of ' + e.capacity + ' places available</span>' : '<span class="badge badge-full">Full — waitlist open</span>') +
+      '</div></div>' +
+      (past ? "" : me ? '<a class="btn btn-primary btn-sm" href="app/events.html">Manage booking</a>' : '<a class="btn btn-primary btn-sm" href="join.html">Join &amp; book</a>') +
+      "</div>";
+  }).join("") : '<div class="empty">No events published yet. <a href="join.html">Join free</a> and we\'ll email you when classes open.</div>';
+})();
+</script>
+</body>
+</html>

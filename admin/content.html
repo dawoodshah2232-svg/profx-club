@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content — ProFX Club CRM</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1b33'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='bold' font-size='26' fill='%230e9f6e' text-anchor='middle'%3EPX%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../css/style.css?v=20260930a">
+</head>
+<body data-page="content">
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="index.html"><span class="logo-mark">PX</span><span>ProFX Club<small>Admin CRM</small></span></a>
+</div></header>
+
+<div class="app">
+  <aside class="side" id="adminSide"></aside>
+  <div class="main">
+    <div class="page-head"><div><h1>Content</h1><p class="lead">Homepage sections, FAQs, policy versions. Changes publish immediately.</p></div></div>
+    <div id="msg"></div>
+
+    <div class="card">
+      <h3>Homepage copy</h3>
+      <div class="field" style="margin-top:.8rem"><label for="hH1">Hero headline</label><input type="text" id="hH1"></div>
+      <div class="field"><label for="hLead">Hero subheading</label><textarea id="hLead" style="min-height:70px"></textarea></div>
+      <div class="field"><label for="hBen">Benefits section title</label><input type="text" id="hBen"></div>
+      <button class="btn btn-primary" id="hSave">Save homepage copy</button>
+    </div>
+
+    <div class="page-head" style="margin-top:1.6rem"><div><h3>FAQs</h3></div><button class="btn btn-primary btn-sm" id="fNew">+ FAQ</button></div>
+    <div id="faqs"></div>
+
+    <div class="card" style="margin-top:1.6rem">
+      <h3>Policy versions</h3>
+      <p class="meta">Bump the version whenever the owner approves new text. Current versions:</p>
+      <div class="grid g2" style="margin-top:.8rem">
+        <div class="field"><label>Membership terms</label><input type="text" id="pvTerms"></div>
+        <div class="field"><label>Privacy notice</label><input type="text" id="pvPrivacy"></div>
+        <div class="field"><label>Community rules</label><input type="text" id="pvRules"></div>
+        <div class="field"><label>Risk notice</label><input type="text" id="pvRisk"></div>
+      </div>
+      <button class="btn btn-primary" id="pvSave">Save policy versions</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="fModal"><div class="modal">
+  <h3 id="fTitle">Add FAQ</h3>
+  <div class="field"><label for="fQ">Question</label><input type="text" id="fQ"></div>
+  <div class="field"><label for="fA">Answer</label><textarea id="fA"></textarea></div>
+  <div style="display:flex;gap:.6rem;justify-content:flex-end">
+    <button class="btn btn-ghost" id="fNo">Back</button>
+    <button class="btn btn-primary" id="fYes">Save</button>
+  </div>
+</div></div>
+
+<script src="../js/db.js?v=20260930a"></script>
+<script src="../js/admin.js?v=20260930a"></script>
+<script>
+(function () {
+  "use strict";
+  var editingFaq = null;
+  function msg(h, c) { document.getElementById("msg").innerHTML = '<div class="' + c + '">' + h + '</div>'; window.scrollTo(0, 0); }
+  function load() {
+    var h = PFX.db.settings.home;
+    document.getElementById("hH1").value = h.heroH1;
+    document.getElementById("hLead").value = h.heroLead;
+    document.getElementById("hBen").value = h.benefitsTitle;
+    var pv = PFX.db.settings.policyVersions;
+    document.getElementById("pvTerms").value = pv.membership;
+    document.getElementById("pvPrivacy").value = pv.privacy;
+    document.getElementById("pvRules").value = pv.communityRules;
+    document.getElementById("pvRisk").value = pv.riskNotice;
+    document.getElementById("faqs").innerHTML = PFX.db.faqs.map(function (f, i) {
+      return '<div class="list-row"><div class="grow"><h3>' + PFX.esc(f.q) + '</h3><p class="meta">' + PFX.esc(f.a.slice(0, 120)) + '…</p></div>' +
+        '<button class="btn btn-ghost btn-sm" data-faq="' + i + '">Edit</button> <button class="btn btn-danger btn-sm" data-faqdel="' + i + '">Remove</button></div>';
+    }).join("");
+  }
+  document.getElementById("hSave").addEventListener("click", function () {
+    var h = PFX.db.settings.home;
+    h.heroH1 = document.getElementById("hH1").value.trim() || h.heroH1;
+    h.heroLead = document.getElementById("hLead").value.trim() || h.heroLead;
+    h.benefitsTitle = document.getElementById("hBen").value.trim() || h.benefitsTitle;
+    PFX.save(); PFX.audit("content.home_update", "homepage copy edited", "admin");
+    msg("Homepage copy saved.", "success");
+  });
+  document.getElementById("pvSave").addEventListener("click", function () {
+    var pv = PFX.db.settings.policyVersions;
+    pv.membership = document.getElementById("pvTerms").value.trim();
+    pv.privacy = document.getElementById("pvPrivacy").value.trim();
+    pv.communityRules = document.getElementById("pvRules").value.trim();
+    pv.riskNotice = document.getElementById("pvRisk").value.trim();
+    PFX.save(); PFX.audit("content.policy_versions", JSON.stringify(pv), "admin");
+    msg("Policy versions saved.", "success");
+  });
+  document.getElementById("fNew").addEventListener("click", function () {
+    editingFaq = null; document.getElementById("fTitle").textContent = "Add FAQ";
+    document.getElementById("fQ").value = ""; document.getElementById("fA").value = "";
+    document.getElementById("fModal").classList.add("open");
+  });
+  document.getElementById("fNo").addEventListener("click", function () { document.getElementById("fModal").classList.remove("open"); });
+  document.getElementById("fYes").addEventListener("click", function () {
+    var q = document.getElementById("fQ").value.trim(), a = document.getElementById("fA").value.trim();
+    if (!q || !a) return;
+    if (editingFaq === null) PFX.db.faqs.push({ q: q, a: a });
+    else PFX.db.faqs[editingFaq] = { q: q, a: a };
+    PFX.save(); PFX.audit("content.faq_update", q, "admin");
+    document.getElementById("fModal").classList.remove("open");
+    msg("FAQ saved.", "success"); load();
+  });
+  document.addEventListener("click", function (ev) {
+    var e = ev.target.closest("[data-faq]");
+    if (e) {
+      editingFaq = parseInt(e.dataset.faq, 10);
+      document.getElementById("fTitle").textContent = "Edit FAQ";
+      document.getElementById("fQ").value = PFX.db.faqs[editingFaq].q;
+      document.getElementById("fA").value = PFX.db.faqs[editingFaq].a;
+      document.getElementById("fModal").classList.add("open"); return;
+    }
+    var d = ev.target.closest("[data-faqdel]");
+    if (d && confirm("Remove this FAQ?")) {
+      PFX.db.faqs.splice(parseInt(d.dataset.faqdel, 10), 1);
+      PFX.save(); PFX.audit("content.faq_remove", d.dataset.faqdel, "admin");
+      msg("FAQ removed.", "success"); load();
+    }
+  });
+  load();
+})();
+</script>
+</body>
+</html>
