@@ -43,6 +43,33 @@
     '<div class="foot-bottom"><span>© ' + new Date().getFullYear() + ' ProFX Club · Demo prototype — sample data</span>' +
     "<span>Education only. Not financial advice. No guaranteed returns.</span></div></div>";
 
+  /* ---- Network ad: right-side rail on wide screens, inline card otherwise ----
+     UPDATE LINKS HERE — add, remove or change our websites in this one list. */
+  var NETWORK_SITES = [
+    { name: "PDFEdit", url: "https://pdfedit.website", desc: "Free online PDF tools" },
+    { name: "FlexSpot", url: "https://www.flexspot.lol", desc: "Bid for attention" },
+    { name: "CatchThePrice", url: "https://catchtheprice.com", desc: "UAE price comparison" }
+  ];
+  var adLinks = NETWORK_SITES.map(function (s) {
+    return '<a class="ad-link" href="' + s.url + '" target="_blank" rel="noopener"><b>' + s.name + '</b><span>' + s.desc + '</span></a>';
+  }).join("");
+  var adInner =
+    '<span class="ad-tag">Ad</span>' +
+    '<div class="ad-body"><h3>More from<br>our network</h3><div class="ad-links">' + adLinks + '</div></div>';
+  var adRail = document.createElement("aside");
+  adRail.className = "ad-rail";
+  adRail.setAttribute("aria-label", "Advertisement");
+  adRail.style.backgroundImage = "url('assets/images/ad-network.jpg')";
+  adRail.innerHTML = adInner;
+  document.body.appendChild(adRail);
+  var adInline = document.createElement("aside");
+  adInline.className = "ad-inline";
+  adInline.setAttribute("aria-label", "Advertisement");
+  adInline.style.backgroundImage = "url('assets/images/ad-network.jpg')";
+  adInline.innerHTML = adInner;
+  var footEl = document.getElementById("chrome-footer");
+  if (footEl && footEl.parentNode) footEl.parentNode.insertBefore(adInline, footEl);
+
   /* join bar on mobile for public pages that want it */
   if (document.body.dataset.joinbar === "1" && !PFX.currentMember()) {
     var bar = document.createElement("div");
