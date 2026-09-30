@@ -19,7 +19,7 @@
 
   document.getElementById("chrome-nav").innerHTML =
     '<div class="container nav-inner">' +
-    '<a class="logo" href="index.html" aria-label="ProFX Club home"><img class="logo-img" src="assets/logo-header.png" alt="ProFX Club"></a>' +
+    '<a class="logo" href="index.html" aria-label="ProFX Club home"><img class="logo-img" src="assets/logo-lockup.png" alt="ProFX Club"></a>' +
     '<nav class="nav-links" aria-label="Primary">' + navLinks + "</nav>" +
     '<div class="nav-cta"><a class="btn btn-ghost btn-sm" href="signin.html">Sign in</a>' +
     '<a class="btn btn-primary btn-sm" href="join.html">Join Free</a></div>' +
